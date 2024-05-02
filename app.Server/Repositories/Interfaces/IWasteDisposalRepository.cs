@@ -8,7 +8,7 @@ namespace app.Server.Repositories.Interfaces
 {
     public interface IWasteDisposalRepository
     {
-        public Task<int> RegisterDispose(WasteDisposalRequest wasteDisposal);
+        public Task<bool> RegisterDispose(WasteDisposalRequest wasteDisposal);
         public bool UpdateDispose();
         public bool DeleteDispose();
         public Task<WasteDisposal>? GetDispose(int id);

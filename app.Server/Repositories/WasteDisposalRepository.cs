@@ -16,18 +16,36 @@ namespace app.Server.Repositories
             _context = context;
         }
 
-        public async Task<int> RegisterDispose(WasteDisposalRequest wasteDisposal)
+        public async Task<bool> RegisterDispose(WasteDisposalRequest wasteDisposal)
         {
-            await _context.WasteDisposals.AddAsync(new WasteDisposal()
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                UserId = wasteDisposal.UserId,
-                HazardousWasteId = wasteDisposal.HazardousWasteId,
-                Date = DateTime.Now.ToUniversalTime()
-            });
-            /*var random = new Random();
-            int randomNumber = random.Next(1, 100);
-            return await Task.FromResult(randomNumber);*///
-            return await _context.SaveChangesAsync();
+                try
+                {
+                    //добавить запись о приеме отходов
+                    await _context.WasteDisposals.AddAsync(new WasteDisposal()
+                    {
+                        UserId = wasteDisposal.UserId,
+                        HazardousWasteId = wasteDisposal.HazardousWasteId,
+                        Date = DateTime.Now.ToUniversalTime()
+                    });
+
+                    //добавить бонусы пользователю
+                    var user = await _context.Users.FindAsync(wasteDisposal.UserId);
+                    var hazardousWaste = await _context.HazardousWastes.FindAsync(wasteDisposal.HazardousWasteId);
+                    user.Bonuses += hazardousWaste.Bonuses;
+
+                    //сохранить
+                    await _context.SaveChangesAsync();
+                    transaction.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return false;
+                }
+            }
         }
 
         public bool UpdateDispose()
