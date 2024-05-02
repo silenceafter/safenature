@@ -5,18 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace app.Server.Repositories
 {
-    public class HazardClassRepository : IHazardClassRepository
+    public class PartnerRepository : IPartnerRepository
     {
         private readonly EcodbContext _context;
 
-        public HazardClassRepository(EcodbContext context)
+        public PartnerRepository(EcodbContext context)
         {
             _context = context;
         }
 
-        public async Task<IEnumerable<HazardClass>>? GetHazardClassAll()
+        public async Task<IEnumerable<Partner>>? GetPartnersAll()
         {
-            return await _context.HazardClasses.ToListAsync();
+            return await _context.Partners.ToListAsync();
         }
     }
 }

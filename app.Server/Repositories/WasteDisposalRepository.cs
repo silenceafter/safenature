@@ -16,7 +16,7 @@ namespace app.Server.Repositories
             _context = context;
         }
 
-        public async Task<bool> RegisterDispose(WasteDisposalRequest wasteDisposal)
+        public async Task<int> RegisterDispose(WasteDisposalRequest wasteDisposal)
         {
             using (var transaction = _context.Database.BeginTransaction())
             {
@@ -30,20 +30,23 @@ namespace app.Server.Repositories
                         Date = DateTime.Now.ToUniversalTime()
                     });
 
+                    //количество добавленных строк
+                    int addedRows = _context.ChangeTracker.Entries().Count(e => e.State == EntityState.Added);
+
                     //добавить бонусы пользователю
                     var user = await _context.Users.FindAsync(wasteDisposal.UserId);
                     var hazardousWaste = await _context.HazardousWastes.FindAsync(wasteDisposal.HazardousWasteId);
                     user.Bonuses += hazardousWaste.Bonuses;
-
+                    
                     //сохранить
                     await _context.SaveChangesAsync();
                     transaction.Commit();
-                    return true;
+                    return addedRows;
                 }
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    return false;
+                    return 0;
                 }
             }
         }

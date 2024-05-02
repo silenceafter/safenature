@@ -16,6 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddTransient<IWasteDisposalRepository, WasteDisposalRepository>();
+builder.Services.AddTransient<IHazardousWasteRepository, HazardousWasteRepository>();
+builder.Services.AddTransient<IPartnerRepository, PartnerRepository>();
+builder.Services.AddTransient<IHazardClassRepository, HazardClassRepository>();
+builder.Services.AddTransient<IDiscountRepository, DiscountRepository>();
 builder.Services.AddDbContext<EcodbContext>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -3,8 +3,8 @@ using app.Server.Models;
 
 namespace app.Server.Repositories.Interfaces
 {
-    public interface IHazardClassRepository
+    public interface IPartnerRepository
     {
-        public Task<IEnumerable<HazardClass>>? GetHazardClassAll();
+        public Task<IEnumerable<Partner>>? GetPartnersAll();
     }
 }
