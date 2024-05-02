@@ -7,13 +7,16 @@ using Microsoft.Extensions.DependencyInjection;
 using app.Server.Models;
 using app.Server.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using app.Server.Repositories.Interfaces;
+using app.Server.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddDbContext<OgtContext>();
+builder.Services.AddTransient<IWasteDisposalRepository, WasteDisposalRepository>();
+builder.Services.AddDbContext<EcodbContext>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

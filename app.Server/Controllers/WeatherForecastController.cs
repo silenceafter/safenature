@@ -1,4 +1,4 @@
-using app.Server.Models;
+//using app.Server.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -18,20 +18,20 @@ namespace app.Server.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
-        private readonly OgtContext _context;
+        //private readonly OgtContext _context;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, OgtContext context)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger/*, OgtContext context*/)
         {
             _logger = logger;
-            _context = context;
+            //_context = context;
         }
 
-        [HttpGet]
+        /*[HttpGet]
         public async Task<IActionResult> Get()
         {
             var data = await _context.Materials.ToListAsync();//ToListAsync();
             return Ok(data);           
-        }
+        }*/
 
         [HttpGet]
         public IActionResult MyRedirect() 

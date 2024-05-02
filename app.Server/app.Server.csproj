@@ -30,4 +30,8 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\Response\HazardClassResponse.cs\" />
+  </ItemGroup>
+
 </Project>
