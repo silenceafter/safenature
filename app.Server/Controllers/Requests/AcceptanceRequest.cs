@@ -1,9 +1,9 @@
 ﻿namespace app.Server.Controllers.Requests
 {
-    public class DiscountRequest
+    public class AcceptanceRequest
     {
         public int UserId { get; set; }
 
-        public int DiscountId { get; set; }
+        public int HazardousWasteId { get; set; }
     }
 }

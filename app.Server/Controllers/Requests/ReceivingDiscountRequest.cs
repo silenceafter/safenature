@@ -1,9 +1,9 @@
 ﻿namespace app.Server.Controllers.Requests
 {
-    public class WasteDisposalRequest
+    public class ReceivingDiscountRequest
     {
         public int UserId { get; set; }
 
-        public int HazardousWasteId { get; set; }
+        public int DiscountId { get; set; }
     }
 }

@@ -15,11 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddTransient<IWasteDisposalRepository, WasteDisposalRepository>();
+builder.Services.AddTransient<IAcceptanceRepository, AcceptanceRepository>();
 builder.Services.AddTransient<IHazardousWasteRepository, HazardousWasteRepository>();
 builder.Services.AddTransient<IPartnerRepository, PartnerRepository>();
 builder.Services.AddTransient<IHazardClassRepository, HazardClassRepository>();
-builder.Services.AddTransient<IDiscountRepository, DiscountRepository>();
+builder.Services.AddTransient<IReceivingDiscountRepository, ReceivingDiscountRepository>();
 builder.Services.AddDbContext<EcodbContext>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

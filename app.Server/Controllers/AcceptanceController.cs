@@ -8,36 +8,36 @@ namespace app.Server.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    public class WasteDisposalController : Controller
+    public class AcceptanceController : Controller
     {
-        private readonly ILogger<WasteDisposalController> _logger;
+        private readonly ILogger<AcceptanceController> _logger;
         private readonly EcodbContext _context;
-        private readonly IWasteDisposalRepository _wasteDisposalRepository;
+        private readonly IAcceptanceRepository _acceptanceRepository;
 
-        public WasteDisposalController(
-            ILogger<WasteDisposalController> logger, 
+        public AcceptanceController(
+            ILogger<AcceptanceController> logger, 
             EcodbContext context,
-            IWasteDisposalRepository wasteDisposalRepository
+            IAcceptanceRepository acceptanceRepository
             )
         {
             _logger = logger;
             _context = context;
-            _wasteDisposalRepository = wasteDisposalRepository;
+            _acceptanceRepository = acceptanceRepository;
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegisterDispose([FromBody] WasteDisposalRequest request)
+        public async Task<IActionResult> RegisterDispose([FromBody] List<AcceptanceRequest> request)
         {
-            var data = await _wasteDisposalRepository.RegisterDispose(request);
+            var data = await _acceptanceRepository.RegisterDispose(request);
             return Ok(data);
         }
 
-        [HttpGet]
+        /*[HttpGet]
         public async Task<IActionResult> GetDisposeAll()
         {
             var data = await _wasteDisposalRepository.GetDisposeAll();
             return Ok(data);           
-        }
+        }*/
 
         //действие по умолчанию при обращении к ecoproducts/, например, список товаров
         //выдать карточку конкретного товара

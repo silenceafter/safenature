@@ -9,13 +9,15 @@ public partial class Discount
 
     public int PartnerId { get; set; }
 
-    public string? Terms { get; set; }
+    public string Terms { get; set; } = null!;
 
-    public DateTime? DateStart { get; set; }
+    public DateTime DateStart { get; set; }
 
-    public DateTime? DateEnd { get; set; }
+    public DateTime DateEnd { get; set; }
 
-    public virtual ICollection<DiscountsHistory> DiscountsHistories { get; set; } = new List<DiscountsHistory>();
+    public int Bonuses { get; set; }
 
     public virtual Partner Partner { get; set; } = null!;
+
+    public virtual ICollection<ReceivingDiscount> ReceivingDiscounts { get; set; } = new List<ReceivingDiscount>();
 }

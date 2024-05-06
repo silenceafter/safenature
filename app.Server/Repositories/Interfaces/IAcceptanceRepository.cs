@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace app.Server.Repositories.Interfaces
 {
-    public interface IWasteDisposalRepository
+    public interface IAcceptanceRepository
     {
-        public Task<int> RegisterDispose(WasteDisposalRequest wasteDisposal);
+        public Task<int> RegisterDispose(List<AcceptanceRequest> request);
         public bool UpdateDispose();
         public bool DeleteDispose();
-        public Task<WasteDisposal>? GetDispose(int id);
-        public Task<IEnumerable<WasteDisposal>>? GetDisposeAll();
+        public Task<Acceptance>? GetDispose(int id);
+        public Task<IEnumerable<Acceptance>>? GetDisposeAll();
     }
 }
