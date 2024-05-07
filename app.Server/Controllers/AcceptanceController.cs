@@ -1,6 +1,7 @@
 ﻿using app.Server.Controllers.Requests;
 using app.Server.Models;
 using app.Server.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 //using Microsoft.EntityFrameworkCore;
 
@@ -25,18 +26,20 @@ namespace app.Server.Controllers
             _acceptanceRepository = acceptanceRepository;
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> RegisterDispose([FromBody] List<AcceptanceRequest> request)
         {
+            var token = HttpContext.Request.Headers["Authorization"];
             var data = await _acceptanceRepository.RegisterDispose(request);
             return Ok(data);
         }
 
         /*[HttpGet]
-        public async Task<IActionResult> GetDisposeAll()
+        public async Task<IActionResult> GetDisposeAll()p
         {
             var data = await _wasteDisposalRepository.GetDisposeAll();
-            return Ok(data);           
+            return Ok(data);
         }*/
 
         //действие по умолчанию при обращении к ecoproducts/, например, список товаров

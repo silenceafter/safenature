@@ -9,6 +9,9 @@ using app.Server.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using app.Server.Repositories.Interfaces;
 using app.Server.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,9 +23,33 @@ builder.Services.AddTransient<IHazardousWasteRepository, HazardousWasteRepositor
 builder.Services.AddTransient<IPartnerRepository, PartnerRepository>();
 builder.Services.AddTransient<IHazardClassRepository, HazardClassRepository>();
 builder.Services.AddTransient<IReceivingDiscountRepository, ReceivingDiscountRepository>();
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, SampleAuthorizationMiddlewareResultHandler>();
 builder.Services.AddDbContext<EcodbContext>();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Enter the Bearer Authorization: `Bearer Generated-JWT_Token`",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = JwtBearerDefaults.AuthenticationScheme
+                }
+            }, new string[] {}
+        }
+    });
+});
 
 var app = builder.Build();
 
