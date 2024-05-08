@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -13,21 +14,20 @@ namespace auth.Pages
     public class PrivacyModel : PageModel
     {
         private readonly ILogger<PrivacyModel> _logger;
-        private readonly IConfiguration _configuration;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly JWT _jwtSettings;
+        /*private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;*/
 
-        public PrivacyModel(ILogger<PrivacyModel> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public PrivacyModel(ILogger<PrivacyModel> logger/*, IConfiguration configuration, IHttpContextAccessor httpContextAccessor*/)
         {
             _logger = logger;
-            _configuration = configuration;
-            _httpContextAccessor = httpContextAccessor;
+            /*_configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;*/
         }
 
-        public void OnGet()
+        public void OnGet()//void
         {
             // Получаем данные о текущем аутентифицированном пользователе
-            var user = _httpContextAccessor.HttpContext.User;
+            /*var user = _httpContextAccessor.HttpContext.User;
 
             // Создание токена JWT
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -39,7 +39,7 @@ namespace auth.Pages
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tt = "";
+            return tokenHandler.WriteToken(token);*/
         }
     }
 
