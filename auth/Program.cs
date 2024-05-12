@@ -22,17 +22,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddRazorPages();
 
 var jwt = builder.Configuration.GetSection("JWT").Get<JWT>();
-/*builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-})
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Identity/Account/Unauthorized";
-        options.AccessDeniedPath = "/Identity/Account/Forbidden/";
-    })
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -45,7 +35,7 @@ var jwt = builder.Configuration.GetSection("JWT").Get<JWT>();
             ValidAudience = jwt.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SecretKey))
         };
-    });*/
+    });
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -56,6 +46,8 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequiredLength = 6;
     options.Password.RequiredUniqueChars = 1;
+    /*options.SignIn.RequireConfirmedEmail = true; // Если требуется подтверждение email
+    options.SignIn.RequireConfirmedPhoneNumber = false;*/ // Может быть true, если требуется подтверждение номера телефона
 
     // Lockout settings.
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
@@ -68,7 +60,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = false;
 });
 
-builder.Services.ConfigureApplicationCookie(options =>
+/*builder.Services.ConfigureApplicationCookie(options =>
 {
     // Cookie settings
     options.Cookie.HttpOnly = true;
@@ -77,13 +69,30 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Identity/Account/Login";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.SlidingExpiration = true;
-});
+});*/
+
+//CORS
 builder.Services.AddCors(options =>
     options.AddPolicy("hhh", builder =>
     {
-        builder.WithOrigins("https://localhost:7158");
+        builder.WithOrigins("https://localhost:7158", "https://localhost:5173")
+            /*.AllowAnyHeader()
+            .AllowAnyMethod()
+            .SetIsOriginAllowed(host => true)
+                .AllowCredentials()*/;
     })
 );
+
+//сессии
+builder.Services.AddSession(options =>
+{
+    // Устанавливаем время жизни сеанса
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    // Настраиваем cookie-файлы сеанса
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true; // Важно для GDPR
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -101,6 +110,7 @@ else
 app.UseCors("hhh");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseSession();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -19,6 +19,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using auth.Services;
+using Newtonsoft.Json;
 
 namespace auth.Areas.Identity.Pages.Account
 {
@@ -94,17 +95,16 @@ namespace auth.Areas.Identity.Pages.Account
         public async Task OnGetAsync(string returnUrl = null)
         {
             if (!string.IsNullOrEmpty(ErrorMessage))
-            {
                 ModelState.AddModelError(string.Empty, ErrorMessage);
-            }
-
             returnUrl ??= Url.Content("~/");
+
+            //сохранить параметры запроса
+            HttpContext.Session.SetString("redirect_uri", HttpContext.Request.Query["redirect_uri"]);
+            HttpContext.Session.SetString("client_id", HttpContext.Request.Query["client_id"]);
 
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
             ReturnUrl = returnUrl;
         }
 
@@ -123,7 +123,19 @@ namespace auth.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User logged in.");
                     var token = _tokenService.GenerateJwtToken();
-                    return new JsonResult(new { token, returnUrl });//LocalRedirect(returnUrl);
+
+                    //параметры запроса
+                    string redirectUri = HttpContext.Session.GetString("redirect_uri"); //string? redirectUri = HttpContext.Request.Query["redirect_uri"];
+                    string clientId = HttpContext.Session.GetString("client_id"); //string? clientId = HttpContext.Request.Query["client_id"];
+
+                    var tt = $"{redirectUri}/callback";//?token={token.Result}
+                    //return Redirect($"{tt}");//new JsonResult(new { token, returnUrl });//LocalRedirect(returnUrl);
+                    // Отправляем POST-запрос на клиент с токеном
+                    var client = new HttpClient();
+                    var content = new StringContent(JsonConvert.SerializeObject(new { token }), Encoding.UTF8, "application/json");
+                    await client.PostAsync(tt, content);
+                    return new JsonResult(new { token, returnUrl });
+
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -143,6 +155,6 @@ namespace auth.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Page();
-        }
+        }        
     }
 }
