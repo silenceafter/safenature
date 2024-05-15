@@ -5,6 +5,7 @@ namespace auth.Services.Interfaces
 {
     public interface IAccountService
     {
+        Task<SignInResult> Login(LoginDto model);
         Task<IdentityResult> Register(RegisterDto model);
     }
 }

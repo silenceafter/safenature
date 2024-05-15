@@ -3,7 +3,8 @@ using auth.DTOs;
 using auth.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+//using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -19,7 +20,7 @@ namespace auth.Services
     public class AccountService : IAccountService
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;        
+        private readonly SignInManager<IdentityUser> _signInManager;
 
         public AccountService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
         {
@@ -27,10 +28,38 @@ namespace auth.Services
             _signInManager = signInManager;
         }
 
+        public async Task<SignInResult> Login(LoginDto model)
+        {
+            try
+            {
+                //пользователь
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                    return SignInResult.Failed;//пользователь не найден
+
+                //вход по паролю
+                return await _signInManager.PasswordSignInAsync(user, model.Password, false, lockoutOnFailure: true);
+            }
+            catch (Exception ex)
+            {
+                //логирование
+            }
+            return SignInResult.Failed;
+        }
+
         public async Task<IdentityResult> Register(RegisterDto model)
         {
-            var user = new IdentityUser { UserName = model.Email, Email = model.Email };
-            return await _userManager.CreateAsync(user, model.Password);
+            try
+            {
+                var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+                var result = await _userManager.CreateAsync(user, model.Password);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                //логирование
+                throw;
+            }              
         }
     }
 }
