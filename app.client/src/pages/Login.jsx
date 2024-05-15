@@ -20,7 +20,7 @@ import {
   Navigate
 } from "react-router-dom";
 
-const Home = () => {
+const Login = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -28,13 +28,19 @@ const Home = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                    const response = await fetch('https://localhost:7086/account/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ Username: 'ac', Email: 'ac@mail.ru', Password: 'Burzum59!', ConfirmPassword: 'Burzum59!' })
-            });
+                    const response = await fetch('https://localhost:7086/account/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ Email: 'ac@mail.ru', Password: 'Burzum59!' })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Error: ${response.statusText}`);
+                    }
+                    const result = await response.json();
+                    setData(result);
             } catch (error) {
                 setError(error);
             } finally {
@@ -43,7 +49,11 @@ const Home = () => {
         };
         fetchData();
     }, []);
-    //window.location.href = `https://localhost:7086/Identity/Account/Login?client_id=1&redirect_uri=${window.location.origin}`;
+
+    //сохранить токен
+    const token = localStorage.getItem('ac@mail.ru');
+    if (!token)
+        localStorage.setItem('ac@mail.ru', data.result);
     
     if (loading) {
         return <div>Loading...</div>;
@@ -56,7 +66,7 @@ const Home = () => {
     return (
         <div>
             {data ? (
-                <div>{data.someProperty}</div> // отрендерить ваши данные здесь
+                <div>{JSON.stringify(data)}</div> // отрендерить ваши данные здесь
             ) : (
                 <div>No data available</div>
             )}
@@ -64,4 +74,4 @@ const Home = () => {
     );
 };
 
-export {Home};
+export {Login};

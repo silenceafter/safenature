@@ -53,6 +53,7 @@ namespace auth.Services
             {
                 var user = new IdentityUser { UserName = model.Email, Email = model.Email };
                 var result = await _userManager.CreateAsync(user, model.Password);
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);//временное подтверждение email
                 return result;
             }
             catch (Exception ex)

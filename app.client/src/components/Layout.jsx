@@ -11,7 +11,8 @@ const Layout = () => {
                 <header className="App-header">                
                     <Box display="flex" flexDirection="column" alignItems="stretch" padding={1}>
                         <Link to="/">Главная страница</Link>
-                        <Link to="/home">Home</Link>
+                        <Link to="/register">Регистрация</Link>
+                        <Link to="/login">Войти</Link>
                         <Link to="/callback">Callback</Link>
                     </Box>
                 </header>
