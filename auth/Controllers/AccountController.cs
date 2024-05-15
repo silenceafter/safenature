@@ -26,8 +26,13 @@ namespace auth.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
-            await _accountService.Register(model);
-            return Ok();
+            var result = await _accountService.Register(model);
+            if (result.Succeeded)
+                return Ok(new { Message = "User registered successfully" });
+            //
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
+            return BadRequest(ModelState);
         }
     }
 }

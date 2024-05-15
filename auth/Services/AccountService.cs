@@ -27,15 +27,10 @@ namespace auth.Services
             _signInManager = signInManager;
         }
 
-        public async Task Register(RegisterDto model)
+        public async Task<IdentityResult> Register(RegisterDto model)
         {
             var user = new IdentityUser { UserName = model.Email, Email = model.Email };
-            var result = await _userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
-            {
-                throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
-            }
-            return;
+            return await _userManager.CreateAsync(user, model.Password);
         }
     }
 }
