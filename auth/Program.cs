@@ -18,6 +18,17 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+//cors
+builder.Services.AddCors(options =>
+    options.AddPolicy("hhh", builder =>
+    {
+        builder.WithOrigins("https://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    })
+);
+
 //контроллеры, сервисы, ..
 builder.Services.AddControllers();//builder.Services.AddRazorPages();
 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -69,12 +80,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.SlidingExpiration = true;
 });
-builder.Services.AddCors(options =>
-    options.AddPolicy("hhh", builder =>
-    {
-        builder.WithOrigins("https://localhost:7158");
-    })
-);
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
