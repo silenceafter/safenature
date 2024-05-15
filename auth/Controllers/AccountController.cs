@@ -1,5 +1,7 @@
 ﻿//using auth.Areas.Identity.Pages.Account;
+using auth.DTOs;
 using auth.Services;
+using auth.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace auth.Controllers
@@ -8,9 +10,9 @@ namespace auth.Controllers
     [Route("[controller]")]
     public class AccountController : Controller
     {
-        private readonly AccountService _accountService;
+        private readonly IAccountService _accountService;
 
-        public AccountController(AccountService accountService)
+        public AccountController(IAccountService accountService)
         {
             _accountService = accountService;
         }
@@ -21,10 +23,10 @@ namespace auth.Controllers
             return Ok();
         }
 
-        [HttpGet("register/{jj?}")]
-        public async Task<IActionResult> Register([FromQuery] string email, string password)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
-            await _accountService.Register(email, password);
+            await _accountService.Register(model);
             return Ok();
         }
     }

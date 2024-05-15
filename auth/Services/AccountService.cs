@@ -1,4 +1,6 @@
 ﻿//using auth.Areas.Identity.Pages.Account;
+using auth.DTOs;
+using auth.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,20 +16,26 @@ using System.Threading.Tasks;
 
 namespace auth.Services
 {
-    public class AccountService
+    public class AccountService : IAccountService
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;        
 
-        public AccountService(UserManager<IdentityUser> userManager)
+        public AccountService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
-        public async Task<string> Register(/*RegisterModel model*/string email, string password)
+        public async Task Register(RegisterDto model)
         {
-            var user = new IdentityUser { UserName = email, Email = email };
-            var result = await _userManager.CreateAsync(user, password);
-            return "1";
+            var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+            {
+                throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
+            }
+            return;
         }
     }
 }

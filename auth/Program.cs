@@ -1,4 +1,6 @@
 using auth.Data;
+using auth.Services.Interfaces;
+using auth.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,9 +17,13 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddRazorPages();
 
-/*builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//контроллеры, сервисы, ..
+builder.Services.AddControllers();//builder.Services.AddRazorPages();
+builder.Services.AddScoped<IAccountService, AccountService>();
+
+//authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -31,7 +37,8 @@ builder.Services.AddRazorPages();
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key"))
         };
     }
-   );*/
+   );
+
 builder.Services.Configure<IdentityOptions>(options =>
 {
     // Password settings.
@@ -52,7 +59,6 @@ builder.Services.Configure<IdentityOptions>(options =>
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
     options.User.RequireUniqueEmail = false;
 });
-
 builder.Services.ConfigureApplicationCookie(options =>
 {
     // Cookie settings
@@ -69,12 +75,20 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("https://localhost:7158");
     })
 );
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        c.RoutePrefix = string.Empty; // This makes swagger the default page
+    });
 }
 else
 {
@@ -89,5 +103,5 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapRazorPages();
+app.MapControllers();//app.MapRazorPages();
 app.Run();
