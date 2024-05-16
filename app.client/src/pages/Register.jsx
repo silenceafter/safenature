@@ -19,6 +19,7 @@ import {
   Outlet,
   Navigate
 } from "react-router-dom";
+import CryptoJS from 'crypto-js';
 
 const Register = () => {
     const [data, setData] = useState(null);
@@ -29,15 +30,23 @@ const Register = () => {
         const fetchData = async () => {
             try {
                     //регистрация в сервисе авторизации
-                    const response = await fetch('https://localhost:7086/account/register', {
+                    const responseAuth = await fetch('https://localhost:7086/account/register', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ Username: 'ac', Email: 'ac@mail.ru', Password: 'Burzum59!', ConfirmPassword: 'Burzum59!' })
+                        body: JSON.stringify({ Username: 'ag', Email: 'ajj@mail.ru', Password: 'Burzum59!', ConfirmPassword: 'Burzum59!' })
+                    });
 
-                    //добавить пользователя в базу данных приложения
-            });
+                    //добавить пользователя в базу данных приложения. если произойдет ошибка, то пользователь (при условии, что он не существует в системе) будет добавлен позднее
+                    const responseServer = await fetch('https://localhost:7158/user/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ Email: 'ajj@mail.ru' })
+                    });
+                    setData({auth: responseAuth, server: responseServer});
             } catch (error) {
                 setError(error);
             } finally {
@@ -58,7 +67,7 @@ const Register = () => {
     return (
         <div>
             {data ? (
-                <div>{data.someProperty}</div> // отрендерить ваши данные здесь
+                <div>{data}</div> // отрендерить ваши данные здесь
             ) : (
                 <div>No data available</div>
             )}

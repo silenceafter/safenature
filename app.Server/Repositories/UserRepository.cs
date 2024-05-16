@@ -1,6 +1,7 @@
 ﻿using app.Server.Controllers.Requests;
 using app.Server.Models;
 using app.Server.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace app.Server.Repositories
 {
@@ -13,16 +14,30 @@ namespace app.Server.Repositories
             _context = context;
         }
 
-        public Task<int> Register(UserRequest request)
+        public async Task<int> Create(string encrypt)
         {
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
-                { 
-                    _context.Users.AddAsync(new User()
+                {
+                    //добавить пользователя
+                    var user = new User() { Encrypt = encrypt, RoleId = 2 };
+                    await _context.Users.AddAsync(user);
+                    await _context.SaveChangesAsync();
+
+                    //добавить транзакцию
+                    var userTransaction = new Transaction()
                     {
-                        e
-                    })
+                        UserId = user.Id,
+                        TypeId = 5,
+                        Date = DateTime.UtcNow.ToUniversalTime(),
+                        BonusesStart = user.Bonuses,
+                        BonusesEnd = user.Bonuses
+                    };
+                    await _context.Transactions.AddAsync(userTransaction);
+                    await _context.SaveChangesAsync();
+                    transaction.Commit();
+                    return user.Id;
                 }
                 catch (Exception ex)
                 {
@@ -30,7 +45,7 @@ namespace app.Server.Repositories
                     return 0;
                 }
             }
-                    return 0;
+            return 0;
         }
 
         public bool Update()
@@ -48,9 +63,9 @@ namespace app.Server.Repositories
             return null;
         }
 
-        public Task<User>? GetUserByEmail(string email)
+        public async Task<User>? GetUserByEmail(string email)
         {
-            return null;
+            return await _context.Users.FirstOrDefaultAsync(u => u.Encrypt == email);
         }
     }
 }

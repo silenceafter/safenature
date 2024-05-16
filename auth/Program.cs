@@ -32,8 +32,9 @@ builder.Services.AddCors(options =>
 
 //контроллеры, сервисы, ..
 builder.Services.AddControllers();//builder.Services.AddRazorPages();
-builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddTransient<IAccountService, AccountService>();
+builder.Services.AddTransient<ITokenService, TokenService>();
+//builder.Services.AddDbContext<ApplicationDbContext>();
 
 //csrf
 builder.Services.AddAntiforgery(options =>

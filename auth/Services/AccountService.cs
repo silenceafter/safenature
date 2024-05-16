@@ -1,10 +1,12 @@
 ﻿//using auth.Areas.Identity.Pages.Account;
+using auth.Data;
 using auth.DTOs;
 using auth.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 //using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -21,11 +23,16 @@ namespace auth.Services
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly ApplicationDbContext _context;
 
-        public AccountService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public AccountService(
+            UserManager<IdentityUser> userManager, 
+            SignInManager<IdentityUser> signInManager,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
         }
 
         public async Task<SignInResult> Login(LoginDto model)
@@ -49,18 +56,34 @@ namespace auth.Services
 
         public async Task<IdentityResult> Register(RegisterDto model)
         {
-            try
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                var user = new IdentityUser { UserName = model.Email, Email = model.Email };
-                var result = await _userManager.CreateAsync(user, model.Password);
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);//временное подтверждение email
-                return result;
+                try
+                {
+                    var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+                    var result = await _userManager.CreateAsync(user, model.Password);
+                    if (!result.Succeeded)
+                        return result;
+
+                    //сохранить
+                    await _context.SaveChangesAsync();
+                    transaction.Commit();
+
+                    //временное подтверждение email
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    result = await _userManager.ConfirmEmailAsync(user, token);
+
+                    //сохранить
+                    await _context.SaveChangesAsync();
+                    transaction.Commit();
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new IdentityResult();
+                }
             }
-            catch (Exception ex)
-            {
-                //логирование
-                throw;
-            }              
         }
     }
 }
