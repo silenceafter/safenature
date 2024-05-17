@@ -39,14 +39,14 @@ const Register = () => {
                     });
 
                     //добавить пользователя в базу данных приложения. если произойдет ошибка, то пользователь (при условии, что он не существует в системе) будет добавлен позднее
-                    const responseServer = await fetch('https://localhost:7158/user/create', {
+                    /*const responseServer = await fetch('https://localhost:7158/user/create', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({ Email: 'ajj@mail.ru' })
-                    });
-                    setData({auth: responseAuth, server: responseServer});
+                    });*/
+                    setData({auth: responseAuth/*, server: responseServer*/});
             } catch (error) {
                 setError(error);
             } finally {

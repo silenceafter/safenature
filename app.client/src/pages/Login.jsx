@@ -31,16 +31,20 @@ const Login = () => {
                     const response = await fetch('https://localhost:7086/account/login', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json'                 
                         },
                         body: JSON.stringify({ Email: 'ac@mail.ru', Password: 'Burzum59!' })
-                    });
-
-                    if (!response.ok) {
+                    });                    
+                    if (!response.ok)
                         throw new Error(`Error: ${response.statusText}`);
-                    }
+
                     const result = await response.json();
                     setData(result);
+
+                    //сохранить токен
+                    const token = localStorage.getItem('ac@mail.ru');
+                    if (!token)
+                        localStorage.setItem('ac@mail.ru', data.result);                    
             } catch (error) {
                 setError(error);
             } finally {
@@ -48,12 +52,7 @@ const Login = () => {
             }
         };
         fetchData();
-    }, []);
-
-    //сохранить токен
-    const token = localStorage.getItem('ac@mail.ru');
-    if (!token)
-        localStorage.setItem('ac@mail.ru', data.result);
+    }, []);    
     
     if (loading) {
         return <div>Loading...</div>;
