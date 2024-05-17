@@ -7,8 +7,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using auth.DTOs;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//appsettings.json
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+//bind
+var settingsJwtDto = new SettingsJwtDto();
+builder.Configuration.GetSection("JWT").Bind(settingsJwtDto);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -30,6 +38,9 @@ builder.Services.AddCors(options =>
     })
 );
 
+//appsettings: jwt
+builder.Services.Configure<SettingsJwtDto>(builder.Configuration.GetSection("JWT"));
+
 //контроллеры, сервисы, ..
 builder.Services.AddControllers();//builder.Services.AddRazorPages();
 builder.Services.AddTransient<IAccountService, AccountService>();
@@ -43,7 +54,7 @@ builder.Services.AddAntiforgery(options =>
 });
 
 //authentication
-var settingsJwt = builder.Configuration.GetSection("JWT").Get<SettingsJwtDto>();
+//var settingsJwt = builder.Configuration.GetSection("JWT").Get<SettingsJwtDto>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -53,12 +64,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = settingsJwt.Issuer,
-            ValidAudience = settingsJwt.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settingsJwt.SecretKey))
+            ValidIssuer = settingsJwtDto.Issuer,/*"https://localhost:7086/",*/
+            ValidAudience = settingsJwtDto.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settingsJwtDto.SecretKey))
         };
-    }
-   );
+    });
 
 builder.Services.Configure<IdentityOptions>(options =>
 {

@@ -3,6 +3,7 @@ using app.Server.Models;
 using app.Server.Repositories;
 using app.Server.Repositories.Interfaces;
 using app.Server.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration.UserSecrets;
 
@@ -28,6 +29,13 @@ namespace app.Server.Controllers
             _context = context;
             _encryptionService = encryptionService;
             _userRepository = userRepository;
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetSecureData()
+        {
+            return Ok("111");
         }
 
         [HttpPost]
