@@ -219,6 +219,7 @@ public partial class EcodbContext : DbContext
             entity.Property(e => e.Bonuses).HasColumnName("bonuses");
             entity.Property(e => e.RoleId).HasColumnName("role_id");
             entity.Property(e => e.Encrypt).HasColumnType("text").HasColumnName("encrypt");
+            entity.Property(e => e.EmailHash).HasColumnType("text").HasColumnName("emailhash");
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)

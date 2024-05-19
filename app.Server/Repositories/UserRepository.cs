@@ -14,14 +14,14 @@ namespace app.Server.Repositories
             _context = context;
         }
 
-        public async Task<int> Create(string encrypt)
+        public async Task<int> Create(string encrypt, string emailHash)
         {
-            using (var transaction = _context.Database.BeginTransaction())
+            await using (var transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
                     //добавить пользователя
-                    var user = new User() { Encrypt = encrypt, RoleId = 2 };
+                    var user = new User() { Encrypt = encrypt, EmailHash = emailHash, RoleId = 2 };
                     await _context.Users.AddAsync(user);
                     await _context.SaveChangesAsync();
 
@@ -36,12 +36,12 @@ namespace app.Server.Repositories
                     };
                     await _context.Transactions.AddAsync(userTransaction);
                     await _context.SaveChangesAsync();
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                     return user.Id;
                 }
                 catch (Exception ex)
                 {
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
                     return 0;
                 }
             }
@@ -63,9 +63,9 @@ namespace app.Server.Repositories
             return null;
         }
 
-        public async Task<User>? GetUserByEmail(string email)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Encrypt == email);
+        public async Task<User>? GetUserByEmail(string emailHash)
+        {            
+            return await _context.Users.FirstOrDefaultAsync(u => u.EmailHash == emailHash);
         }
     }
 }

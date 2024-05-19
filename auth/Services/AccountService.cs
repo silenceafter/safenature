@@ -56,7 +56,7 @@ namespace auth.Services
 
         public async Task<IdentityResult> Register(RegisterDto model)
         {
-            using (var transaction = _context.Database.BeginTransaction())
+            await using (var transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
@@ -67,7 +67,7 @@ namespace auth.Services
 
                     //сохранить
                     await _context.SaveChangesAsync();
-                    transaction.Commit();
+                    //await transaction.CommitAsync();
 
                     //временное подтверждение email
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -75,12 +75,12 @@ namespace auth.Services
 
                     //сохранить
                     await _context.SaveChangesAsync();
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                     return result;
                 }
                 catch (Exception ex)
                 {
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
                     return new IdentityResult();
                 }
             }

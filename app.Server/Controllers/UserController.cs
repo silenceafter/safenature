@@ -39,16 +39,26 @@ namespace app.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] UserRequest request)
+        [Authorize]
+        public async Task<IActionResult> Login([FromBody] UserRequest request)
         {
-            var user = await _userRepository.GetUserByEmail(request.Email);
-            if (user != null)
-                return Ok(0);
+            try
+            {                
+                var encrypt = _encryptionService.Encrypt(request.Email);
+                var emailHash = _encryptionService.ComputeHash(request.Email);
+                //
+                var user = await _userRepository.GetUserByEmail(emailHash);
+                if (user != null)//токен опознан
+                    return Ok(user.Id);
 
-            //пользователь найден
-            var encrypt = _encryptionService.Encrypt(request.Email);
-            var id = await _userRepository.Create(encrypt);
-            return Ok(id);            
-        }
+                //пользователь не найден -> регистрируем по email в зашифрованном виде
+                var response = await _userRepository.Create(encrypt, emailHash);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return Ok(0);
+            }            
+        }       
     }
 }

@@ -5,7 +5,7 @@ namespace app.Server.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-        public Task<int> Create(string encrypt);
+        public Task<int> Create(string encrypt, string emailHash);
         public bool Update();
         public bool Delete();
         public Task<User>? GetUserById(int id);
