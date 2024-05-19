@@ -7,6 +7,9 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using auth.DTOs;
 using Microsoft.Extensions.Options;
+using auth.Data;
+using auth.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace auth.Services
 {
@@ -15,12 +18,38 @@ namespace auth.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<TokenService> _logger;
         private readonly SettingsJwtDto _settingsJwtDto;
+        private readonly ApplicationDbContext _context;
 
-        public TokenService(ILogger<TokenService> logger, IHttpContextAccessor httpContextAccessor, IOptions<SettingsJwtDto> settingsJwtDto)
+        public TokenService(
+            ILogger<TokenService> logger, 
+            IHttpContextAccessor httpContextAccessor, 
+            IOptions<SettingsJwtDto> settingsJwtDto,
+            ApplicationDbContext context)
         {
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
             _settingsJwtDto = settingsJwtDto.Value;
+            _context = context;
+        }
+
+        public async Task<int> AddTokenToBlacklist(BlacklistedToken blacklistedToken)
+        {
+            await using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    _context.BlacklistedTokens.AddAsync(blacklistedToken);                    
+                    var addedRows = _context.ChangeTracker.Entries().Count(e => e.State == EntityState.Added);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return addedRows;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return 0;
+                }
+            }
         }
 
         public async Task<string> GenerateJwtToken(IdentityUser user)

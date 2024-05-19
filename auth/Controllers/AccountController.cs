@@ -1,9 +1,12 @@
 ﻿//using auth.Areas.Identity.Pages.Account;
 using auth.DTOs;
+using auth.Models;
 using auth.Services;
 using auth.Services.Interfaces;
+using Azure.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace auth.Controllers
 {
@@ -47,6 +50,17 @@ namespace auth.Controllers
                 //логирование
             }
             return Unauthorized("Invalid email or password.");
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutDto model)
+        {
+            var blacklistedToken = new BlacklistedToken
+            {
+                Token = model.Token,
+                ExpirationDate = DateTime.UtcNow.AddHours(1) // Установите срок действия токена
+            };
+            return await _tokenService.AddTokenToBlacklist(blacklistedToken) > 0 ? Ok() : Ok();
         }
 
         [HttpPost("register")]

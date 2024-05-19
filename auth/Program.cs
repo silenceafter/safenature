@@ -68,6 +68,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = settingsJwtDto.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settingsJwtDto.SecretKey))
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
+                var token = context.SecurityToken as JwtSecurityToken;
+                var tokenId = token?.RawData;
+
+                if (dbContext.BlacklistedTokens.Any(t => t.Token == tokenId))
+                {
+                    context.Fail("This token is blacklisted.");
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.Configure<IdentityOptions>(options =>
