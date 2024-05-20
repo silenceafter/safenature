@@ -43,7 +43,10 @@ namespace app.Server.Controllers
         public async Task<IActionResult> Login([FromBody] UserRequest request)
         {
             try
-            {                
+            {             
+                //валидация токена
+                //_encryptionService.Validate()
+
                 var encrypt = _encryptionService.Encrypt(request.Email);
                 var emailHash = _encryptionService.ComputeHash(request.Email);
                 //

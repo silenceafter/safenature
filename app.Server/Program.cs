@@ -63,11 +63,26 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = settingsJwt.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settingsJwt.SecretKey))
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var tokenValidationService = context.HttpContext.RequestServices.GetRequiredService<ITokenValidationService>();
+                var token = context.SecurityToken as JwtSecurityToken;
+                var tokenId = token?.RawData;
+
+                if (!await tokenValidationService.Validate(tokenId))
+                {
+                    context.Fail("This token is blacklisted.");
+                }
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
-
 builder.Services.AddTransient<IEncryptionService, EncryptionService>();
+builder.Services.AddTransient<ITokenValidationService, TokenValidationService>();
 builder.Services.AddTransient<IAcceptanceRepository, AcceptanceRepository>();
 builder.Services.AddTransient<IHazardousWasteRepository, HazardousWasteRepository>();
 builder.Services.AddTransient<IPartnerRepository, PartnerRepository>();
@@ -75,6 +90,7 @@ builder.Services.AddTransient<IHazardClassRepository, HazardClassRepository>();
 builder.Services.AddTransient<IReceivingDiscountRepository, ReceivingDiscountRepository>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddDbContext<EcodbContext>();
+builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

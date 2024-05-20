@@ -1,6 +1,7 @@
 ﻿using app.Server.Services.Interfaces;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace app.Server.Services
 {
@@ -89,5 +90,22 @@ namespace app.Server.Services
                 }
             }
         }
+    
+        /*public async Task<bool> Validate(string token)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("https://localhost:7086/account/validate", new { Token = token });
+                response.EnsureSuccessStatusCode();
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                {
+                    return await JsonSerializer.DeserializeAsync<bool>(stream);                    
+                }
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+        }*/
     }
 }

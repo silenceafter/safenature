@@ -4,6 +4,7 @@ using auth.Models;
 using auth.Services;
 using auth.Services.Interfaces;
 using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -53,6 +54,7 @@ namespace auth.Controllers
         }
 
         [HttpPost("logout")]
+        [Authorize]
         public async Task<IActionResult> Logout([FromBody] LogoutDto model)
         {
             var blacklistedToken = new BlacklistedToken
@@ -60,7 +62,7 @@ namespace auth.Controllers
                 Token = model.Token,
                 ExpirationDate = DateTime.UtcNow.AddHours(1) // Установите срок действия токена
             };
-            return await _tokenService.AddTokenToBlacklist(blacklistedToken) > 0 ? Ok() : Ok();
+            return await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? Ok() : Ok();
         }
 
         [HttpPost("register")]
@@ -76,6 +78,21 @@ namespace auth.Controllers
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
             return BadRequest(ModelState);
+        }
+
+        [HttpGet("validate")]
+        [Authorize]
+        public async Task<IActionResult> Validate(/*[FromBody] string token*/)
+        {
+            try
+            {
+                var result = await _tokenService.ValidateJwtToken();
+                return StatusCode(200, result);
+            }
+            catch(Exception ex) 
+            {
+                return StatusCode(200, false);
+            }
         }
     }
 }

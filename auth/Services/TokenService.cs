@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using auth.Data;
 using auth.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 
 namespace auth.Services
 {
@@ -32,13 +33,13 @@ namespace auth.Services
             _context = context;
         }
 
-        public async Task<int> AddTokenToBlacklist(BlacklistedToken blacklistedToken)
+        public async Task<int> AddJwtTokenToBlacklist(BlacklistedToken blacklistedToken)
         {
             await using (var transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
-                    _context.BlacklistedTokens.AddAsync(blacklistedToken);                    
+                    await _context.BlacklistedTokens.AddAsync(blacklistedToken);                    
                     var addedRows = _context.ChangeTracker.Entries().Count(e => e.State == EntityState.Added);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
@@ -74,6 +75,25 @@ namespace auth.Services
             {
                 _logger.LogError(ex, "Error generating token.");
                 return "";
+            }
+        }
+    
+        public async Task<bool> ValidateJwtToken(/*string token*/)
+        {
+            try
+            { 
+                //извлечь токен
+                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(" ").Last();
+                
+                //проверить
+                var blacklistedToken = await _context.BlacklistedTokens.FirstOrDefaultAsync(u => u.Token == token);
+                if (blacklistedToken != null)
+                    return false;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
             }
         }
     }

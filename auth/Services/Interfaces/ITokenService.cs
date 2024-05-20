@@ -5,7 +5,8 @@ namespace auth.Services.Interfaces
 {
     public interface ITokenService
     {
-        Task<int> AddTokenToBlacklist(BlacklistedToken blacklistedToken);
+        Task<int> AddJwtTokenToBlacklist(BlacklistedToken blacklistedToken);
         Task<string> GenerateJwtToken(IdentityUser user);
+        Task<bool> ValidateJwtToken(/*string token*/);
     }
 }
