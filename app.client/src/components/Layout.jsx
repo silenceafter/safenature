@@ -168,9 +168,9 @@ const posts = [post1, post2, post3];
 const Layout = () => {
     return (
         <>
-            <CssBaseline />
+            {/*<CssBaseline />
                 <Container maxWidth="lg">
-                    <Header title="MyEcoProject" sections={sections} />
+    <Header title="MyEcoProject" sections={sections} />*/}
                     <main>
                         <MainFeaturedPost post={mainFeaturedPost} />
                         <Grid container spacing={4}> 
@@ -188,32 +188,11 @@ const Layout = () => {
                             />     
                         </Grid>
                     </main>
-                </Container>
+                {/*</Container>
                 <Footer
                     title="Footer"
                     description="Something here to give the footer a purpose!"
-                />
-                
-            {/*
-            <div>            
-                <Box display="flex" flexDirection="column" alignItems="stretch" padding={1}>
-                    <header className="App-header">                
-                        <Box display="flex" flexDirection="column" alignItems="stretch" padding={1}>
-                            <Link to="/">Главная страница</Link>
-                            <Link to="/register">Регистрация</Link>
-                            <Link to="/login">Войти</Link>
-                            <Link to="/callback">Callback</Link>
-                        </Box>
-                    </header>
-                    <main className="App-main">
-                        <Outlet/>
-                    </main>            
-                    <footer className="App-footer">
-                        2024
-                    </footer>
-                </Box>
-            </div>
-            */}
+                          />*/}                            
         </>
     );
 };

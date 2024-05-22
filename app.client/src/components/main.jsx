@@ -7,7 +7,6 @@ import Markdown from './markdown';
 
 function Main(props) {
   const { posts, title } = props;
-
   return (
     <Grid
       item
