@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Register } from './pages/register';
 import { Login } from './pages/login';
+import { Logout } from './pages/logout';
 import { Callback } from './pages/callback';
 import { Layout } from './components/layout';
 
@@ -24,40 +25,40 @@ import Grid from '@mui/material/Grid';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import XIcon from '@mui/icons-material/X';
+import { Provider } from 'react-redux';
+import store from './store/store';
 
 const sections = [
-  { title: 'Technology', url: '#' },
-  { title: 'Design', url: '#' },
-  { title: 'Culture', url: '#' },
-  { title: 'Business', url: '#' },
-  { title: 'Politics', url: '#' },
-  { title: 'Opinion', url: '#' },
-  { title: 'Science', url: '#' },
-  { title: 'Health', url: '#' },
-  { title: 'Style', url: '#' },
-  { title: 'Travel', url: '#' },
+  { title: 'Главная', url: '#' },
+  { title: 'О нас', url: '#' },
+  { title: 'Магазины-партнеры', url: '#' },
+  { title: 'Товары бренда', url: '#' },
+  { title: 'Карта пунктов приёма отходов', url: '#' },
 ];
 
 const App = () => {
     return (
-      <Router>
-        <div className="App">
-          <CssBaseline />
-            <Container maxWidth="lg">
-              <Header title="MyEcoProject" sections={sections} />
-              <Routes>
-                  <Route path="/" element={<Layout />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/callback" element={<Callback />} />
-              </Routes>
-            </Container>
-            <Footer
-                title="Footer"
-                description="Something here to give the footer a purpose!"
-            />
-        </div>
-      </Router>
+      <Provider store={store}>
+        <Router>
+          <div className="App">
+            <CssBaseline />
+              <Container maxWidth="lg">
+                <Header title="SafeNature" sections={sections} />
+                <Routes>
+                    <Route path="/" element={<Layout />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/logout" element={<Logout />} />
+                    <Route path="/callback" element={<Callback />} />
+                </Routes>
+              </Container>
+              <Footer
+                  title=""
+                  description=""
+              />
+          </div>
+        </Router>
+      </Provider>
     );
 };
 

@@ -55,14 +55,27 @@ namespace auth.Controllers
 
         [HttpPost("logout")]
         [Authorize]
-        public async Task<IActionResult> Logout([FromBody] LogoutDto model)
+        public async Task<IActionResult> Logout(/*[FromBody] LogoutDto model*/)
         {
-            var blacklistedToken = new BlacklistedToken
+            /*var blacklistedToken = new BlacklistedToken
             {
                 Token = model.Token,
                 ExpirationDate = DateTime.UtcNow.AddHours(1) // Установите срок действия токена
             };
-            return await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? Ok() : Ok();
+            return await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? Ok() : Ok();*/
+
+            //получить токен
+            var token = await _tokenService.GetJwtTokenFromHeader();
+            if (token == null)
+                return BadRequest();
+            //
+            var blacklistedToken = new BlacklistedToken
+            {
+                Token = token,
+                ExpirationDate = DateTime.UtcNow.AddHours(1) // Установите срок действия токена
+            };
+            return await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? Ok() : BadRequest();
+
         }
 
         [HttpPost("register")]

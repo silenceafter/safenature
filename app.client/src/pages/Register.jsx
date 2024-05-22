@@ -168,7 +168,7 @@ const Register = () => {
                 </Button>
                 <Grid container justifyContent="flex-end">
                   <Grid item>
-                    <Link href="#" variant="body2">
+                    <Link component={RouterLink} to="/login" variant="body2">
                       Уже есть учетная запись? Войти
                     </Link>
                   </Grid>

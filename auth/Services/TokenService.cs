@@ -78,6 +78,19 @@ namespace auth.Services
             }
         }
     
+        public async Task<string>? GetJwtTokenFromHeader()
+        {
+            try
+            {
+                return _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
         public async Task<bool> ValidateJwtToken(/*string token*/)
         {
             try

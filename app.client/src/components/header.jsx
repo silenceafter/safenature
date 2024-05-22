@@ -7,10 +7,20 @@ import SearchIcon from '@mui/icons-material/Search';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import { Link as RouterLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 //import { Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../store/actions/authActions';
 
 function Header(props) {
   const { sections, title } = props;
+  const { email, token } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  /*const handleLogout = () => {
+    dispatch(logout());
+    //localStorage.removeItem(email, token);
+  }*/
 
   return (
     <React.Fragment>
@@ -28,10 +38,21 @@ function Header(props) {
         </Typography>
         <IconButton>
           <SearchIcon />
-        </IconButton>        
-        <Button variant="outlined" size="small" component={RouterLink} to="/login">
-          Войти
-        </Button>        
+        </IconButton>
+       { email 
+          ? (
+              <Button variant="outlined" size="small" component={RouterLink} to="/logout">
+                Выйти
+              </Button>
+            ) 
+          : (
+              <Button variant="outlined" size="small" component={RouterLink} to="/login">
+                Войти
+              </Button>
+            )
+        }
+               
+            
       </Toolbar>
       <Toolbar
         component="nav"
