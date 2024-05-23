@@ -7,5 +7,6 @@ namespace auth.Services.Interfaces
     {
         Task<SignInResult> Login(LoginDto model);
         Task<IdentityResult> Register(RegisterDto model);
+        Task<UserDto>? GetIdentityUser();
     }
 }

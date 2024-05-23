@@ -43,6 +43,10 @@ const Logout = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        //доступ запрещен
+        /*if (!email)
+            navigate('/access-denied');*/
+        //
         const handleSubmit = async () => {
             try {
                 const response = await fetch('https://localhost:7086/account/logout', {

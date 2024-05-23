@@ -24,15 +24,18 @@ namespace auth.Services
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ApplicationDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AccountService(
             UserManager<IdentityUser> userManager, 
             SignInManager<IdentityUser> signInManager,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<SignInResult> Login(LoginDto model)
@@ -83,6 +86,31 @@ namespace auth.Services
                     await transaction.RollbackAsync();
                     return new IdentityResult();
                 }
+            }
+        }
+
+        public async Task<UserDto>? GetIdentityUser()
+        {
+            try
+            {
+                //извлечь токен
+                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(" ").Last();
+
+                //найти пользователя
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+                var userId = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name")?.Value;
+                var user = await _userManager.FindByIdAsync(userId);
+                return new UserDto() 
+                { 
+                    UserName = user.UserName, 
+                    Email = user.Email, 
+                    PhoneNumber = user.PhoneNumber 
+                };
+            }
+            catch (Exception ex) 
+            {
+                return null;
             }
         }
     }

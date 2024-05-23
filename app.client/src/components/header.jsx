@@ -13,7 +13,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/actions/authActions';
 
 function Header(props) {
-  const { sections, title } = props;
+  const { /*sections,*/ title } = props;
   const { email, token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
@@ -21,6 +21,31 @@ function Header(props) {
     dispatch(logout());
     //localStorage.removeItem(email, token);
   }*/
+
+  //список страниц для header
+  let sections = [];
+  if (email) {
+    //для авторизованных пользователей
+    sections = [
+      { title: 'Главная', url: '/' },
+      { title: 'О нас', url: '/about' },
+      { title: 'Магазины-партнеры', url: '/partners' },
+      { title: 'Товары бренда', url: '/products' },
+      { title: 'Аккаунт', url: '/account' },
+      { title: 'Обмен бонусов', url: '/bonus-exchange' },
+      { title: 'Расчет бонусов', url: '/bonus-calculation' },
+      { title: 'Карта пунктов приёма отходов', url: '/points' },
+    ];
+  } else {
+    //для гостей
+    sections = [
+      { title: 'Главная', url: '/' },
+      { title: 'О нас', url: '/about' },
+      { title: 'Магазины-партнеры', url: '/partners' },
+      { title: 'Товары бренда', url: '/products' },
+      { title: 'Карта пунктов приёма отходов', url: '/points' },
+    ];
+  }
 
   return (
     <React.Fragment>
@@ -77,12 +102,12 @@ function Header(props) {
 }
 
 Header.propTypes = {
-  sections: PropTypes.arrayOf(
+  /*sections: PropTypes.arrayOf(
     PropTypes.shape({
       title: PropTypes.string.isRequired,
       url: PropTypes.string.isRequired,
     }),
-  ).isRequired,
+  ).isRequired,*/
   title: PropTypes.string.isRequired,
 };
 //<Link to="/">Главная страница</Link>

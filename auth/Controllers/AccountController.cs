@@ -5,6 +5,7 @@ using auth.Services;
 using auth.Services.Interfaces;
 using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -105,6 +106,21 @@ namespace auth.Controllers
             catch(Exception ex) 
             {
                 return StatusCode(200, false);
+            }
+        }
+
+        [HttpGet("get-current-user")]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            try
+            { 
+                var user = await _accountService.GetIdentityUser();
+                return Ok(user);
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest();
             }
         }
     }
