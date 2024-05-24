@@ -11,6 +11,7 @@ import { About } from './pages/about';
 import { Partners } from './pages/partners';
 import { Products } from './pages/products';
 import { Points } from './pages/points';
+import { Article } from './pages/article';
 import { AccessDenied } from './pages/accessDenied';
 import { BonusExchange } from './pages/bonusExchange';
 import { BonusCalculation } from './pages/bonusCalculation';
@@ -45,6 +46,7 @@ const App = () => {
                   <Route path="/points" element={<Points />} />
                   <Route path="/bonus-exchange" element={<BonusExchange />} />
                   <Route path="/bonus-calculation" element={<BonusCalculation />} />
+                  <Route path="/article" element={<Article />} />
                   <Route path="/access-denied" element={<AccessDenied />} />
               </Routes>
             </main>

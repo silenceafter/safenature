@@ -10,7 +10,7 @@ function Copyright() {
     <Typography variant="body2" color="text.secondary" align="center">
       {'© '}
       <Link color="inherit" href="https://mui.com/">
-        Your Website
+        SafeNature
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}

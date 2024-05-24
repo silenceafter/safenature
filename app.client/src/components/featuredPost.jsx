@@ -25,7 +25,7 @@ function FeaturedPost(props) {
               {post.description}
             </Typography>
             <Typography variant="subtitle1" color="primary">
-              Continue reading...
+              Читать...
             </Typography>
           </CardContent>
           <CardMedia

@@ -7,7 +7,7 @@ import Container from '@mui/material/Container';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-//import Link from '@mui/material/Link';
+import Link from '@mui/material/Link';
 import CircularProgress from '@mui/material/CircularProgress';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import FacebookIcon from '@mui/icons-material/Facebook';
@@ -22,6 +22,44 @@ import Markdown from '../components/markdown';
 //import Markdown from 'markdown-to-jsx';
 import { post } from 'jquery';
 //import ReactMarkdown from 'markdown-to-jsx';
+import { Card, CardContent, Avatar } from '@mui/material';
+import { styled } from '@mui/system';
+import { login, logout } from '../store/actions/authActions';
+
+const UserInfoCard = styled(Card)(({ theme }) => ({
+    margin: theme.spacing(2),
+    padding: theme.spacing(2),
+  }));
+  
+  const UserAvatar = styled(Avatar)(({ theme }) => ({
+    width: theme.spacing(10),
+    height: theme.spacing(10),
+    marginRight: theme.spacing(2),
+  }));
+  
+function UserProfile({ user }) {
+    return (      
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Box mt={2}> {/* Добавляем отступ сверху */}
+                <Typography variant="body1" component="div">
+                <strong>Имя пользователя:</strong> {user.userName}
+                </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="body1">
+              <strong>Email:</strong> {user.email}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="body1">
+              <strong>Phone Number:</strong> {user.phoneNumber != null ? user.phoneNumber : 'не указан'}
+            </Typography>
+          </Grid>
+        </Grid>      
+    );
+}
 
 const Account = () => {
     const [userData, setUserData] = useState(null);
@@ -62,112 +100,6 @@ const Account = () => {
         { name: 'Facebook', icon: FacebookIcon },
     ],
     };
-    
-      let post11 = `
-      # Sample blog post
-
-      ~~April 1, 2020 by~~
-      
-      Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-      Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum.
-      Sed posuere consectetur est at lobortis. Cras mattis consectetur purus sit amet fermentum.
-      
-      Curabitur blandit tempus porttitor. **Nullam quis risus eget urna mollis** ornare vel eu leo.
-      Nullam id dolor id nibh ultricies vehicula ut id elit.
-      
-      Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum.
-      Aenean lacinia bibendum nulla sed consectetur.
-      
-      ## Heading
-      
-      Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
-      Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-      Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
-      
-      ### Sub-heading 1
-      
-      Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-      
-      ### Sub-heading 2
-      
-      Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-      Aenean lacinia bibendum nulla sed consectetur. Etiam porta sem malesuada magna mollis euismod.
-      Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
-      sit amet risus.
-      
-      - Praesent commodo cursus magna, vel scelerisque nisl consectetur et.
-      - Donec id elit non mi porta gravida at eget metus.
-      - Nulla vitae elit libero, a pharetra augue.
-      
-      Donec ullamcorper nulla non metus auctor fringilla. Nulla vitae elit libero, a pharetra augue.
-      
-      1. Vestibulum id ligula porta felis euismod semper.
-      1. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-      1. Maecenas sed diam eget risus varius blandit sit amet non magna.
-      
-      Cras mattis consectetur purus sit amet fermentum. Sed posuere consectetur est at lobortis.
-      `;
-      
-      const post2 = `
-      # Another blog post
-      
-      _March 23, 2020 by [Matt](/)_
-      
-      Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-      Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum.
-      Sed posuere consectetur est at lobortis. Cras mattis consectetur purus sit amet fermentum.
-      
-      Curabitur blandit tempus porttitor. **Nullam quis risus eget urna mollis** ornare vel eu leo.
-      Nullam id dolor id nibh ultricies vehicula ut id elit.
-      
-      Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum.
-      Aenean lacinia bibendum nulla sed consectetur.
-      
-      Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
-      Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-      Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
-      `;
-      
-      const post3 = `
-      # New feature
-      
-      _March 14, 2020 by [Tom](/)_
-      
-      Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-      Aenean lacinia bibendum nulla sed consectetur. Etiam porta sem malesuada magna mollis euismod.
-      Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh,
-      ut fermentum massa justo sit amet risus.
-      
-      - Praesent commodo cursus magna, vel scelerisque nisl consectetur et.
-      - Donec id elit non mi porta gravida at eget metus.
-      - Nulla vitae elit libero, a pharetra augue.
-      
-      Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum.
-      Aenean lacinia bibendum nulla sed consectetur.
-      
-      Donec ullamcorper nulla non metus auctor fringilla. Nulla vitae elit libero, a pharetra augue.
-      `;
-    const posts = [post11, post2, post3];
-
-    const featuredPosts = [
-        {
-          title: 'Featured post',
-          date: 'Nov 12',
-          description:
-            'This is a wider card with supporting text below as a natural lead-in to additional content.',
-          image: 'https://source.unsplash.com/random?wallpapers',
-          imageLabel: 'Image Text',
-        },
-        {
-          title: 'Post title',
-          date: 'Nov 11',
-          description:
-            'This is a wider card with supporting text below as a natural lead-in to additional content.',
-          image: 'https://source.unsplash.com/random?wallpapers',
-          imageLabel: 'Image Text',
-        },
-      ];
-
     //
     useEffect(() => {
         //доступ запрещен
@@ -186,6 +118,11 @@ const Account = () => {
             if (response.ok) {
                 setUserData(await response.json());
             } else {
+                if (response.status === 401) {
+                    //токен не действует
+                    dispatch(logout());//удалить токен
+                    navigate('/login');
+                }                                
             }
             } catch (error) {
                 console.error('Error:', error);
@@ -203,51 +140,27 @@ const Account = () => {
                 <CircularProgress />
             </Box>
         );
-    }  
-    /*return (
-        <Box
-            sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                minHeight: '100vh',
-            }}
-        >
-            <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">
-                <Typography variant="h2" component="h1" gutterBottom></Typography>
-                <Typography variant="h5" component="h2" gutterBottom>
-                    {`Имя пользователя: ${userData.userName}`}
-                </Typography>
-                <Typography variant="h5" component="h2" gutterBottom>
-                    {`Email: ${userData.email}`}
-                </Typography>
-                <Typography variant="h5" component="h2" gutterBottom>
-                    {`Телефон: ${userData.phoneNumber != null ? userData.phoneNumber : 'не указан'}`}
-                </Typography>
-                <Typography variant="body1"></Typography>
-            </Container>
-            <Box
-                component="footer"
-                sx={{
-                py: 3,
-                px: 2,
-                mt: 'auto',
-                backgroundColor: (theme) =>
-                    theme.palette.mode === 'light'
-                    ? theme.palette.grey[200]
-                    : theme.palette.grey[800],
-                }}
-            >
-                <Container maxWidth="sm">
-                    <Typography variant="body1"></Typography>                
-                </Container>
-            </Box>  
-        </Box>
-      );*/
+    }
     return (
         <> 
             <MainFeaturedPost post={mainFeaturedPost} />
             <Grid container spacing={5} sx={{ mt: 3 }}>                
-            
+            <Grid
+                item
+                xs={12}
+                md={8}
+                sx={{
+                    '& .markdown': {
+                    py: 3,
+                    },
+                }}
+            >
+                <Typography variant="h6" gutterBottom>Учетная запись</Typography>
+                <Divider />
+                <div>
+                    <UserProfile user={userData} />
+                </div>
+                </Grid>
                 <Sidebar
                     title={sidebar.title}
                     description={sidebar.description}
