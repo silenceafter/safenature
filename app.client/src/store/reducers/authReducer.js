@@ -1,25 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { valHooks } from 'jquery';
-
-/*const authSlice = createSlice({
-  name: 'authSlice',
-  initialState: {
-    isAuthenticated: false',
-    user: null,
-    token: null
-  },
-  reducers: {
-    updateValue: (state, action) => {
-      state.value = action.payload;
-    }
-  }
-});*/
-
-
-
 const initialState = {
-    /*email: null,
-    token: null*/
     email: localStorage.getItem('auth') ? JSON.parse(localStorage.getItem('auth')).email : null,
     token: localStorage.getItem('auth') ? JSON.parse(localStorage.getItem('auth')).token : null,
 };

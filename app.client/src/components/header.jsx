@@ -11,16 +11,12 @@ import { useState, useEffect } from 'react';
 //import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/actions/authActions';
+import { styled } from '@mui/system';
 
 function Header(props) {
   const { /*sections,*/ title } = props;
   const { email, token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-
-  /*const handleLogout = () => {
-    dispatch(logout());
-    //localStorage.removeItem(email, token);
-  }*/
 
   //список страниц для header
   let sections = [];
@@ -29,24 +25,32 @@ function Header(props) {
     sections = [
       { title: 'Главная', url: '/' },
       { title: 'О нас', url: '/about' },
-      { title: 'Магазины-партнеры', url: '/partners' },
-      { title: 'Товары бренда', url: '/products' },
-      { title: 'Аккаунт', url: '/account' },
-      { title: 'Обмен бонусов', url: '/bonus-exchange' },
+      { title: 'Пункты приёма отходов', url: '/points' },
+      { title: 'Магазины', url: '/partners' },
+      { title: 'Обменять бонусы', url: '/bonus-exchange' },
       { title: 'Расчет бонусов', url: '/bonus-calculation' },
-      { title: 'Карта пунктов приёма отходов', url: '/points' },
+      { title: 'Наши товары', url: '/products' },            
+      { title: 'Учетная запись', url: '/account' },            
     ];
   } else {
     //для гостей
     sections = [
       { title: 'Главная', url: '/' },
       { title: 'О нас', url: '/about' },
-      { title: 'Магазины-партнеры', url: '/partners' },
-      { title: 'Товары бренда', url: '/products' },
-      { title: 'Карта пунктов приёма отходов', url: '/points' },
+      { title: 'Пункты приёма отходов', url: '/points' },
+      { title: 'Магазины', url: '/partners' },
+      { title: 'Наши товары', url: '/products' },
     ];
   }
 
+  //кастомный RouterLink
+  const StyledRouterLink = styled(RouterLink)(({ theme }) => ({
+    color: 'inherit',
+    textDecoration: 'none',
+    padding: '8px',
+    flexShrink: 0,
+  }));
+  //
   return (
     <React.Fragment>
       <Toolbar sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -75,9 +79,7 @@ function Header(props) {
                 Войти
               </Button>
             )
-        }
-               
-            
+        }                           
       </Toolbar>
       <Toolbar
         component="nav"
@@ -85,16 +87,13 @@ function Header(props) {
         sx={{ justifyContent: 'space-between', overflowX: 'auto' }}
       >
         {sections.map((section) => (
-          <Link
-            color="inherit"
-            noWrap
+          <StyledRouterLink
             key={section.title}
-            variant="body2"
-            href={section.url}
+            to={section.url}
             sx={{ p: 1, flexShrink: 0 }}
           >
             {section.title}
-          </Link>
+          </StyledRouterLink>
         ))}
       </Toolbar>
     </React.Fragment>

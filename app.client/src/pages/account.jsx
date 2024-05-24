@@ -25,80 +25,40 @@ import { post } from 'jquery';
 import { Card, CardContent, Avatar } from '@mui/material';
 import { styled } from '@mui/system';
 import { login, logout } from '../store/actions/authActions';
-
-const UserInfoCard = styled(Card)(({ theme }) => ({
-    margin: theme.spacing(2),
-    padding: theme.spacing(2),
-  }));
-  
-  const UserAvatar = styled(Avatar)(({ theme }) => ({
-    width: theme.spacing(10),
-    height: theme.spacing(10),
-    marginRight: theme.spacing(2),
-  }));
-  
-function UserProfile({ user }) {
-    return (      
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Box mt={2}> {/* Добавляем отступ сверху */}
-                <Typography variant="body1" component="div">
-                <strong>Имя пользователя:</strong> {user.userName}
-                </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12}>
-            <Typography variant="body1">
-              <strong>Email:</strong> {user.email}
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <Typography variant="body1">
-              <strong>Phone Number:</strong> {user.phoneNumber != null ? user.phoneNumber : 'не указан'}
-            </Typography>
-          </Grid>
-        </Grid>      
-    );
-}
+import image from '../images/account.jpg';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+} from '@mui/material';
 
 const Account = () => {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const { email, token } = useSelector((state) => state.auth);
+    const { social } = useSelector((state) => state.social);
     const dispatch = useDispatch();
     const navigate = useNavigate();  
     
+    //раздел
     const mainFeaturedPost = {
-        title: 'Title of a longer featured blog post',
-        description:
-          "Multiple lines of text that form the lede, informing new readers quickly and efficiently about what's most interesting in this post's contents.",
-        image: 'https://source.unsplash.com/random?wallpapers',
-        imageText: 'main image description',
-        linkText: 'Continue reading…',
+        title: 'Учетная запись',
+        description: "",
+        image: image,
+        imageText: '',
+        linkText: '',
     };
 
+    //информация о странице
     const sidebar = {
-    title: 'About',
-    description:
-        'Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.',
-    archives: [
-        { title: 'March 2020', url: '#' },
-        { title: 'February 2020', url: '#' },
-        { title: 'January 2020', url: '#' },
-        { title: 'November 1999', url: '#' },
-        { title: 'October 1999', url: '#' },
-        { title: 'September 1999', url: '#' },
-        { title: 'August 1999', url: '#' },
-        { title: 'July 1999', url: '#' },
-        { title: 'June 1999', url: '#' },
-        { title: 'May 1999', url: '#' },
-        { title: 'April 1999', url: '#' },
-    ],
-    social: [
-        { name: 'GitHub', icon: GitHubIcon },
-        { name: 'X', icon: XIcon },
-        { name: 'Facebook', icon: FacebookIcon },
-    ],
+        title: '',
+        description:
+            'Данные Вашей учетной записи, количество бонусных баллов, информация о списании/начислении, последних совершенных действиях и т.д.',    
+        social: social
     };
     //
     useEffect(() => {
@@ -155,10 +115,26 @@ const Account = () => {
                     },
                 }}
             >
-                <Typography variant="h6" gutterBottom>Учетная запись</Typography>
                 <Divider />
                 <div>
-                    <UserProfile user={userData} />
+                    <TableContainer component={Paper}>
+                        <Table aria-label="user table">
+                            <TableHead>
+                            <TableRow>
+                                <TableCell>Имя пользователя</TableCell>
+                                <TableCell>Email</TableCell>
+                                <TableCell>Номер телефона</TableCell>
+                            </TableRow>
+                            </TableHead>
+                            <TableBody>
+                            <TableRow>
+                                <TableCell>{userData.userName}</TableCell>
+                                <TableCell>{userData.email}</TableCell>
+                                <TableCell>{userData.phoneNumber != null ? userData.phoneNumber : 'не указан'}</TableCell>
+                            </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </div>
                 </Grid>
                 <Sidebar

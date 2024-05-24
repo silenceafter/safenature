@@ -7,7 +7,7 @@ import Grid from '@mui/material/Grid';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import YoutubeIcon from '@mui/icons-material/YouTube';
-import { WhatsApp } from '@mui/icons-material';
+import { useSelector, useDispatch } from 'react-redux';
 /*import post1 from '../md/1.md';
 import post2 from '../md/2.md';
 import post3 from '../md/3.md';*/
@@ -38,16 +38,7 @@ const featuredPosts = [
     imageLabel: 'Image Text',
   },
 ];
-const sidebar = {
-  title: 'О нас',
-  description:
-    'Наш проект по обработке опасных отходов первого и второго классов опасности - это инициатива, посвящённая охране окружающей среды, созданию устойчивой экосистемы и обеспечению безопасности нашего будущего! Присоединяйтесь к нам в нашем стремлении сделать мир зеленым, чистым и безопасным для всех живых существ!',
-  social: [
-    { name: 'Telegram', icon: TelegramIcon },
-    { name: 'WhatsApp', icon: WhatsAppIcon },    
-    { name: 'Youtube', icon: YoutubeIcon }
-  ],
-};
+
 
 const post1 = `
 # Sample blog post
@@ -136,24 +127,36 @@ Donec ullamcorper nulla non metus auctor fringilla. Nulla vitae elit libero, a p
 const posts = [post1, post2, post3];
 
 const Home = () => {
-    return (
-        <>
-          <MainFeaturedPost post={mainFeaturedPost} />
-          <Grid container spacing={4}> 
-              {featuredPosts.map((post) => (
-                  <FeaturedPost key={post.title} post={post} />
-              ))}           
-          </Grid>
-          <Grid container spacing={5} sx={{ mt: 3 }}>
-              <Main title="From the firehose" posts={posts} />
-              <Sidebar
-                  title={sidebar.title}
-                  description={sidebar.description}
-                  social={sidebar.social}
-              />     
-          </Grid>                                     
-        </>
-    );
+  const { social } = useSelector((state) => state.social);
+  const sidebar = {
+    title: 'О нас',
+    description:
+      'Наш проект по обработке опасных отходов первого и второго классов опасности - это инициатива, посвящённая охране окружающей среды, созданию устойчивой экосистемы и обеспечению безопасности нашего будущего! Присоединяйтесь к нам в нашем стремлении сделать мир зеленым, чистым и безопасным для всех живых существ!',
+    social: social/*[
+      { name: 'Telegram', icon: TelegramIcon },
+      { name: 'WhatsApp', icon: WhatsAppIcon },    
+      { name: 'Youtube', icon: YoutubeIcon }
+    ],*/
+  };
+  //
+  return (
+      <>
+        <MainFeaturedPost post={mainFeaturedPost} />
+        <Grid container spacing={4}> 
+            {featuredPosts.map((post) => (
+                <FeaturedPost key={post.title} post={post} />
+            ))}           
+        </Grid>
+        <Grid container spacing={5} sx={{ mt: 3 }}>
+            <Main title="From the firehose" posts={posts} />
+            <Sidebar
+                title={sidebar.title}
+                description={sidebar.description}
+                social={sidebar.social}
+            />     
+        </Grid>                                     
+      </>
+  );
 };
 
 export {Home};

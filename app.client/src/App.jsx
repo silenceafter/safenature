@@ -15,7 +15,7 @@ import { Article } from './pages/article';
 import { AccessDenied } from './pages/accessDenied';
 import { BonusExchange } from './pages/bonusExchange';
 import { BonusCalculation } from './pages/bonusCalculation';
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import Header from './components/header';
 import Footer from './components/footer';
 import { Container } from '@mui/material';
@@ -34,7 +34,7 @@ const App = () => {
             <Header title="SafeNature" />
             <main>
               <Routes>
-                  <Route path="/" element={<Home />} />
+                  <Route index element={<Home />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/logout" element={<Logout />} />

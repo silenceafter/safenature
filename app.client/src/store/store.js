@@ -1,13 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './reducers/authReducer';
 import userReducer from './reducers/userReducer';
+import sidebarReducer from './slices/sidebarSlice';
 import { combineReducers } from 'redux';
 //import thunk from 'redux-thunk'; // Middleware для асинхронных действий
 
 //корневой редьюсер
 const rootReducer = combineReducers({
   auth: authReducer,
-  user: userReducer
+  user: userReducer,
+  social: sidebarReducer
 });
 
 //хранилище redux
