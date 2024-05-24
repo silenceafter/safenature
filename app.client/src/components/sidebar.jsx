@@ -28,7 +28,7 @@ function Sidebar(props) {
           key={network.name}
           sx={{ mb: 0.5 }}
         >
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={1} alignItems="right">
             <network.icon />
             <span>{network.name}</span>
           </Stack>

@@ -1,10 +1,12 @@
 ﻿using app.Server.Controllers.Requests;
+using app.Server.Controllers.Response;
 using app.Server.Models;
 using app.Server.Repositories;
 using app.Server.Repositories.Interfaces;
 using app.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace app.Server.Controllers
@@ -36,6 +38,26 @@ namespace app.Server.Controllers
         public IActionResult GetSecureData()
         {
             return Ok("111");
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> GetUser([FromBody] UserRequest request)
+        {
+            try
+            {
+                var encrypt = _encryptionService.Encrypt(request.Email);
+                var emailHash = _encryptionService.ComputeHash(request.Email);
+                //
+                var user = await _userRepository.GetUserByEmail(emailHash);
+                if (user != null)//токен опознан
+                    return Ok(new UserResponse() { Bonus = user.Bonuses, Role = "Пользователь" });
+                return Ok(null);                
+            }
+            catch (Exception ex)
+            {
+                return Ok(null);
+            }
         }
 
         [HttpPost]

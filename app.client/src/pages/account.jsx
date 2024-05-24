@@ -38,6 +38,7 @@ import {
 
 const Account = () => {
     const [userData, setUserData] = useState(null);
+    const [backendData, setBackendData] = useState(null);
     const [loading, setLoading] = useState(true);
     const { email, token } = useSelector((state) => state.auth);
     const { social } = useSelector((state) => state.social);
@@ -66,6 +67,7 @@ const Account = () => {
         if (!email)
             navigate('/access-denied');
 
+        //запрос 1 к сервису авторизации
         const userRequest = async () => {
         try {
             const response = await fetch('https://localhost:7086/account/get-current-user', {
@@ -76,13 +78,45 @@ const Account = () => {
             });
 
             if (response.ok) {
-                setUserData(await response.json());
+                const userResponse = await response.json();
+                setUserData(userResponse);
+
+                //запрос 2 к бекенд-приложению
+                const userRequest2 = async () => {
+                    try {
+                        const response = await fetch('https://localhost:7158/user/getuser', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ Email: userResponse.email })
+                        });
+            
+                        if (response.ok) {
+                            //setUserData(await response.json());
+                            const backendResponse = await response.json();
+                            setBackendData(backendResponse);
+                        } else {
+                            if (response.status === 401) {
+                                //токен не действует
+                                dispatch(logout());//удалить токен
+                                navigate('/login');
+                            }            
+                        }
+                        } catch (error) {
+                            console.error('Error:', error);
+                        } finally {
+                            setLoading(false);
+                        }
+                    };
+                    userRequest2();
             } else {
                 if (response.status === 401) {
                     //токен не действует
                     dispatch(logout());//удалить токен
                     navigate('/login');
-                }                                
+                }                
             }
             } catch (error) {
                 console.error('Error:', error);
@@ -123,14 +157,18 @@ const Account = () => {
                             <TableRow>
                                 <TableCell>Имя пользователя</TableCell>
                                 <TableCell>Email</TableCell>
+                                <TableCell>Роль</TableCell>
                                 <TableCell>Номер телефона</TableCell>
+                                <TableCell>Кол-во баллов</TableCell>                                
                             </TableRow>
                             </TableHead>
                             <TableBody>
                             <TableRow>
                                 <TableCell>{userData.userName}</TableCell>
                                 <TableCell>{userData.email}</TableCell>
+                                <TableCell>{backendData.role}</TableCell>
                                 <TableCell>{userData.phoneNumber != null ? userData.phoneNumber : 'не указан'}</TableCell>
+                                <TableCell>{backendData.bonus}</TableCell>
                             </TableRow>
                             </TableBody>
                         </Table>
