@@ -14,7 +14,7 @@ import { Points } from './pages/points';
 import { Article } from './pages/article';
 import { AccessDenied } from './pages/accessDenied';
 import { BonusExchange } from './pages/bonusExchange';
-import { BonusCalculation } from './pages/bonusCalculation';
+import { Acceptance } from './pages/acceptance';
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import Header from './components/header';
 import Footer from './components/footer';
@@ -45,7 +45,7 @@ const App = () => {
                   <Route path="/products" element={<Products />} />
                   <Route path="/points" element={<Points />} />
                   <Route path="/bonus-exchange" element={<BonusExchange />} />
-                  <Route path="/bonus-calculation" element={<BonusCalculation />} />
+                  <Route path="/acceptance" element={<Acceptance />} />
                   <Route path="/article" element={<Article />} />
                   <Route path="/access-denied" element={<AccessDenied />} />
               </Routes>

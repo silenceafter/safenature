@@ -38,12 +38,12 @@ import {
 
 const Account = () => {
     const [userData, setUserData] = useState(null);
-    const [backendData, setBackendData] = useState(null);
+    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const { email, token } = useSelector((state) => state.auth);
     const { social } = useSelector((state) => state.social);
     const dispatch = useDispatch();
-    const navigate = useNavigate();  
+    const navigate = useNavigate();
     
     //раздел
     const mainFeaturedPost = {
@@ -60,71 +60,65 @@ const Account = () => {
         description:
             'Данные Вашей учетной записи, количество бонусных баллов, информация о списании/начислении, последних совершенных действиях и т.д.',    
         social: social
-    };
-    //
+    };    
+
+    //useEffect
     useEffect(() => {
         //доступ запрещен
         if (!email)
             navigate('/access-denied');
 
-        //запрос 1 к сервису авторизации
+        //запросы: 1-й к сервису авторизации, 2-й к бекенд-части
         const userRequest = async () => {
-        try {
-            const response = await fetch('https://localhost:7086/account/get-current-user', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
+            try {
+                const response = await fetch('https://localhost:7086/account/get-current-user', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                //
+                if (response.ok) {
+                    const userResponse = await response.json();
+                    if (userResponse == null || typeof userResponse == 'undefined')
+                        return null;
+
+                    //запрос 2 к бекенд-приложению
+                    const response2 = await fetch('https://localhost:7158/user/getuser', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ Email: userResponse.email })
+                    });
+                    //
+                    if (response2.ok) {
+                        const backendResponse = await response2.json();
+                        setUserData(
+                            {
+                                userName: userResponse.userName, 
+                                email: userResponse.email,
+                                phoneNumber: userResponse.phoneNumber, 
+                                role: backendResponse.role, 
+                                bonus: backendResponse.bonus
+                            }
+                        );
+                    }
+                } else {
+                    if (response.status === 401) {
+                        //токен не действует
+                        dispatch(logout());//удалить токен
+                        navigate('/login');
+                    }                
                 }
-            });
-
-            if (response.ok) {
-                const userResponse = await response.json();
-                setUserData(userResponse);
-
-                //запрос 2 к бекенд-приложению
-                const userRequest2 = async () => {
-                    try {
-                        const response = await fetch('https://localhost:7158/user/getuser', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ Email: userResponse.email })
-                        });
-            
-                        if (response.ok) {
-                            //setUserData(await response.json());
-                            const backendResponse = await response.json();
-                            setBackendData(backendResponse);
-                        } else {
-                            if (response.status === 401) {
-                                //токен не действует
-                                dispatch(logout());//удалить токен
-                                navigate('/login');
-                            }            
-                        }
-                        } catch (error) {
-                            console.error('Error:', error);
-                        } finally {
-                            setLoading(false);
-                        }
-                    };
-                    userRequest2();
-            } else {
-                if (response.status === 401) {
-                    //токен не действует
-                    dispatch(logout());//удалить токен
-                    navigate('/login');
-                }                
-            }
             } catch (error) {
-                console.error('Error:', error);
+                setError(error);
             } finally {
                 setLoading(false);
             }
         };
-        userRequest();
+        userRequest();//запросы
     }, []);
 
     //рендер
@@ -166,9 +160,9 @@ const Account = () => {
                             <TableRow>
                                 <TableCell>{userData.userName}</TableCell>
                                 <TableCell>{userData.email}</TableCell>
-                                <TableCell>{backendData.role}</TableCell>
+                                <TableCell>{userData.role}</TableCell>
                                 <TableCell>{userData.phoneNumber != null ? userData.phoneNumber : 'не указан'}</TableCell>
-                                <TableCell>{backendData.bonus}</TableCell>
+                                <TableCell>{userData.bonus}</TableCell>
                             </TableRow>
                             </TableBody>
                         </Table>

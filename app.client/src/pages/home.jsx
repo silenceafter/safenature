@@ -3,14 +3,43 @@ import Main from '../components/main';
 import Sidebar from '../components/sidebar';
 import MainFeaturedPost from '../components/mainFeaturedPost';
 import FeaturedPost from '../components/featuredPost';
-import Grid from '@mui/material/Grid';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import YoutubeIcon from '@mui/icons-material/YouTube';
 import { useSelector, useDispatch } from 'react-redux';
-/*import post1 from '../md/1.md';
-import post2 from '../md/2.md';
-import post3 from '../md/3.md';*/
+import { Box, Grid, Typography } from '@mui/material';
+import RecyclingIcon from '@mui/icons-material/Recycling';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import DiscountIcon from '@mui/icons-material/Discount';
+import Button from '@mui/material/Button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from '@mui/material';
+import Divider from '@mui/material/Divider';
+
+const items = [
+  {
+    icon: <RecyclingIcon style={{ fontSize: 50, color: 'green' }} />,
+    title: 'Сдавай отходы',
+    description: 'Приноси использованные батарейки, аккумуляторы, лампочки, ртутные градусники и другие отходы (смотри таблицу отходов, которые мы принимаем) в наши пункты приема.'
+  },
+  {
+    icon: <AttachMoneyIcon style={{ fontSize: 50, color: 'gold' }} />,
+    title: 'Получай бонусы',
+    description: 'Бонусные баллы можно обменять на скидочные купоны, которые действуют в магазинах наших партнеров. Покупки могут быть еще более выгодными! Поможем окружающей среде и сделаем это простым и удобным способом.'
+  },
+  {
+    icon: <DiscountIcon style={{ fontSize: 50, color: 'purple' }} />,
+    title: 'Выбирай купон на скидку',
+    description: 'Список наших партнеров продолжает увеличиваться. Вы сможете найти для себя самые разные товары, а скидка сделает покупку еще более приятной! '
+  }
+];
 
 const mainFeaturedPost = {
   title: 'Эко-проект по утилизации опасных отходов',
@@ -20,111 +49,6 @@ const mainFeaturedPost = {
   imageText: 'main image description',
   linkText: '',
 };
-const featuredPosts = [
-  {
-    title: 'Новый пункт приема отходов',
-    date: '22.05.24',
-    description:
-      'Новый пункт приема отходов открылся в городе Белгород.',
-    image: 'https://source.unsplash.com/random?wallpapers',
-    imageLabel: 'Image Text',
-  },
-  {
-    title: 'Товаров бренда стало больше',
-    date: '06.05.24',
-    description:
-      'С сегодняшнего дня дополнительно к текущему ассортименту с логотипом бренда добивились стильные худи.',
-    image: 'https://source.unsplash.com/random?wallpapers',
-    imageLabel: 'Image Text',
-  },
-];
-
-
-const post1 = `
-# Sample blog post
-
-_April 1, 2020 by [Olivier](/)_
-
-Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum.
-Sed posuere consectetur est at lobortis. Cras mattis consectetur purus sit amet fermentum.
-
-Curabitur blandit tempus porttitor. **Nullam quis risus eget urna mollis** ornare vel eu leo.
-Nullam id dolor id nibh ultricies vehicula ut id elit.
-
-Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum.
-Aenean lacinia bibendum nulla sed consectetur.
-
-## Heading
-
-Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
-Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
-
-### Sub-heading 1
-
-Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-
-### Sub-heading 2
-
-Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-Aenean lacinia bibendum nulla sed consectetur. Etiam porta sem malesuada magna mollis euismod.
-Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
-sit amet risus.
-
-- Praesent commodo cursus magna, vel scelerisque nisl consectetur et.
-- Donec id elit non mi porta gravida at eget metus.
-- Nulla vitae elit libero, a pharetra augue.
-
-Donec ullamcorper nulla non metus auctor fringilla. Nulla vitae elit libero, a pharetra augue.
-
-1. Vestibulum id ligula porta felis euismod semper.
-1. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-1. Maecenas sed diam eget risus varius blandit sit amet non magna.
-
-Cras mattis consectetur purus sit amet fermentum. Sed posuere consectetur est at lobortis.
-`;
-
-const post2 = `
-# Another blog post
-
-_March 23, 2020 by [Matt](/)_
-
-Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum.
-Sed posuere consectetur est at lobortis. Cras mattis consectetur purus sit amet fermentum.
-
-Curabitur blandit tempus porttitor. **Nullam quis risus eget urna mollis** ornare vel eu leo.
-Nullam id dolor id nibh ultricies vehicula ut id elit.
-
-Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum.
-Aenean lacinia bibendum nulla sed consectetur.
-
-Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
-Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
-`;
-
-const post3 = `
-# New feature
-
-_March 14, 2020 by [Tom](/)_
-
-Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-Aenean lacinia bibendum nulla sed consectetur. Etiam porta sem malesuada magna mollis euismod.
-Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh,
-ut fermentum massa justo sit amet risus.
-
-- Praesent commodo cursus magna, vel scelerisque nisl consectetur et.
-- Donec id elit non mi porta gravida at eget metus.
-- Nulla vitae elit libero, a pharetra augue.
-
-Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum.
-Aenean lacinia bibendum nulla sed consectetur.
-
-Donec ullamcorper nulla non metus auctor fringilla. Nulla vitae elit libero, a pharetra augue.
-`;
-const posts = [post1, post2, post3];
 
 const Home = () => {
   const { social } = useSelector((state) => state.social);
@@ -132,29 +56,139 @@ const Home = () => {
     title: 'О нас',
     description:
       'Наш проект по обработке опасных отходов первого и второго классов опасности - это инициатива, посвящённая охране окружающей среды, созданию устойчивой экосистемы и обеспечению безопасности нашего будущего! Присоединяйтесь к нам в нашем стремлении сделать мир зеленым, чистым и безопасным для всех живых существ!',
-    social: social/*[
-      { name: 'Telegram', icon: TelegramIcon },
-      { name: 'WhatsApp', icon: WhatsAppIcon },    
-      { name: 'Youtube', icon: YoutubeIcon }
-    ],*/
+    social: social
   };
   //
   return (
       <>
-        <MainFeaturedPost post={mainFeaturedPost} />
-        <Grid container spacing={4}> 
-            {featuredPosts.map((post) => (
-                <FeaturedPost key={post.title} post={post} />
-            ))}           
-        </Grid>
+        <MainFeaturedPost post={mainFeaturedPost} />        
         <Grid container spacing={5} sx={{ mt: 3 }}>
-            <Main title="From the firehose" posts={posts} />
-            <Sidebar
-                title={sidebar.title}
-                description={sidebar.description}
-                social={sidebar.social}
-            />     
-        </Grid>                                     
+        {/*<Box sx={{ textAlign: 'center', py: 5 }}>
+          <Typography variant="h4" gutterBottom>
+            Принимаем отходы
+          </Typography>
+          <Typography variant="subtitle1" gutterBottom>
+            В 2024 году мы открыли 1-й пункт по приему отходов. Сегодня их уже 5 в 2-х городах России
+          </Typography>
+          <Box sx={{ mt: 3, mb: 5 }}>
+            <Button type="button"                  
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}>
+              Регистрация
+            </Button>
+          </Box>
+          <Grid container spacing={4} justifyContent="center">
+            {items.map((item, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Box sx={{ textAlign: 'center', px: 3 }}>
+                  {item.icon}
+                  <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+                    {item.title}
+                  </Typography>
+                  <Typography variant="body1" color="textSecondary">
+                    {item.description}
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
+
+
+
+       
+                <div>
+                <Box sx={{ textAlign: 'center', mt: 10, mb: 10 }}>
+                <Typography variant="h4" gutterBottom>
+            Отходы
+          </Typography>
+                    <TableContainer component={Paper} sx={{ textAlign: 'justify', mt: 4, mb: 4 }}>
+                        <Table aria-label="user table">
+                            <TableHead>
+                            <TableRow>
+                                <TableCell>Имя пользователя</TableCell>
+                                <TableCell>Email</TableCell>
+                                <TableCell>Роль</TableCell>
+                                <TableCell>Номер телефона</TableCell>
+                                <TableCell>Кол-во баллов</TableCell>                                
+                            </TableRow>
+                            </TableHead>
+                            <TableBody>
+                            <TableRow>
+                                <TableCell>111</TableCell>
+                                
+                            </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box></div>
+                
+          </Grid>
+          
+          
+          </Box>*/}
+        
+        
+        <Grid
+        item
+        xs={12}
+        md={8}
+        sx={{
+            '& .markdown': {
+            py: 3,
+            },
+        }}
+    >
+      <Divider />
+      <div>  
+      <Box sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>                            
+      <Typography variant="h4" component="h1" gutterBottom>
+        Sample blog post
+      </Typography>      
+          <Typography variant="body1" paragraph>
+            Добро пожаловать в сердце экологической революции! Мы - команда страстных защитников природы, стремящихся к гармонии между человеком и окружающей средой. Наш проект по переработке опасных отходов первого и второго классов опасности - это наш ответ на вызовы нашего времени, выраженный в языке заботы, ответственности и инноваций.
+          </Typography>
+          <Typography variant="body1" sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
+            По данным Всемирной организации здравоохранения (ВОЗ), каждый год в мире производится более 400 миллионов тонн опасных отходов. Это включает в себя отходы от промышленности, здравоохранения, сельского хозяйства, а также бытовые отходы. Опасные отходы могут содержать токсичные вещества, которые могут наносить вред здоровью людей и окружающей среде.
+          </Typography>
+          <Typography variant="body1" sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
+          Мы верим, что каждый маленький шаг в сторону устойчивого потребления, переработки и утилизации отходов приближает нас к чистому и светлому будущему. Наша миссия не только в том, чтобы преображать опасные отходы в безопасные ресурсы, но и вдохновлять людей на заботу о драгоценной планете, которую мы делим.
+          </Typography>
+          <Typography variant="body1" sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
+            Присоединяйтесь к нам в этом удивительном путешествии экологического созидания! Давайте вместе создадим мир, где каждый акт заботы о природе станет каплей великого океана экологического процветания. Помните: наш дом - это Земля, и только вместе мы можем защитить его и сохранить для будущих поколений.
+          </Typography>
+ </Box>
+      </div> 
+
+      <div>
+                <Box sx={{ textAlign: 'center', mt: 10, mb: 10 }}>
+                <Typography variant="h4" gutterBottom>
+            Отходы
+          </Typography>
+                    <TableContainer component={Paper} sx={{ textAlign: 'justify', mt: 4, mb: 4 }}>
+                        <Table aria-label="user table">
+                            <TableHead>
+                            <TableRow>
+                                <TableCell>Имя пользователя</TableCell>
+                                <TableCell>Email</TableCell>
+                                <TableCell>Роль</TableCell>
+                                <TableCell>Номер телефона</TableCell>
+                                <TableCell>Кол-во баллов</TableCell>                                
+                            </TableRow>
+                            </TableHead>
+                            <TableBody>
+                            <TableRow>
+                                <TableCell>111</TableCell>
+                                
+                            </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box></div>        
+        </Grid> <Sidebar
+            title={sidebar.title}
+            description={sidebar.description}
+            archives={sidebar.archives}
+            social={sidebar.social}
+          />  </Grid>                                   
       </>
   );
 };

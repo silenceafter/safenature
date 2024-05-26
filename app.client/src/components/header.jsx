@@ -12,6 +12,8 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/actions/authActions';
 import { styled } from '@mui/system';
+import { Box } from '@mui/material';
+import logo from '../images/logo.png';
 
 function Header(props) {
   const { /*sections,*/ title } = props;
@@ -25,11 +27,11 @@ function Header(props) {
     sections = [
       { title: 'Главная', url: '/' },
       { title: 'О нас', url: '/about' },
-      { title: 'Пункты приёма отходов', url: '/points' },
-      { title: 'Магазины', url: '/partners' },
-      { title: 'Обменять бонусы', url: '/bonus-exchange' },
-      { title: 'Расчет бонусов', url: '/bonus-calculation' },
-      { title: 'Наши товары', url: '/products' },            
+      { title: 'Принять отходы', url: '/acceptance' },
+      { title: 'Обменять бонусы', url: '/bonus-exchange' },      
+      { title: 'Магазины', url: '/partners' },            
+      { title: 'Наши товары', url: '/products' }, 
+      { title: 'Пункты приёма отходов', url: '/points' },           
       { title: 'Учетная запись', url: '/account' },            
     ];
   } else {
@@ -37,8 +39,8 @@ function Header(props) {
     sections = [
       { title: 'Главная', url: '/' },
       { title: 'О нас', url: '/about' },
-      { title: 'Пункты приёма отходов', url: '/points' },
       { title: 'Магазины', url: '/partners' },
+      { title: 'Пункты приёма отходов', url: '/points' },      
       { title: 'Наши товары', url: '/products' },
     ];
   }
@@ -54,7 +56,9 @@ function Header(props) {
   return (
     <React.Fragment>
       <Toolbar sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Button size="small">Subscribe</Button>
+      <Box display="flex" justifyContent="center" mb={2}>
+        <img src={logo} alt="Logo" style={{ height: '70px' }} /> {/* Используйте логотип */}
+      </Box>
         <Typography
           component="h2"
           variant="h5"
