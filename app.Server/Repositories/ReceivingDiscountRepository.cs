@@ -84,7 +84,7 @@ namespace app.Server.Repositories
 
         public async Task<IEnumerable<Discount>>? GetDiscountsAll()
         {
-            return await _context.Discounts.ToListAsync();
+            return await _context.Discounts.Include(o => o.Partner).ToListAsync();
         }
     }
 }

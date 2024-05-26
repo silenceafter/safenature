@@ -53,6 +53,7 @@ public partial class EcodbContext : DbContext
             entity.Property(e => e.Date).HasColumnName("date");
             entity.Property(e => e.HazardousWasteId).HasColumnName("hazardous_waste_id");
             entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
+            entity.Property(e => e.Quantity).HasColumnName("quantity");
 
             entity.HasOne(d => d.HazardousWaste).WithMany(p => p.Acceptances)
                 .HasForeignKey(d => d.HazardousWasteId)
@@ -135,6 +136,7 @@ public partial class EcodbContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .HasColumnName("name");
+            entity.Ignore(e => e.Discounts);//исключаем цикличную вложенность записей
         });
 
         modelBuilder.Entity<ReceivingDiscount>(entity =>

@@ -1,9 +1,12 @@
-﻿namespace app.Server.Controllers.Requests
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace app.Server.Controllers.Requests
 {
     public class AcceptanceRequest
     {
-        public int UserId { get; set; }
+        public string Email { get; set; }
 
         public int HazardousWasteId { get; set; }
+        public int Quantity { get; set; }
     }
 }

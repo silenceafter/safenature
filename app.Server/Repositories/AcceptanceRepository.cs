@@ -16,7 +16,7 @@ namespace app.Server.Repositories
             _context = context;
         }
 
-        public async Task<int> RegisterDispose(List<AcceptanceRequest> request)
+        public async Task<int> RegisterDispose(List<AcceptanceRequest> request, User user)
         {
             using (var transaction = _context.Database.BeginTransaction())
             {
@@ -24,8 +24,7 @@ namespace app.Server.Repositories
                 {
                     int addedRows = 0;
                     int bonuses = 0;
-                    var user = await _context.Users.FindAsync(request[0].UserId);
-
+                    
                     //1 создать транзакцию приема отходов
                     var userTransaction = new Transaction()
                     {
@@ -48,6 +47,7 @@ namespace app.Server.Repositories
                         {
                             TransactionId = userTransactionId,
                             HazardousWasteId = item.HazardousWasteId,
+                            Quantity = item.Quantity,
                             Date = DateTime.UtcNow.ToUniversalTime()
                         });
                         

@@ -2,6 +2,7 @@
 using app.Server.Models;
 using app.Server.Repositories;
 using app.Server.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,6 +28,7 @@ namespace app.Server.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> RegisterDiscountReserve([FromBody] ReceivingDiscountRequest request)
         {
             var data = await _receivingDiscountRepository.RegisterDiscountReserve(request);
@@ -34,6 +36,7 @@ namespace app.Server.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetDiscounts()
         {
             var data = await _receivingDiscountRepository.GetDiscountsAll();
