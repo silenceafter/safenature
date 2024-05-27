@@ -36,16 +36,77 @@ import CircularProgress from '@mui/material/CircularProgress';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputAdornment from '@mui/material/InputAdornment';
 import { login, logout } from '../store/actions/authActions';
+import { Card, CardContent, Radio } from '@mui/material';
+
+function formatDate(dateString) {
+    //форматирование даты в дд.мм.гггг
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяцы от 0 до 11
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+}
 
 const BonusExchange = () => {
     const { email, token } = useSelector((state) => state.auth);
     const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedDiscountId, setSelectedDiscountId] = useState(null);
+    //
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const [value, setValue] = useState(1);
+    const handleSelect = (id) => {
+        setSelectedDiscountId(id);
+        console.log('Selected Discount ID:', id); // Здесь вы получаете значение выбранной карточки
+    };
+    const DiscountCard = ({ discount, isSelected, onSelect }) => (
+        <Card
+          key={discount.id}
+          onClick={() => onSelect(discount.id)}
+          style={{
+            margin: '10px',
+            cursor: 'pointer',
+            border: isSelected ? '2px solid #3f51b5' : '1px solid #ccc'
+          }}
+        >
+          <CardContent>        
+            <Typography variant="body2" component="div"><strong>Описание:</strong> {discount.conditions}</Typography>
+            <Box mt={0.5}>
+                <Typography variant="body2" component="div">
+                    <strong>Магазин:</strong> {discount.storeName}
+                </Typography>
+            </Box>
+            <Box mt={0.5}>
+                <Typography variant="body2" component="div" align="left">
+                    <strong>Действует:</strong> {formatDate(discount.dateStart)} - {formatDate(discount.dateEnd)}
+                </Typography>
+            </Box>
+            <Radio
+              checked={isSelected}
+              value={discount.id}
+              readOnly
+            />
+          </CardContent>
+        </Card>
+    );
+    const DiscountCardList = ({ discounts }) => {   
+        return (
+            <Grid container spacing={2} sx={{maxHeight: 600, overflowY: 'auto', p: 2}}>
+            {discounts.map((discount) => (
+                <Grid item xs={12} sm={6} md={4} key={discount.id}>
+                <DiscountCard
+                    discount={discount}
+                    isSelected={selectedDiscountId === discount.id}
+                    onSelect={handleSelect}
+                />
+                </Grid>
+            ))}
+            </Grid>
+        );
+    };
+
     //раздел
     const mainFeaturedPost = {
         title: 'Обменять бонусы',
@@ -68,46 +129,18 @@ const BonusExchange = () => {
     ],
     };
 
-    //state формы
-    const [fields, setFields] = useState([
-        { id: 1, selectValue: '', textFieldValue: 1 }
-      ]);
 
-    //добавить строку
-    const handleAddField = () => {
-        setFields([...fields, { id: fields.length + 1, selectValue: '', textFieldValue: 1 }]);
-    };
-
-    //удалить строку
-    const handleRemoveField = (id) => {
-        setFields(fields.filter((field) => field.id !== id));
-    };
-
-    //изменить значение Select
-    const handleSelectChange = (id, newValue) => {
-        setFields(fields.map((field) =>
-          field.id === id ? { ...field, selectValue: newValue } : field
-        ));
-    };
-    
-    //изменить значение TextValue
-    const handleTextFieldChange = (id, newValue) => {
-    setFields(fields.map((field) =>
-        field.id === id ? { ...field, textFieldValue: newValue } : field
-    ));
-    };
 
     //собрать данные из элементов и отправить запрос на сервер
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const dataToSend = fields.map(field => ({
-          email: email,
-          hazardousWasteId: field.selectValue,
-          quantity: field.textFieldValue
-        }));
+        const dataToSend = {
+            email: email,
+            discountId: selectedDiscountId
+        };
     
         try {
-          const response = await fetch('https://localhost:7158/acceptance/registerdispose', {
+          const response = await fetch('https://localhost:7158/receivingdiscount/registerdiscountreserve', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -147,7 +180,20 @@ const BonusExchange = () => {
                 //
                 if (response.ok) {
                     const userResponse = await response.json();
-                    setUserData(userResponse);
+                    let items = [];
+                    for(const item of userResponse) {
+                        items.push(
+                            {
+                                id: item.id,
+                                storeName: item.partner.name,
+                                conditions: item.terms,
+                                bonus: item.bonuses,
+                                dateStart: item.dateStart,
+                                dateEnd: item.dateEnd
+                            }
+                        );
+                    }
+                    setUserData(items);
                 } else {
                     if (response.status === 401) {
                         //токен не действует
@@ -162,7 +208,7 @@ const BonusExchange = () => {
             }
         };
         userRequest();
-    }, []);
+    }, []);        
 
     //рендер
     if (loading) {
@@ -195,55 +241,16 @@ const BonusExchange = () => {
                             <Typography variant="body1" paragraph>
                                 Выберите скидочный купон из списка. Подтвердите списание бонусных баллов со счета.
                             </Typography>            
-                            <Box
-                                component="form"
-                                onSubmit={handleSubmit}
-                                sx={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'justify',
-                                    justifyContent: 'center',
-                                    position: 'relative',
-                                    width: '100%',
-                                    bgcolor: 'background.paper',
-                                    p: 4,
-                                    borderRadius: 1,
-                                    boxShadow: 3,
-                                    pl: 3.5,
-                                    pr: 6
-                                }}
-                            >
-                                {fields.map((field, index) => (
-                                    <Grid container spacing={2} alignItems="center" key={field.id}>
-                                        <Grid item xs={12}>
-                                            <FormControl required sx={{ mb: 2 }} fullWidth>
-                                                <InputLabel id={`select-label-${field.id}`}>Скидка</InputLabel>
-                                                <Select                                            
-                                                    labelId={`select-label-${field.id}`}
-                                                    value={field.selectValue}
-                                                    label="Отход"
-                                                    onChange={(event) => handleSelectChange(field.id, event.target.value)}
-                                                >
-                                                    {userData.map((option) => (
-                                                    <MenuItem key={option.id} value={option.id}>
-                                                        {option.terms}
-                                                    </MenuItem>
-                                                    ))}
-                                                </Select>                                            
-                                            </FormControl>
-                                        </Grid>
-                                    
-                                    </Grid>
-                                ))}                                
-                                <Box sx={{ mt: 1 }}>
-                                    <Button                            
+                            <DiscountCardList discounts={userData} onSelect={handleSelect} />
+                            <Box sx={{ mt: 1 }}>
+                                <Button                            
                                     variant="contained"
                                     color="secondary"
                                     type="submit"
-                                    >
-                                    Подтвердить
-                                    </Button>
-                                </Box>
+                                    onClick={handleSubmit}
+                                >
+                                Подтвердить
+                                </Button>
                             </Box>
                         </Box>                                    
                     </div>

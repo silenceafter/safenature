@@ -38,8 +38,7 @@ namespace app.Server.Controllers
         public async Task<IActionResult> RegisterDispose([FromBody] List<AcceptanceRequest> request)
         {
             try
-            {
-                //
+            {                
                 //пользователь
                 var emailHash = _encryptionService.ComputeHash(request[0].Email);
                 var user = await _userRepository.GetUserByEmail(emailHash);
