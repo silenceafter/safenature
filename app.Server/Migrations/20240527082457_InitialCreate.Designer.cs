@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using app.Server.Models;
 
 #nullable disable
@@ -12,7 +11,7 @@ using app.Server.Models;
 namespace app.Server.Migrations
 {
     [DbContext(typeof(EcodbContext))]
-    [Migration("20240516053620_InitialCreate")]
+    [Migration("20240527082457_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -21,32 +20,33 @@ namespace app.Server.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "7.0.17")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
-
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("app.Server.Models.Acceptance", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("nextval('waste_disposal_id_seq'::regclass)");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("date");
 
                     b.Property<int>("HazardousWasteId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("hazardous_waste_id");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int")
+                        .HasColumnName("quantity");
+
                     b.Property<int>("TransactionId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("transaction_id");
 
                     b.HasKey("Id")
-                        .HasName("waste_disposal_pkey");
+                        .HasName("PRIMARY");
 
                     b.HasIndex("HazardousWasteId");
 
@@ -59,33 +59,32 @@ namespace app.Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("nextval('discounts_in_stores_id_seq'::regclass)");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     b.Property<int>("Bonuses")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("bonuses");
 
                     b.Property<DateTime>("DateEnd")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("date_end");
 
                     b.Property<DateTime>("DateStart")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("date_start");
 
                     b.Property<int>("PartnerId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("partner_id");
 
                     b.Property<string>("Terms")
                         .IsRequired()
-                        .HasColumnType("character varying")
+                        .HasColumnType("longtext")
                         .HasColumnName("terms");
 
                     b.HasKey("Id")
-                        .HasName("discounts_in_stores_pkey");
+                        .HasName("PRIMARY");
 
                     b.HasIndex("PartnerId");
 
@@ -96,24 +95,22 @@ namespace app.Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("character varying")
+                        .HasColumnType("longtext")
                         .HasColumnName("description");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
+                        .HasColumnType("varchar(10)")
                         .HasColumnName("name");
 
                     b.HasKey("Id")
-                        .HasName("hazard_class_pkey");
+                        .HasName("PRIMARY");
 
                     b.ToTable("hazard_class", (string)null);
                 });
@@ -122,27 +119,25 @@ namespace app.Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
                     b.Property<int>("Bonuses")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("bonuses");
 
                     b.Property<int>("HazardClassId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("hazard_class_id");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("varchar(50)")
                         .HasColumnName("name");
 
                     b.HasKey("Id")
-                        .HasName("hazardous_waste_pkey");
+                        .HasName("PRIMARY");
 
                     b.HasIndex("HazardClassId");
 
@@ -153,24 +148,22 @@ namespace app.Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("character varying")
+                        .HasColumnType("longtext")
                         .HasColumnName("description");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("varchar(50)")
                         .HasColumnName("name");
 
                     b.HasKey("Id")
-                        .HasName("partners_pkey");
+                        .HasName("PRIMARY");
 
                     b.ToTable("partners", (string)null);
                 });
@@ -179,24 +172,23 @@ namespace app.Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("nextval('discounts_history_id_seq'::regclass)");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("date");
 
                     b.Property<int>("DiscountId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("discount_id");
 
                     b.Property<int>("TransactionId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("transaction_id");
 
                     b.HasKey("Id")
-                        .HasName("discounts_history_pkey");
+                        .HasName("PRIMARY");
 
                     b.HasIndex("DiscountId");
 
@@ -209,19 +201,17 @@ namespace app.Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("varchar(20)")
                         .HasColumnName("name");
 
                     b.HasKey("Id")
-                        .HasName("roles_pkey");
+                        .HasName("PRIMARY");
 
                     b.ToTable("roles", (string)null);
                 });
@@ -230,33 +220,31 @@ namespace app.Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
                     b.Property<int>("BonusesEnd")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("bonuses_end");
 
                     b.Property<int>("BonusesStart")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("bonuses_start");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("date");
 
                     b.Property<int>("TypeId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("type_id");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("user_id");
 
                     b.HasKey("Id")
-                        .HasName("transactions_pkey");
+                        .HasName("PRIMARY");
 
                     b.HasIndex("TypeId");
 
@@ -269,19 +257,17 @@ namespace app.Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("varchar(50)")
                         .HasColumnName("name");
 
                     b.HasKey("Id")
-                        .HasName("transaction_types_pkey");
+                        .HasName("PRIMARY");
 
                     b.ToTable("transaction_types", (string)null);
                 });
@@ -290,14 +276,17 @@ namespace app.Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
                     b.Property<int>("Bonuses")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("bonuses");
+
+                    b.Property<string>("EmailHash")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email_hash");
 
                     b.Property<string>("Encrypt")
                         .IsRequired()
@@ -305,11 +294,11 @@ namespace app.Server.Migrations
                         .HasColumnName("encrypt");
 
                     b.Property<int>("RoleId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("role_id");
 
                     b.HasKey("Id")
-                        .HasName("users_pkey");
+                        .HasName("PRIMARY");
 
                     b.HasIndex("RoleId");
 
@@ -322,13 +311,13 @@ namespace app.Server.Migrations
                         .WithMany("Acceptances")
                         .HasForeignKey("HazardousWasteId")
                         .IsRequired()
-                        .HasConstraintName("waste_disposal_hazardous_waste_id_fkey");
+                        .HasConstraintName("acceptance_hazardous_waste_id_fk");
 
                     b.HasOne("app.Server.Models.Transaction", "Transaction")
                         .WithMany("Acceptances")
                         .HasForeignKey("TransactionId")
                         .IsRequired()
-                        .HasConstraintName("acceptance_transaction_id_fkey");
+                        .HasConstraintName("acceptance_transaction_id_fk");
 
                     b.Navigation("HazardousWaste");
 
@@ -341,7 +330,7 @@ namespace app.Server.Migrations
                         .WithMany("Discounts")
                         .HasForeignKey("PartnerId")
                         .IsRequired()
-                        .HasConstraintName("discounts_partner_id_fkey");
+                        .HasConstraintName("discounts_partner_id_fk");
 
                     b.Navigation("Partner");
                 });
@@ -352,7 +341,7 @@ namespace app.Server.Migrations
                         .WithMany("HazardousWastes")
                         .HasForeignKey("HazardClassId")
                         .IsRequired()
-                        .HasConstraintName("hazardous_waste_hazard_class_id_fkey");
+                        .HasConstraintName("hazardous_waste_hazard_class_id_fk");
 
                     b.Navigation("HazardClass");
                 });
@@ -363,13 +352,13 @@ namespace app.Server.Migrations
                         .WithMany("ReceivingDiscounts")
                         .HasForeignKey("DiscountId")
                         .IsRequired()
-                        .HasConstraintName("discounts_history_discount_id_fkey");
+                        .HasConstraintName("receiving_discounts_discount_id_fk");
 
                     b.HasOne("app.Server.Models.Transaction", "Transaction")
                         .WithMany("ReceivingDiscounts")
                         .HasForeignKey("TransactionId")
                         .IsRequired()
-                        .HasConstraintName("receiving_discounts_transaction_id_fkey");
+                        .HasConstraintName("receiving_discounts_transaction_id_fk");
 
                     b.Navigation("Discount");
 
@@ -382,13 +371,13 @@ namespace app.Server.Migrations
                         .WithMany("Transactions")
                         .HasForeignKey("TypeId")
                         .IsRequired()
-                        .HasConstraintName("transactions_type_id_fkey");
+                        .HasConstraintName("transactions_type_id_fk");
 
                     b.HasOne("app.Server.Models.User", "User")
                         .WithMany("Transactions")
                         .HasForeignKey("UserId")
                         .IsRequired()
-                        .HasConstraintName("transactions_user_id_fkey");
+                        .HasConstraintName("transactions_user_id_fk");
 
                     b.Navigation("Type");
 
@@ -401,7 +390,7 @@ namespace app.Server.Migrations
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .IsRequired()
-                        .HasConstraintName("users_role_id_fkey");
+                        .HasConstraintName("users_role_id_fk");
 
                     b.Navigation("Role");
                 });
