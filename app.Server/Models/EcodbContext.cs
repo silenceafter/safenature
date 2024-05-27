@@ -117,6 +117,7 @@ namespace app.Server.Models
                 entity.Property(e => e.Name)
                     .HasMaxLength(50)
                     .HasColumnName("name");
+                entity.Ignore(e => e.Discounts);//исключаем цикличную вложенность записей
             });
 
             modelBuilder.Entity<ReceivingDiscount>(entity =>
