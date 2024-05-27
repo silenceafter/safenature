@@ -17,22 +17,22 @@ namespace app.Server.Controllers
         private readonly ILogger<ReceivingDiscountController> _logger;
         private readonly EcodbContext _context;
         private readonly IReceivingDiscountRepository _receivingDiscountRepository;
-        /*private readonly IEncryptionService _encryptionService;
-        private readonly IUserRepository _userRepository;*/
+        private readonly IEncryptionService _encryptionService;
+        private readonly IUserRepository _userRepository;
 
         public ReceivingDiscountController(
             ILogger<ReceivingDiscountController> logger,
             EcodbContext context,
-            ReceivingDiscountRepository receivingDiscountRepository/*,
-            EncryptionService encryptionService,
-            UserRepository userRepository*/
+            IReceivingDiscountRepository receivingDiscountRepository,
+            IEncryptionService encryptionService,
+            IUserRepository userRepository
             )
         {
             _logger = logger;
             _context = context;
             _receivingDiscountRepository = receivingDiscountRepository;
-            /*_encryptionService = encryptionService;
-            _userRepository = userRepository;*/
+            _encryptionService = encryptionService;
+            _userRepository = userRepository;
         }
 
         [HttpPost]

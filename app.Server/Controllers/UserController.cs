@@ -42,6 +42,26 @@ namespace app.Server.Controllers
 
         [HttpPost]
         [Authorize]
+        public async Task<IActionResult> GetAccountBalance([FromBody] UserRequest request)
+        {
+            try
+            {
+                var encrypt = _encryptionService.Encrypt(request.Email);
+                var emailHash = _encryptionService.ComputeHash(request.Email);
+                //
+                var user = await _userRepository.GetUserByEmail(emailHash);
+                if (user == null)
+                    return BadRequest();
+                return Ok(new { bonus = user.Bonuses });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
         public async Task<IActionResult> GetUser([FromBody] UserRequest request)
         {
             try

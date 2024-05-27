@@ -50,21 +50,24 @@ function formatDate(dateString) {
 const BonusExchange = () => {
     const { email, token } = useSelector((state) => state.auth);
     const [userData, setUserData] = useState(null);
+    const [userBalance, setUserBalance] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedDiscountId, setSelectedDiscountId] = useState(null);
+    const [selectedDiscountBonus, setSelectedDiscountBonus] = useState(null);
     //
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const handleSelect = (id) => {
-        setSelectedDiscountId(id);
+    const handleSelect = (id, bonus) => {
+        setSelectedDiscountId(id);//храним выбранный id карты
+        setSelectedDiscountBonus(bonus);//храним количество бонусов, которое стоит купон
         console.log('Selected Discount ID:', id); // Здесь вы получаете значение выбранной карточки
     };
     const DiscountCard = ({ discount, isSelected, onSelect }) => (
         <Card
           key={discount.id}
-          onClick={() => onSelect(discount.id)}
+          onClick={() => onSelect(discount.id, discount.bonus)}
           style={{
             margin: '10px',
             cursor: 'pointer',
@@ -91,7 +94,7 @@ const BonusExchange = () => {
           </CardContent>
         </Card>
     );
-    const DiscountCardList = ({ discounts }) => {   
+    const DiscountCardList = ({ discounts }) => {
         return (
             <Grid container spacing={2} sx={{maxHeight: 600, overflowY: 'auto', p: 2}}>
             {discounts.map((discount) => (
@@ -168,7 +171,7 @@ const BonusExchange = () => {
         if (!email)
             navigate('/access-denied');
         
-        //получить список доступных купонов
+        //1 получить список доступных купонов
         const userRequest = async () => {
             try {
                 const response = await fetch('https://localhost:7158/receivingdiscount/getdiscounts', {
@@ -194,6 +197,31 @@ const BonusExchange = () => {
                         );
                     }
                     setUserData(items);
+
+                    //2 запрос баланса
+                    try {
+                        const response2 = await fetch('https://localhost:7158/user/getaccountbalance', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ Email: email })
+                        });
+                        //
+                        if (response2.ok) {
+                            const balanceResponse = await response2.json();
+                            setUserBalance(balanceResponse);
+                        } else {
+                            if (response.status === 401) {
+                                //токен не действует
+                                dispatch(logout());//удалить токен
+                                navigate('/login');
+                            }
+                        }
+                    } catch(error) {
+                        setError(error);
+                    }
                 } else {
                     if (response.status === 401) {
                         //токен не действует
@@ -208,7 +236,7 @@ const BonusExchange = () => {
             }
         };
         userRequest();
-    }, []);        
+    }, []);
 
     //рендер
     if (loading) {
@@ -242,7 +270,23 @@ const BonusExchange = () => {
                                 Выберите скидочный купон из списка. Подтвердите списание бонусных баллов со счета.
                             </Typography>            
                             <DiscountCardList discounts={userData} onSelect={handleSelect} />
-                            <Box sx={{ mt: 1 }}>
+                            <Box sx={{ mt: 2, mb: 2 }}>
+                                <TextField
+                                    label='Кол-во бонусов'
+                                    value={userBalance.bonus}
+                                    variant="outlined"
+                                    fullWidth
+                                    InputProps={{
+                                    readOnly: true,
+                                    }}
+                                    margin="normal"
+                                />
+                                <Typography variant="body1" paragraph>
+                                    Будет списано { selectedDiscountBonus } бонусов. Баллов на счете 
+                                    <Box component="span" sx={{ color: userBalance.bonus >= selectedDiscountBonus ? 'inherit' : 'red' }}>
+                                        { userBalance.bonus >= selectedDiscountBonus ? ' достаточно' : ' не достаточно' }.
+                                    </Box>
+                                </Typography>
                                 <Button                            
                                     variant="contained"
                                     color="secondary"
