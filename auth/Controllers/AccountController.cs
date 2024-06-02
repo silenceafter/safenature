@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.EntityFrameworkCore;
 
 namespace auth.Controllers
@@ -27,12 +28,6 @@ namespace auth.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Index()
-        {
-            return Ok();
-        }
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
@@ -41,42 +36,33 @@ namespace auth.Controllers
                 return Unauthorized("Invalid email or password.");
 
             //генерация токена
-            try
-            {
-                var user = await _userManager.FindByEmailAsync(model.Email);
-                var token = _tokenService.GenerateJwtToken(user);
-                return Ok(new { Token = token });
-            } 
-            catch (Exception ex)
-            {
-                //логирование
-            }
-            return Unauthorized("Invalid email or password.");
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return Unauthorized("User not found");
+            //
+            var token = _tokenService.GenerateJwtToken(user);
+            if (token == null) 
+                return Unauthorized("Invalid email or password.");
+            return Ok(new { Token = token });
         }
 
         [HttpPost("logout")]
         [Authorize]
         public async Task<IActionResult> Logout(/*[FromBody] LogoutDto model*/)
         {
-            /*var blacklistedToken = new BlacklistedToken
-            {
-                Token = model.Token,
-                ExpirationDate = DateTime.UtcNow.AddHours(1) // Установите срок действия токена
-            };
-            return await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? Ok() : Ok();*/
-
             //получить токен
             var token = await _tokenService.GetJwtTokenFromHeader();
             if (token == null)
-                return BadRequest();
+                return BadRequest("Произошла ошибка при обработке токена");
             //
             var blacklistedToken = new BlacklistedToken
             {
                 Token = token,
-                ExpirationDate = DateTime.UtcNow.AddHours(1) // Установите срок действия токена
+                ExpirationDate = DateTime.UtcNow.AddHours(1) //срок действия токена
             };
-            return await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? Ok() : BadRequest();
-
+            return await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 
+                ? Ok() 
+                : BadRequest();
         }
 
         [HttpPost("register")]
@@ -84,19 +70,31 @@ namespace auth.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
-            var result = await _accountService.Register(model);
-            if (result.Succeeded)
-                return StatusCode(201);// Если регистрация прошла успешно, возвращаем статус 201 Created
             //
-            foreach (var error in result.Errors)
-                ModelState.AddModelError(string.Empty, error.Description);
-            return BadRequest(ModelState);
+            var result = await _accountService.Register(model);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+                return BadRequest(ModelState);
+            }
+               
+            //присваиваем пользователю роль "User"
+            var roleResult = await _accountService.AssignRoleToUser(model.Email, "User");
+            if (!roleResult.Succeeded)
+            {
+                //если присвоение роли не удалось, откатываем регистрацию пользователя
+                await _accountService.DeleteUserByEmail(model.Email);
+                foreach (var error in roleResult.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+                return BadRequest(ModelState);
+            }
+            return StatusCode(201);//201 Created           
         }
 
         [HttpGet("validate")]
         [Authorize]
-        public async Task<IActionResult> Validate(/*[FromBody] string token*/)
+        public async Task<IActionResult> Validate()
         {
             try
             {
@@ -122,6 +120,21 @@ namespace auth.Controllers
             {
                 return BadRequest();
             }
+        }
+
+        [HttpGet("get-roles")]
+        [Authorize]
+        public async Task<IActionResult> GetRoles()
+        {
+            var roles = await _accountService.GetRoles();
+            return Ok(roles);
+        }
+
+        [HttpPost("set-role")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SetRole(string role)
+        {
+
         }
     }
 }

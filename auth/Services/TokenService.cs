@@ -53,7 +53,7 @@ namespace auth.Services
             }
         }
 
-        public async Task<string> GenerateJwtToken(IdentityUser user)
+        public async Task<string>? GenerateJwtToken(IdentityUser user)
         {
             try
             {
@@ -74,7 +74,7 @@ namespace auth.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error generating token.");
-                return "";
+                return null;
             }
         }
     
