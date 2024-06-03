@@ -61,30 +61,37 @@ namespace auth.Services
         {
             try
             {
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, user.Id.ToString())
-                };
-                //
                 var roles = await _userManager.GetRolesAsync(user);
-                foreach (var role in roles)
-                    claims.Add(new Claim(ClaimTypes.Role, role));
-
+                /*var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.Id.ToString()),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Role, roles.FirstOrDefault())
+                };*/
+                //
+                
+                
                 //создание токена JWT
-                /*var tokenHandler = new JwtSecurityTokenHandler();
+                var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.ASCII.GetBytes(_settingsJwtDto.SecretKey);
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
-                    Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, user.Id) }), // Используем клеймы текущего пользователя
+                    Subject = new ClaimsIdentity(new[] 
+                    { 
+                        new Claim(ClaimTypes.Name, user.Id),
+                        new Claim(ClaimTypes.Email, user.Email),
+                        new Claim(ClaimTypes.Role, roles.FirstOrDefault())
+                    }
+                    ), // Используем клеймы текущего пользователя
                     Expires = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_settingsJwtDto.ExpirationMinutes)),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                     Issuer = _settingsJwtDto.Issuer,//"https://localhost:7086/"
                     Audience = _settingsJwtDto.Audience
                 };
                 var token = tokenHandler.CreateToken(tokenDescriptor);
-                return tokenHandler.WriteToken(token);*/
+                return tokenHandler.WriteToken(token);
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settingsJwtDto.SecretKey));
+                /*var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settingsJwtDto.SecretKey));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                 var token = new JwtSecurityToken(
@@ -94,7 +101,7 @@ namespace auth.Services
                     expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(_settingsJwtDto.ExpirationMinutes)),
                     signingCredentials: creds);
 
-                return new JwtSecurityTokenHandler().WriteToken(token);
+                return new JwtSecurityTokenHandler().WriteToken(token);*/
             }
             catch (Exception ex)
             {

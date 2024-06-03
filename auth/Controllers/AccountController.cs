@@ -122,7 +122,7 @@ namespace auth.Controllers
             }
         }
 
-        [HttpGet("get-role")]
+        [HttpGet("get-current-role")]
         [Authorize]
         public async Task<IActionResult> GetRole()
         {

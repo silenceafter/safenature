@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using NuGet.Common;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
@@ -96,29 +97,65 @@ namespace auth.Services
         {
             try
             {
-                //извлечь токен
                 var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(" ").Last();
 
-                //найти пользователя
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
-                var userId = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name")?.Value;
-                var user = await _userManager.FindByIdAsync(userId);
-                
-                //роли
-                var roles = await _userManager.GetRolesAsync(user);
-                var rolesList = new List<string>();
-                foreach(var role in roles)
-                    rolesList.Add(role);
-                //
-                return new UserDto() 
-                { 
-                    UserName = user.UserName, 
-                    Email = user.Email, 
-                    PhoneNumber = user.PhoneNumber,
-                    Roles = rolesList
+                var key = Encoding.ASCII.GetBytes("my_secret_key_for_jwt_tokenpopipoipoipoi");
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "https://localhost:7086/",
+                    ValidAudience = "auth",
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
-            }
+
+                // Валидируем токен
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+                // Извлекаем клеймы из токена
+                var jwtToken = validatedToken as JwtSecurityToken;
+
+                foreach (var claim in jwtToken.Claims)
+                {
+                    var yy = $"Claim Type: {claim.Type}, Value: {claim.Value}";
+                    var tt = "";
+                }
+
+                var userId = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name)?.Value;
+                    var email = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)?.Value;
+                    var role = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role)?.Value;
+
+                return null;
+                    //извлечь токен
+                    /*var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(" ").Last();
+
+                    //найти пользователя
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+
+                    //клеймы
+                    var userId = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name)?.Value;//"unique_name"
+                    var email = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)?.Value;
+                    var role = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role)?.Value;
+                    var user = await _userManager.FindByIdAsync(userId);
+
+                    //роли
+                    var roles = await _userManager.GetRolesAsync(user);
+                    var rolesList = new List<string>();
+                    foreach(var item in roles)
+                        rolesList.Add(item);
+                    //
+                    return new UserDto() 
+                    { 
+                        UserName = user.UserName, 
+                        Email = user.Email, 
+                        PhoneNumber = user.PhoneNumber,
+                        Roles = rolesList
+                    };*/
+                }
             catch (Exception ex) 
             {
                 return null;

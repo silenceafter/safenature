@@ -53,6 +53,8 @@ builder.Services.AddAuthentication(options =>
 })
     .AddJwtBearer(options =>
     {
+        /*options.RequireHttpsMetadata = false;
+        options.SaveToken = true;*/
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -76,6 +78,12 @@ builder.Services.AddAuthentication(options =>
                 {
                     context.Fail("This token is blacklisted.");
                 }
+            },
+            OnAuthenticationFailed = context =>
+            {
+                // Логирование причины ошибки аутентификации
+                var tt = context.Exception.Message;
+                return Task.CompletedTask;
             }
         };
     });
