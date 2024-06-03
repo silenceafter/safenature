@@ -66,10 +66,10 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 builder.Services.AddCors(options =>
     options.AddPolicy("hhh", builder =>
     {
-        builder.WithOrigins("https://localhost:5173")
+        builder.AllowAnyOrigin() /*WithOrigins("https://localhost:5173", "https://localhost:5174", "https://localhost:7158")*/
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials();
+            /*.AllowCredentials()*/;
     })
 );
 

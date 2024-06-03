@@ -48,7 +48,7 @@ namespace auth.Controllers
 
         [HttpPost("logout")]
         [Authorize]
-        public async Task<IActionResult> Logout(/*[FromBody] LogoutDto model*/)
+        public async Task<IActionResult> Logout()
         {
             //получить токен
             var token = await _tokenService.GetJwtTokenFromHeader();
@@ -122,6 +122,23 @@ namespace auth.Controllers
             }
         }
 
+        [HttpGet("get-role")]
+        [Authorize]
+        public async Task<IActionResult> GetRole()
+        {
+            var user = await _accountService.GetIdentityUser();
+            if (user != null)
+                return Ok(user.Roles);
+            return BadRequest(
+                IdentityResult.Failed(
+                    new IdentityError
+                    {
+                        Description = $"Ошибка предоставления сведений о роли пользователю"
+                    }
+                )
+            );
+        }
+
         [HttpGet("get-roles")]
         [Authorize]
         public async Task<IActionResult> GetRoles()
@@ -130,11 +147,21 @@ namespace auth.Controllers
             return Ok(roles);
         }
 
-        [HttpPost("set-role")]
+        [HttpPost("update-role")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> SetRole(string role)
+        public async Task<IActionResult> UpdateRole(string email, string role)
         {
-
-        }
+            var result = await _accountService.AssignRoleToUser(email, role);
+            if (result.Succeeded)
+                return Ok(result);
+            return BadRequest(
+                IdentityResult.Failed(
+                    new IdentityError
+                    {
+                        Description = $"Ошибка присвоения новой роли пользователю"
+                    }
+                )
+            );
+        }                        
     }
 }

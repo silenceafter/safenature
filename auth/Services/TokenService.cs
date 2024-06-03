@@ -20,17 +20,21 @@ namespace auth.Services
         private readonly ILogger<TokenService> _logger;
         private readonly SettingsJwtDto _settingsJwtDto;
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
+
 
         public TokenService(
             ILogger<TokenService> logger, 
             IHttpContextAccessor httpContextAccessor, 
             IOptions<SettingsJwtDto> settingsJwtDto,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            UserManager<IdentityUser> userManager)
         {
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
             _settingsJwtDto = settingsJwtDto.Value;
             _context = context;
+            _userManager = userManager;
         }
 
         public async Task<int> AddJwtTokenToBlacklist(BlacklistedToken blacklistedToken)
@@ -57,8 +61,17 @@ namespace auth.Services
         {
             try
             {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.Id.ToString())
+                };
+                //
+                var roles = await _userManager.GetRolesAsync(user);
+                foreach (var role in roles)
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+
                 //создание токена JWT
-                var tokenHandler = new JwtSecurityTokenHandler();
+                /*var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.ASCII.GetBytes(_settingsJwtDto.SecretKey);
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
@@ -69,7 +82,19 @@ namespace auth.Services
                     Audience = _settingsJwtDto.Audience
                 };
                 var token = tokenHandler.CreateToken(tokenDescriptor);
-                return tokenHandler.WriteToken(token);
+                return tokenHandler.WriteToken(token);*/
+
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settingsJwtDto.SecretKey));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                var token = new JwtSecurityToken(
+                    issuer: _settingsJwtDto.Issuer,
+                    audience: _settingsJwtDto.Audience,
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(_settingsJwtDto.ExpirationMinutes)),
+                    signingCredentials: creds);
+
+                return new JwtSecurityTokenHandler().WriteToken(token);
             }
             catch (Exception ex)
             {
@@ -91,7 +116,7 @@ namespace auth.Services
             }
         }
 
-        public async Task<bool> ValidateJwtToken(/*string token*/)
+        public async Task<bool> ValidateJwtToken()
         {
             try
             { 
@@ -108,6 +133,16 @@ namespace auth.Services
             {
                 return false;
             }
+        }
+
+        public async Task<bool> ValidateRoles(IdentityUser user, List<string> roles)
+        {
+            foreach (var role in roles) 
+            {
+                if (!await _userManager.IsInRoleAsync(user, role))
+                    return false;
+            }
+            return true;
         }
     }
 }

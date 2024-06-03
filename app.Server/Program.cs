@@ -31,10 +31,10 @@ builder.Configuration.GetSection("JWT").Bind(settingsJwt);
 builder.Services.AddCors(options =>
     options.AddPolicy("hhh", builder =>
     {
-        builder.WithOrigins("https://localhost:5173")
+        builder.AllowAnyOrigin() /*WithOrigins("https://localhost:5173", "https://localhost:5174", "https://localhost:7158")*/
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials();
+            /*.AllowCredentials()*/;
     })
 );
 
@@ -83,6 +83,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddTransient<IEncryptionService, EncryptionService>();
 builder.Services.AddTransient<ITokenValidationService, TokenValidationService>();
+//builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IAcceptanceRepository, AcceptanceRepository>();
 builder.Services.AddTransient<IHazardousWasteRepository, HazardousWasteRepository>();
 builder.Services.AddTransient<IPartnerRepository, PartnerRepository>();
@@ -90,7 +91,9 @@ builder.Services.AddTransient<IHazardClassRepository, HazardClassRepository>();
 builder.Services.AddTransient<IReceivingDiscountRepository, ReceivingDiscountRepository>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddDbContext<EcodbContext>();
+//builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddHttpClient();
+//builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

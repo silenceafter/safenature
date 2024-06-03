@@ -142,7 +142,7 @@ namespace auth.Services
                 var roleExists = await _roleManager.RoleExistsAsync(role);
                 if (!roleExists)
                 {
-                    // Создаем роль, если она не существует
+                    //создаем роль, если она не существует
                     var roleResult = await _roleManager.CreateAsync(new IdentityRole(role));
                     if (!roleResult.Succeeded)
                         return roleResult;
