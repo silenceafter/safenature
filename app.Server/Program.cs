@@ -29,7 +29,7 @@ builder.Configuration.GetSection("JWT").Bind(settingsJwt);
 
 //cors
 builder.Services.AddCors(options =>
-    options.AddPolicy("hhh", builder =>
+    options.AddPolicy("policy", builder =>
     {
         builder.AllowAnyOrigin() /*WithOrigins("https://localhost:5173", "https://localhost:5174", "https://localhost:7158")*/
             .AllowAnyMethod()
@@ -148,7 +148,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("hhh");
+app.UseCors("policy");
 app.UseHttpsRedirection();
 //app.UseMiddleware<AuthorizationMiddleware>();//добавление middleware должно быть перед UseAuthorization()
 app.UseAuthentication();

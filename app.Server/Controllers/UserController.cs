@@ -61,7 +61,7 @@ namespace app.Server.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUser([FromBody] UserRequest request)
         {
             try

@@ -129,8 +129,34 @@ namespace auth.Services
             { 
                 //извлечь токен
                 var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(" ").Last();
-                
-                //проверить
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_settingsJwtDto.SecretKey);
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _settingsJwtDto.Issuer,
+                    ValidAudience = _settingsJwtDto.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+
+                //валидируем токен
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+                //извлекаем клеймы из токена
+                var jwtToken = validatedToken as JwtSecurityToken;
+                var userId = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name")?.Value;
+                var email = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "email")?.Value;
+                var role = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "role")?.Value;
+
+                //нет основных клеймов => валидация не пройдена
+                if (userId == null || email == null || role == null)
+                    return false;
+
+                //проверить в списке отозванных
                 var blacklistedToken = await _context.BlacklistedTokens.FirstOrDefaultAsync(u => u.Token == token);
                 if (blacklistedToken != null)
                     return false;

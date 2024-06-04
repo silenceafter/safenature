@@ -64,12 +64,12 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 //cors
 builder.Services.AddCors(options =>
-    options.AddPolicy("hhh", builder =>
+    options.AddPolicy("policy", builder =>
     {
-        builder.AllowAnyOrigin() /*WithOrigins("https://localhost:5173", "https://localhost:5174", "https://localhost:7158")*/
+        builder.WithOrigins("https://localhost:5173", "https://localhost:5174", "https://localhost:7158")
             .AllowAnyMethod()
             .AllowAnyHeader()
-            /*.AllowCredentials()*/;
+            .AllowCredentials();
     })
 );
 
@@ -209,7 +209,7 @@ else
     app.UseHsts();
 }
 
-app.UseCors("hhh");
+app.UseCors("policy");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();

@@ -92,19 +92,13 @@ namespace auth.Controllers
             return StatusCode(201);//201 Created           
         }
 
-        [HttpGet("validate")]
-        [Authorize]
+        [HttpPost("validate")]
+        //[Authorize]
         public async Task<IActionResult> Validate()
         {
-            try
-            {
-                var result = await _tokenService.ValidateJwtToken();
-                return StatusCode(200, result);
-            }
-            catch(Exception ex) 
-            {
-                return StatusCode(200, false);
-            }
+            if (await _tokenService.ValidateJwtToken())
+                return Ok(true);
+            return Unauthorized();
         }
 
         [HttpGet("get-current-user")]

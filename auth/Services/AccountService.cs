@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Common;
 using System;
@@ -17,6 +18,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using auth.Models;
 
 namespace auth.Services
 {
@@ -27,19 +29,25 @@ namespace auth.Services
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly SettingsJwtDto _settingsJwtDto;
+        private readonly ITokenService _tokenService;
 
         public AccountService(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             SignInManager<IdentityUser> signInManager,
             ApplicationDbContext context,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IOptions<SettingsJwtDto> settingsJwtDto,
+            ITokenService tokenService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _settingsJwtDto = settingsJwtDto.Value;
+            _tokenService = tokenService;
         }
 
         public async Task<SignInResult> Login(LoginDto model)
@@ -97,64 +105,25 @@ namespace auth.Services
         {
             try
             {
-                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(" ").Last();
+                //пользователь
+                var email = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                    return null;
 
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes("my_secret_key_for_jwt_tokenpopipoipoipoi");
-                var validationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = "https://localhost:7086/",
-                    ValidAudience = "auth",
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                //роль
+                var roles = await _userManager.GetRolesAsync(user);
+                var rolesList = new List<string>();
+                foreach(var item in roles)
+                    rolesList.Add(item);
+                //
+                return new UserDto() 
+                { 
+                    UserName = user.UserName, 
+                    Email = user.Email, 
+                    PhoneNumber = user.PhoneNumber,
+                    Roles = rolesList
                 };
-
-                // Валидируем токен
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
-
-                // Извлекаем клеймы из токена
-                var jwtToken = validatedToken as JwtSecurityToken;
-
-                foreach (var claim in jwtToken.Claims)
-                {
-                    var yy = $"Claim Type: {claim.Type}, Value: {claim.Value}";
-                    var tt = "";
-                }
-
-                var userId = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name)?.Value;
-                    var email = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)?.Value;
-                    var role = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role)?.Value;
-
-                return null;
-                    //извлечь токен
-                    /*var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(" ").Last();
-
-                    //найти пользователя
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
-
-                    //клеймы
-                    var userId = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name)?.Value;//"unique_name"
-                    var email = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)?.Value;
-                    var role = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role)?.Value;
-                    var user = await _userManager.FindByIdAsync(userId);
-
-                    //роли
-                    var roles = await _userManager.GetRolesAsync(user);
-                    var rolesList = new List<string>();
-                    foreach(var item in roles)
-                        rolesList.Add(item);
-                    //
-                    return new UserDto() 
-                    { 
-                        UserName = user.UserName, 
-                        Email = user.Email, 
-                        PhoneNumber = user.PhoneNumber,
-                        Roles = rolesList
-                    };*/
                 }
             catch (Exception ex) 
             {
