@@ -132,8 +132,9 @@ namespace auth.Services
             try
             {
                 //пользователь
-                var email = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
+                var email = _httpContextAccessor.HttpContext?.User?.FindFirst("email")?.Value;
                 var user = await _userManager.FindByEmailAsync(email);
+                var claims = await _userManager.GetClaimsAsync(user);
                 if (user == null)
                     return null;
 

@@ -72,9 +72,9 @@ const Account = () => {
         if (!email)
             navigate('/access-denied');
 
-        /*if (status === 'idle') {
+        if (status === 'idle') {
             dispatch(fetchAccountData(token));
-        }*/
+        }
         //запросы: 1-й к сервису авторизации, 2-й к бекенд-части
         /*const userRequest = async () => {
             try {

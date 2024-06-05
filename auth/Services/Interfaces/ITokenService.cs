@@ -1,4 +1,5 @@
-﻿using auth.Models;
+﻿using auth.DTOs;
+using auth.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace auth.Services.Interfaces

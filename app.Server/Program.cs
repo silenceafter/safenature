@@ -31,10 +31,10 @@ builder.Configuration.GetSection("JWT").Bind(settingsJwt);
 builder.Services.AddCors(options =>
     options.AddPolicy("policy", builder =>
     {
-        builder.AllowAnyOrigin() /*WithOrigins("https://localhost:5173", "https://localhost:5174", "https://localhost:7158")*/
+        builder.WithOrigins("https://localhost:5173", "https://localhost:5174", "https://localhost:7158")
             .AllowAnyMethod()
             .AllowAnyHeader()
-            /*.AllowCredentials()*/;
+            .AllowCredentials();
     })
 );
 
@@ -45,7 +45,6 @@ builder.Services.Configure<SettingsJwt>(builder.Configuration.GetSection("JWT"))
 builder.Services.AddControllers();
 
 //identity
-//var settingsJwt = builder.Configuration.GetSection("JWT").Get<SettingsJwt>();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -78,15 +77,19 @@ builder.Services.AddAuthentication(options =>
                 {
                     context.Fail("This token is blacklisted.");
                 }
-            },
-            OnAuthenticationFailed = context =>
-            {
-                // Логирование причины ошибки аутентификации
-                var tt = context.Exception.Message;
-                return Task.CompletedTask;
             }
         };
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AllowIfNoRoleClaim", policy =>
+        policy.RequireAssertion(context =>
+        {
+            //если токен не содержит claim с ролью, разрешить доступ
+            return !context.User.Claims.Any(c => c.Type == "roles");
+        }));
+});
 
 builder.Services.AddAuthorization();
 builder.Services.AddTransient<IEncryptionService, EncryptionService>();

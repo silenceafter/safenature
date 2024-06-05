@@ -115,7 +115,6 @@ namespace auth.Services
             try
             {
                 return _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
             }
             catch (Exception ex)
             {
@@ -129,7 +128,6 @@ namespace auth.Services
             { 
                 //извлечь токен
                 var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Split(" ").Last();
-
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.ASCII.GetBytes(_settingsJwtDto.SecretKey);
                 var validationParameters = new TokenValidationParameters

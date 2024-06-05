@@ -47,7 +47,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
     // User settings.
     options.User.AllowedUserNameCharacters =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
     options.User.RequireUniqueEmail = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -113,12 +113,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
                 var token = context.SecurityToken as JwtSecurityToken;
                 var tokenId = token?.RawData;
-                //
+
+                //черный список токенов
                 if (dbContext.BlacklistedTokens.Any(t => t.Token == tokenId))
                 {
                     context.Fail("This token is blacklisted.");
                 }
-                //return Task.CompletedTask;
+                await Task.CompletedTask;
             }
         };
     });
@@ -128,7 +129,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AllowIfNoRoleClaim", policy =>
         policy.RequireAssertion(context =>
         {
-            // Если токен не содержит claim с ролью, разрешить доступ
+            //если токен не содержит claim с ролью, разрешить доступ
             return !context.User.Claims.Any(c => c.Type == "roles");
         }));
 });

@@ -92,7 +92,7 @@ namespace auth.Controllers
         }
 
         [HttpGet("get-current-user")]
-        [Authorize]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> GetCurrentUser()
         {
             try
@@ -107,7 +107,7 @@ namespace auth.Controllers
         }
 
         [HttpGet("get-current-role")]
-        [Authorize]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> GetRole()
         {
             var user = await _accountService.GetIdentityUser();
@@ -132,7 +132,7 @@ namespace auth.Controllers
         }
 
         [HttpPost("update-role")]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public async Task<IActionResult> UpdateRole(string email, string role)
         {
             var result = await _accountService.AssignRoleToUser(email, role);
