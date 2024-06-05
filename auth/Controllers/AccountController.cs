@@ -32,7 +32,7 @@ namespace auth.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
             var result = await _accountService.Login(model);
-            if (!result.Succeeded)
+            if (!result)
                 return Unauthorized("Invalid email or password.");
 
             //генерация токена
@@ -47,22 +47,12 @@ namespace auth.Controllers
         }
 
         [HttpPost("logout")]
-        //[Authorize]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> Logout()
         {
-            //получить токен
-            var token = await _tokenService.GetJwtTokenFromHeader();
-            if (token == null)
-                return BadRequest("Произошла ошибка при обработке токена");
-            //
-            var blacklistedToken = new BlacklistedToken
-            {
-                Token = token,
-                ExpirationDate = DateTime.UtcNow.AddHours(1) //срок действия токена
-            };
-            return await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 
-                ? Ok() 
-                : BadRequest();
+            return await _accountService.Logout()
+                ? Ok()
+                : BadRequest("Произошла ошибка при обработке токена");
         }
 
         [HttpPost("register")]

@@ -1,12 +1,14 @@
 ﻿using auth.DTOs;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace auth.Services.Interfaces
 {
     public interface IAccountService
     {
-        Task<SignInResult> Login(LoginDto model);
         Task<IdentityResult> Register(RegisterDto model);
+        Task<bool> Login(LoginDto model);
+        Task<bool> Logout();        
         Task<UserDto>? GetIdentityUser();
         Task<IdentityResult> AssignRoleToUser(string email, string role);
         Task<IdentityResult> DeleteUserByEmail(string email);

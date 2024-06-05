@@ -85,10 +85,10 @@ builder.Services.AddScoped<RoleManager<IdentityRole>>();
 //builder.Services.AddDbContext<ApplicationDbContext>();
 
 //csrf
-builder.Services.AddAntiforgery(options =>
+/*builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = "X-CSRF-TOKEN";
-});
+});*/
 
 //authentication
 //var settingsJwt = builder.Configuration.GetSection("JWT").Get<SettingsJwtDto>();
@@ -123,36 +123,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-/*builder.Services.Configure<IdentityOptions>(options =>
+builder.Services.AddAuthorization(options =>
 {
-    // Password settings.
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 3;
-    options.Password.RequiredUniqueChars = 1;
+    options.AddPolicy("AllowIfNoRoleClaim", policy =>
+        policy.RequireAssertion(context =>
+        {
+            // ≈сли токен не содержит claim с ролью, разрешить доступ
+            return !context.User.Claims.Any(c => c.Type == "roles");
+        }));
+});
 
-    // Lockout settings.
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.AllowedForNewUsers = true;
-
-    // User settings.
-    options.User.AllowedUserNameCharacters =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-    options.User.RequireUniqueEmail = false;
-});*/
-/*builder.Services.ConfigureApplicationCookie(options =>
-{
-    // Cookie settings
-    options.Cookie.HttpOnly = true;
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-
-    options.LoginPath = "/Identity/Account/Login";
-    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-    options.SlidingExpiration = true;
-});*/
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });

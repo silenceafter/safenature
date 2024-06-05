@@ -19,6 +19,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using auth.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace auth.Services
 {
@@ -48,25 +49,6 @@ namespace auth.Services
             _httpContextAccessor = httpContextAccessor;
             _settingsJwtDto = settingsJwtDto.Value;
             _tokenService = tokenService;
-        }
-
-        public async Task<SignInResult> Login(LoginDto model)
-        {
-            try
-            {
-                //пользователь
-                var user = await _userManager.FindByEmailAsync(model.Email);
-                if (user == null)
-                    return SignInResult.Failed;//пользователь не найден
-
-                //вход по паролю
-                return await _signInManager.PasswordSignInAsync(user, model.Password, false, lockoutOnFailure: true);
-            }
-            catch (Exception ex)
-            {
-                //логирование
-            }
-            return SignInResult.Failed;
         }
 
         public async Task<IdentityResult> Register(RegisterDto model)
@@ -100,6 +82,50 @@ namespace auth.Services
                 }
             }
         }
+
+        public async Task<bool> Login(LoginDto model)
+        {
+            try
+            {
+                //пользователь
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                    return false;//пользователь не найден
+
+                //вход по паролю
+                var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, lockoutOnFailure: true);
+                return result.Succeeded ? true : false;
+            }
+            catch (Exception ex)
+            {
+                //логирование
+            }
+            return false;
+        }
+
+        public async Task<bool> Logout()
+        {
+            try
+            {
+                //получить токен
+                var token = await _tokenService.GetJwtTokenFromHeader();
+                if (token == null)
+                    return false;//BadRequest("Произошла ошибка при обработке токена");
+                //
+                var blacklistedToken = new BlacklistedToken
+                {
+                    Token = token,
+                    ExpirationDate = DateTime.UtcNow.AddHours(1) //срок действия токена
+                };
+                //
+                await _signInManager.SignOutAsync();
+                return await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? true : false;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }      
 
         public async Task<UserDto>? GetIdentityUser()
         {
