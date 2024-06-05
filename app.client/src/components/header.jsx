@@ -68,20 +68,42 @@ function Header(props) {
           sx={{ flex: 1 }}
         >
           {title}
-        </Typography>
-        <IconButton>
-          <SearchIcon />
-        </IconButton>
+        </Typography>       
        { email 
           ? (
-              <Button variant="outlined" size="small" component={RouterLink} to="/logout">
-                Выйти
-              </Button>
+            <>
+              <Box
+                display="flex"
+                flexDirection="row"
+                gap={2}
+                alignItems="center"
+              >
+                <IconButton>
+                  <SearchIcon />
+                </IconButton>
+                <Typography component={RouterLink} to="/account" sx={{ textDecoration: 'none' }}>{email}</Typography>
+                <Button variant="outlined" size="small" component={RouterLink} to="/logout">
+                  Выйти
+                </Button>
+              </Box>              
+            </>
             ) 
           : (
-              <Button variant="outlined" size="small" component={RouterLink} to="/login">
-                Войти
-              </Button>
+            <>
+              <Box
+                display="flex"
+                flexDirection="row"
+                gap={2}
+                alignItems="center"
+              >
+                <IconButton>
+                  <SearchIcon />
+                </IconButton>                
+                <Button variant="outlined" size="small" component={RouterLink} to="/login">
+                  Войти
+                </Button>
+              </Box>              
+            </>
             )
         }                           
       </Toolbar>

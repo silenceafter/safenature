@@ -8,6 +8,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 namespace app.Server.Controllers
 {
@@ -19,25 +23,27 @@ namespace app.Server.Controllers
         private readonly EcodbContext _context;
         private readonly IEncryptionService _encryptionService;
         private readonly IUserRepository _userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly SettingsJwt _settingsJwt;
+        private readonly ITokenValidationService _tokenValidationService;
 
         public UserController(
             ILogger<UserController> logger,
             EcodbContext context,
             IEncryptionService encryptionService,
-            IUserRepository userRepository
+            IUserRepository userRepository,
+            IHttpContextAccessor httpContextAccessor,
+            IOptions<SettingsJwt> settingsJwt,
+            ITokenValidationService tokenValidationService
             )
         {
             _logger = logger;
             _context = context;
             _encryptionService = encryptionService;
             _userRepository = userRepository;
-        }
-
-        [HttpGet]
-        [Authorize]
-        public IActionResult GetSecureData()
-        {
-            return Ok("111");
+            _httpContextAccessor = httpContextAccessor;
+            _settingsJwt = settingsJwt.Value;
+            _tokenValidationService = tokenValidationService;
         }
 
         [HttpPost]
@@ -82,27 +88,28 @@ namespace app.Server.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Login([FromBody] UserRequest request)
+        public async Task<IActionResult> Login()
         {
             try
-            {             
-                //валидация токена
-                //_encryptionService.Validate()
+            {
+                //извлечь информацию из токена
+                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+                var userResponse = _tokenValidationService.GetPayloadData(token);
 
-                var encrypt = _encryptionService.Encrypt(request.Email);
-                var emailHash = _encryptionService.ComputeHash(request.Email);
+                var encrypt = _encryptionService.Encrypt(userResponse.Email);
+                var emailHash = _encryptionService.ComputeHash(userResponse.Email);
                 //
                 var user = await _userRepository.GetUserByEmail(emailHash);
                 if (user != null)//токен опознан
-                    return Ok(user.Id);
+                    return Ok(true);
 
                 //пользователь не найден -> регистрируем по email в зашифрованном виде
                 var response = await _userRepository.Create(encrypt, emailHash);
-                return Ok(response);
+                return Ok(true);
             }
             catch (Exception ex)
             {
-                return Ok(0);
+                return BadRequest();
             }            
         }       
     }

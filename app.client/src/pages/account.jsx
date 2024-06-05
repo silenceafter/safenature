@@ -35,15 +35,19 @@ import {
     TableRow,
     Paper,
 } from '@mui/material';
+import { fetchAccountData } from '../store/actions/accountActions';
 
 const Account = () => {
-    const [userData, setUserData] = useState(null);
-    const [error, setError] = useState(null);
+    //const [userData, setUserData] = useState(null);
+    //const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const { email, token } = useSelector((state) => state.auth);
     const { social } = useSelector((state) => state.social);
+    const { data, status, error } = useSelector((state) => state.account);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    
     
     //раздел
     const mainFeaturedPost = {
@@ -68,8 +72,11 @@ const Account = () => {
         if (!email)
             navigate('/access-denied');
 
+        /*if (status === 'idle') {
+            dispatch(fetchAccountData(token));
+        }*/
         //запросы: 1-й к сервису авторизации, 2-й к бекенд-части
-        const userRequest = async () => {
+        /*const userRequest = async () => {
             try {
                 const response = await fetch('https://localhost:7086/account/get-current-user', {
                     method: 'GET',
@@ -119,16 +126,29 @@ const Account = () => {
             }
         };
         userRequest();//запросы
-    }, []);
+        */
+    }, [dispatch]);
 
-    //рендер
-    if (loading) {
+    /*if (status === 'loading') {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 <CircularProgress />
             </Box>
         );
-    }
+      }
+    
+      if (status === 'failed') {
+        return <div>Error: {error}</div>;
+      }*/
+
+    //рендер
+    /*if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <CircularProgress />
+            </Box>
+        );
+    }*/
     return (
         <> 
             <MainFeaturedPost post={mainFeaturedPost} />
@@ -158,11 +178,11 @@ const Account = () => {
                             </TableHead>
                             <TableBody>
                             <TableRow>
-                                <TableCell>{userData.userName}</TableCell>
-                                <TableCell>{userData.email}</TableCell>
-                                <TableCell>{userData.role}</TableCell>
-                                <TableCell>{userData.phoneNumber != null ? userData.phoneNumber : 'не указан'}</TableCell>
-                                <TableCell>{userData.bonus}</TableCell>
+                                <TableCell>{/*userData.userName*/}</TableCell>
+                                <TableCell>{/*userData.email*/}</TableCell>
+                                <TableCell>{/*userData.role*/}</TableCell>
+                                <TableCell>{/*userData.phoneNumber != null ? userData.phoneNumber : 'не указан'*/}</TableCell>
+                                <TableCell>{/*userData.bonus*/}</TableCell>
                             </TableRow>
                             </TableBody>
                         </Table>

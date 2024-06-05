@@ -101,7 +101,7 @@ builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddDbContext<EcodbContext>();
 //builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddHttpClient();
-//builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

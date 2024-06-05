@@ -47,7 +47,7 @@ namespace auth.Controllers
         }
 
         [HttpPost("logout")]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> Logout()
         {
             //получить токен

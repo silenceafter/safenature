@@ -1,6 +1,6 @@
 // reducers/userReducer.js
 import { createReducer } from '@reduxjs/toolkit';
-import { fetchUserDataRequest, fetchUserDataSuccess, fetchUserDataFailure } from '../actions/userActions';
+import { fetchUserDataRequest, fetchUserDataSuccess, fetchUserDataFailure } from '../actions/userActions2';
 
 const initialState = {
     loading: false,
@@ -8,7 +8,7 @@ const initialState = {
     error: null,
 };
 
-const userReducer = createReducer(initialState, (builder) => {
+const userReducer2 = createReducer(initialState, (builder) => {
     builder
         .addCase(fetchUserDataRequest, (state) => {
             state.loading = true;
@@ -24,4 +24,4 @@ const userReducer = createReducer(initialState, (builder) => {
         });
 });
 
-export default userReducer;
+export default userReducer2;
