@@ -9,6 +9,8 @@ using System.Text;
 using auth.DTOs;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.OpenApi.Models;
+using System.Diagnostics;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,10 +26,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 37))));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-/*builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();*/
-
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedEmail = true;
@@ -53,15 +51,6 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-/*
- builder.Services.AddDefaultIdentity<IdentityUser, IdentityRole>(options =>
-    {
-        options.SignIn.RequireConfirmedAccount = true;
-    })
-        .AddEntityFrameworkStores<ApplicationDbContext>()
-        .AddDefaultTokenProviders();
- */
-
 //cors
 builder.Services.AddCors(options =>
     options.AddPolicy("policy", builder =>
@@ -77,31 +66,26 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<SettingsJwtDto>(builder.Configuration.GetSection("JWT"));
 
 //контроллеры, сервисы, ..
-builder.Services.AddControllers();//builder.Services.AddRazorPages();
+builder.Services.AddControllers();
 builder.Services.AddTransient<IAccountService, AccountService>();
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddScoped<RoleManager<IdentityRole>>();
-//builder.Services.AddHttpClient();
-//builder.Services.AddDbContext<ApplicationDbContext>();
 
-//csrf
-/*builder.Services.AddAntiforgery(options =>
+//аутентификация
+builder.Services.AddAuthentication(options =>
 {
-    options.HeaderName = "X-CSRF-TOKEN";
-});*/
-
-//authentication
-//var settingsJwt = builder.Configuration.GetSection("JWT").Get<SettingsJwtDto>();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = settingsJwtDto.Issuer,/*"https://localhost:7086/",*/
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = false,
+            ValidateIssuerSigningKey = false,
+            ValidIssuer = settingsJwtDto.Issuer,
             ValidAudience = settingsJwtDto.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settingsJwtDto.SecretKey))
         };
@@ -110,9 +94,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnTokenValidated = async context =>
             {
+                Console.WriteLine("OnTokenValidated called");
                 var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
                 var token = context.SecurityToken as JwtSecurityToken;
                 var tokenId = token?.RawData;
+                
+                //клеймы
+                var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
+                var nameClaim = claimsIdentity?.FindFirst(ClaimTypes.Name)?.Value;
+                var emailClaim = claimsIdentity?.FindFirst(ClaimTypes.Email)?.Value;
+                var roleClaim = claimsIdentity?.FindFirst(ClaimTypes.Role)?.Value;
+                //
+                if (!string.IsNullOrEmpty(nameClaim))
+                    claimsIdentity?.AddClaim(new Claim(ClaimTypes.Name, nameClaim));
+                if (!string.IsNullOrEmpty(emailClaim))
+                    claimsIdentity?.AddClaim(new Claim(ClaimTypes.Email, emailClaim));
+                if (!string.IsNullOrEmpty(roleClaim))
+                    claimsIdentity?.AddClaim(new Claim(ClaimTypes.Role, roleClaim));
 
                 //черный список токенов
                 if (dbContext.BlacklistedTokens.Any(t => t.Token == tokenId))
@@ -120,10 +118,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     context.Fail("This token is blacklisted.");
                 }
                 await Task.CompletedTask;
+            },
+            OnAuthenticationFailed = async context =>
+            {
+                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                await Task.CompletedTask;
             }
         };
     });
 
+//авторизация
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AllowIfNoRoleClaim", policy =>
@@ -186,7 +190,6 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -196,5 +199,5 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();//app.MapRazorPages();
+app.MapControllers();
 app.Run();

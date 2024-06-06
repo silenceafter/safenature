@@ -91,7 +91,7 @@ builder.Services.AddAuthorization(options =>
         }));
 });
 
-builder.Services.AddAuthorization();
+//builder.Services.AddAuthorization();
 builder.Services.AddTransient<IEncryptionService, EncryptionService>();
 builder.Services.AddTransient<ITokenValidationService, TokenValidationService>();
 //builder.Services.AddTransient<IUserService, UserService>();

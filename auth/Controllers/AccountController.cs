@@ -124,7 +124,7 @@ namespace auth.Controllers
         }
 
         [HttpGet("get-roles")]
-        [Authorize]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> GetRoles()
         {
             var roles = await _accountService.GetRoles();
