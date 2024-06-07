@@ -35,17 +35,24 @@ import {
     TableRow,
     Paper,
 } from '@mui/material';
-import { fetchAccountData } from '../store/actions/accountActions';
+import { fetchAccountData } from '../store/actions/getRequestActions';
 
 const Account = () => {
     //const [userData, setUserData] = useState(null);
     //const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
+    //const [loading, setLoading] = useState(true);
     const { email, token } = useSelector((state) => state.auth);
-    const { social } = useSelector((state) => state.social);
-    const { data, status, error } = useSelector((state) => state.account);
+    const { social } = useSelector((state) => state.social);    
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    /*const data = useSelector((state) => state.account.data);
+    const loading = useSelector((state) => state.account.loading);
+    const error = useSelector((state) => state.account.error);*/
+    const { data, loading, error } = useSelector(state => ({
+        data: state.account.data,
+        loading: state.account.loading,
+        error: state.account.error,
+      }));
 
     
     
@@ -72,9 +79,7 @@ const Account = () => {
         if (!email)
             navigate('/access-denied');
 
-        if (status === 'idle') {
-            dispatch(fetchAccountData(token));
-        }
+        dispatch(fetchAccountData(token));
         //запросы: 1-й к сервису авторизации, 2-й к бекенд-части
         /*const userRequest = async () => {
             try {
@@ -127,28 +132,16 @@ const Account = () => {
         };
         userRequest();//запросы
         */
-    }, [dispatch]);
-
-    /*if (status === 'loading') {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                <CircularProgress />
-            </Box>
-        );
-      }
-    
-      if (status === 'failed') {
-        return <div>Error: {error}</div>;
-      }*/
+    }, [dispatch, token]);
 
     //рендер
-    /*if (loading) {
+    if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 <CircularProgress />
             </Box>
         );
-    }*/
+    }
     return (
         <> 
             <MainFeaturedPost post={mainFeaturedPost} />
@@ -164,7 +157,7 @@ const Account = () => {
                 }}
             >
                 <Divider />
-                <div>
+                <div>                    
                     <TableContainer component={Paper}>
                         <Table aria-label="user table">
                             <TableHead>
@@ -178,15 +171,30 @@ const Account = () => {
                             </TableHead>
                             <TableBody>
                             <TableRow>
-                                <TableCell>{/*userData.userName*/}</TableCell>
-                                <TableCell>{/*userData.email*/}</TableCell>
-                                <TableCell>{/*userData.role*/}</TableCell>
-                                <TableCell>{/*userData.phoneNumber != null ? userData.phoneNumber : 'не указан'*/}</TableCell>
-                                <TableCell>{/*userData.bonus*/}</TableCell>
+                            { data 
+                                ? (
+                                    <>
+                                        <TableCell>{data.userName}</TableCell>
+                                        <TableCell>{data.email}</TableCell>
+                                        <TableCell>{data.roles[0]}</TableCell>
+                                        <TableCell>{data.phoneNumber != null ? data.phoneNumber : 'не указан'}</TableCell>
+                                        <TableCell>{/*userData.bonus*/}</TableCell>
+                                    </>
+                                ) 
+                                : (
+                                    <>
+                                        <TableCell></TableCell>
+                                        <TableCell></TableCell>
+                                        <TableCell></TableCell>
+                                        <TableCell></TableCell>
+                                        <TableCell></TableCell>
+                                    </>
+                                )
+                            }  
                             </TableRow>
                             </TableBody>
                         </Table>
-                    </TableContainer>
+                    </TableContainer>                
                 </div>
                 </Grid>
                 <Sidebar

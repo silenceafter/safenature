@@ -11,6 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.OpenApi.Models;
 using System.Diagnostics;
 using System.Security.Claims;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,10 +82,10 @@ builder.Services.AddAuthentication(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = false,
-            ValidateIssuerSigningKey = false,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
             ValidIssuer = settingsJwtDto.Issuer,
             ValidAudience = settingsJwtDto.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settingsJwtDto.SecretKey))
@@ -119,10 +120,12 @@ builder.Services.AddAuthentication(options =>
                 }
                 await Task.CompletedTask;
             },
-            OnAuthenticationFailed = async context =>
+            OnAuthenticationFailed = context =>
             {
-                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
-                await Task.CompletedTask;
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+                var result = JsonConvert.SerializeObject(new { message = "Authentication failed" });
+                return context.Response.WriteAsync(result);
             }
         };
     });

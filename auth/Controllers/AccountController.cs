@@ -47,7 +47,7 @@ namespace auth.Controllers
         }
 
         [HttpPost("logout")]
-        [Authorize(Policy = "AllowIfNoRoleClaim")]
+        [AllowAnonymous]//[Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> Logout()
         {
             return await _accountService.Logout()
@@ -92,7 +92,7 @@ namespace auth.Controllers
         }
 
         [HttpGet("get-current-user")]
-        [Authorize(Policy = "AllowIfNoRoleClaim")]
+        [Authorize]
         public async Task<IActionResult> GetCurrentUser()
         {
             try
