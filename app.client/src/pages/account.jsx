@@ -35,7 +35,7 @@ import {
     TableRow,
     Paper,
 } from '@mui/material';
-import { fetchAccountData } from '../store/actions/getRequestActions';
+import { fetchDataGet } from '../store/thunk/thunks';
 
 const Account = () => {
     //const [userData, setUserData] = useState(null);
@@ -48,11 +48,8 @@ const Account = () => {
     /*const data = useSelector((state) => state.account.data);
     const loading = useSelector((state) => state.account.loading);
     const error = useSelector((state) => state.account.error);*/
-    const { data, loading, error } = useSelector(state => ({
-        data: state.account.data,
-        loading: state.account.loading,
-        error: state.account.error,
-      }));
+    const accountAuthRequest = useSelector((state) => state.getRequest.accountAuthRequest);
+    const accountBackendRequest = useSelector((state) => state.getRequest.accountBackendRequest);
 
     
     
@@ -79,7 +76,9 @@ const Account = () => {
         if (!email)
             navigate('/access-denied');
 
-        dispatch(fetchAccountData(token));
+        dispatch(fetchDataGet(token, 'https://localhost:7086/account/get-current-user', 'accountAuthRequest'));
+        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-current-user', 'accountBackendRequest'));        
+
         //запросы: 1-й к сервису авторизации, 2-й к бекенд-части
         /*const userRequest = async () => {
             try {
@@ -132,16 +131,27 @@ const Account = () => {
         };
         userRequest();//запросы
         */
-    }, [dispatch, token]);
+    }, [dispatch]);
+
+    //состояния запросов
+    const isLoading = accountAuthRequest?.loading || accountBackendRequest?.loading;
+    const isError = accountAuthRequest?.error || accountBackendRequest?.error;
 
     //рендер
-    if (loading) {
+    if (isLoading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 <CircularProgress />
             </Box>
         );
     }
+    //
+    if (isError) {
+        if (accountBackendRequest.error === 401) {
+            navigate('/login');
+        }
+    }
+    //
     return (
         <> 
             <MainFeaturedPost post={mainFeaturedPost} />
@@ -166,19 +176,19 @@ const Account = () => {
                                 <TableCell>Email</TableCell>
                                 <TableCell>Роль</TableCell>
                                 <TableCell>Номер телефона</TableCell>
-                                <TableCell>Кол-во баллов</TableCell>                                
+                                <TableCell>Кол-во баллов</TableCell>
                             </TableRow>
                             </TableHead>
                             <TableBody>
                             <TableRow>
-                            { data 
+                            { accountBackendRequest?.data
                                 ? (
                                     <>
-                                        <TableCell>{data.userName}</TableCell>
-                                        <TableCell>{data.email}</TableCell>
-                                        <TableCell>{data.roles[0]}</TableCell>
-                                        <TableCell>{data.phoneNumber != null ? data.phoneNumber : 'не указан'}</TableCell>
-                                        <TableCell>{/*userData.bonus*/}</TableCell>
+                                        <TableCell>{accountAuthRequest?.data.userName}</TableCell>
+                                        <TableCell>{accountAuthRequest?.data.email}</TableCell>
+                                        <TableCell>{accountAuthRequest?.data.roles[0]}</TableCell>
+                                        <TableCell>{accountAuthRequest?.data.phoneNumber != null ? accountAuthRequest?.data.phoneNumber : 'не указан'}</TableCell>
+                                        <TableCell>{accountBackendRequest?.data.bonus}</TableCell>
                                     </>
                                 ) 
                                 : (

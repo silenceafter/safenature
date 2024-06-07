@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './reducers/authReducer';
-import accountReducer from './reducers/getRequestReducer';
+import getRequestReducer from './reducers/getRequestReducer';
 import sidebarReducer from './slices/sidebarSlice';
 import { combineReducers } from 'redux';
 import { thunk } from 'redux-thunk'; // Middleware для асинхронных действий

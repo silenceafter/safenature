@@ -11,12 +11,13 @@ using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace app.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("[controller]")]
     public class UserController : Controller
     {
         private readonly ILogger<UserController> _logger;
@@ -78,7 +79,32 @@ namespace app.Server.Controllers
                 var user = await _userRepository.GetUserByEmail(emailHash);
                 if (user != null)//токен опознан
                     return Ok(new UserResponse() { Bonus = user.Bonuses, Role = "Пользователь" });
-                return Ok(null);                
+                return Ok(null);
+            }
+            catch (Exception ex)
+            {
+                return Ok(null);
+            }
+        }
+
+        [HttpGet("get-current-user")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            try
+            {
+                //извлечь информацию из токена
+                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                //пользователь
+                var payloadData = _tokenValidationService.GetPayloadData(token);
+                //var encrypt = _encryptionService.Encrypt(payloadData.Email);
+                var emailHash = _encryptionService.ComputeHash(payloadData.Email);
+                //
+                var user = await _userRepository.GetUserByEmail(emailHash);
+                if (user != null)//токен опознан
+                    return Ok(new UserResponse() { Bonus = user.Bonuses, Role = payloadData.Role });
+                return Ok(null);
             }
             catch (Exception ex)
             {

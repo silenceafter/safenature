@@ -17,6 +17,8 @@ using System.Text;
 using app.Server;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +79,14 @@ builder.Services.AddAuthentication(options =>
                 {
                     context.Fail("This token is blacklisted.");
                 }
+                await Task.CompletedTask;
+            },
+            OnAuthenticationFailed = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+                var result = JsonConvert.SerializeObject(new { message = "Authentication failed" });
+                return context.Response.WriteAsync(result);
             }
         };
     });
