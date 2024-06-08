@@ -1,94 +1,74 @@
-import { Password } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import TextField from '@mui/material/TextField';
-import React, { useEffect, useRef, useState, useContext } from 'react';
-import {
-  Routes,
-  Route,
-  Link,
-  BrowserRouter,
-  useParams,
-  Outlet,
-  Navigate
-} from "react-router-dom";
-import CryptoJS from 'crypto-js';
-import { Link as RouterLink } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { useDispatch } from 'react-redux';
 
 const Register = () => {
+    const [formData, setFormData] = useState({
+      userName: '',
+      email: '',
+      password: '',
+    });
     const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    /*useEffect(() => {        
-        const fetchData = async () => {
-            try {
-                    //регистрация в сервисе авторизации
-                    const responseAuth = await fetch('https://localhost:7086/account/register', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ Username: 'ag', Email: 'ajj@mail.ru', Password: 'Burzum59!', ConfirmPassword: 'Burzum59!' })
-                    });
-
-                    //добавить пользователя в базу данных приложения. если произойдет ошибка, то пользователь (при условии, что он не существует в системе) будет добавлен позднее
-                    /*const responseServer = await fetch('https://localhost:7158/user/create', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ Email: 'ajj@mail.ru' })
-                    });*/
-      /*              setData({auth: responseAuth});
-            } catch (error) {
-                setError(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
-    
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-    return <div>Error: {error.message}</div>;
-    }
-
-    return (
-        <div>
-            {data ? (
-                <div>{data}</div> // отрендерить ваши данные здесь
-            ) : (
-                <div>No data available</div>
-            )}
-        </div>
-    );*/
-
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        console.log({
-          email: data.get('email'),
-          password: data.get('password'),
+    const handleSubmit = async (event) => {
+      event.preventDefault();
+      setLoading(true);
+      try {
+        const response = await fetch('https://localhost:7086/account/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'                 
+            },
+            body: JSON.stringify(
+              {
+                UserName: formData.userName,
+                Email: formData.email, 
+                Password: formData.password 
+              }
+            )
         });
-      };
+
+        if (response.ok) {
+            console.log('Login successful');
+            const result = await response.json();
+
+            //сохранить токен
+            dispatch(login(result.userName, formData.email, result.token.result));           
+            navigate('/');
+        } else {
+          console.error('Login failed');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    };
     
       return (
           <Container component="main" maxWidth="xs">
@@ -109,35 +89,27 @@ const Register = () => {
               </Typography>
               <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12}>
                     <TextField
                       autoComplete="given-name"
-                      name="firstName"
+                      name="userName"
                       required
                       fullWidth
-                      id="firstName"
-                      label="First Name"
+                      id="userName"
+                      label="Имя пользователя"
                       autoFocus
+                      onChange={handleChange}
                     />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      required
-                      fullWidth
-                      id="lastName"
-                      label="Last Name"
-                      name="lastName"
-                      autoComplete="family-name"
-                    />
-                  </Grid>
+                  </Grid>                  
                   <Grid item xs={12}>
                     <TextField
                       required
                       fullWidth
                       id="email"
-                      label="Email Address"
+                      label="Электронная почта"
                       name="email"
                       autoComplete="email"
+                      onChange={handleChange}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -145,24 +117,20 @@ const Register = () => {
                       required
                       fullWidth
                       name="password"
-                      label="Password"
+                      label="Пароль"
                       type="password"
                       id="password"
                       autoComplete="new-password"
+                      onChange={handleChange}
                     />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControlLabel
-                      control={<Checkbox value="allowExtraEmails" color="primary" />}
-                      label="Хочу получать рекламу на электронную почту"
-                    />
-                  </Grid>
+                  </Grid>                 
                 </Grid>
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
                   sx={{ mt: 3, mb: 2 }}
+                  disabled={loading}
                 >
                   Зарегистрироваться
                 </Button>

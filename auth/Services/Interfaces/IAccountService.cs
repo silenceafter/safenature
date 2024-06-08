@@ -8,7 +8,8 @@ namespace auth.Services.Interfaces
     {
         Task<IdentityResult> Register(RegisterDto model);
         Task<bool> Login(LoginDto model);
-        Task<bool> Logout();        
+        Task<bool> Logout();
+        //Task<IdentityResult> Forgot(ForgotDto model);
         Task<UserDto>? GetIdentityUser();
         Task<IdentityResult> AssignRoleToUser(string email, string role);
         Task<IdentityResult> DeleteUserByEmail(string email);

@@ -3,12 +3,16 @@
 namespace auth.DTOs
 {
     public class RegisterDto
-    {        
+    {
+        [Required]
         public string Username { get; set; }
         
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
+        [Phone]
+        public string PhoneNumber { get; set; }
 
         [Required]
         [DataType(DataType.Password)]

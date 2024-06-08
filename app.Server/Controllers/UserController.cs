@@ -27,6 +27,7 @@ namespace app.Server.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly SettingsJwt _settingsJwt;
         private readonly ITokenValidationService _tokenValidationService;
+        private readonly ICAuthorizationService _authorizationService;
 
         public UserController(
             ILogger<UserController> logger,
@@ -35,7 +36,8 @@ namespace app.Server.Controllers
             IUserRepository userRepository,
             IHttpContextAccessor httpContextAccessor,
             IOptions<SettingsJwt> settingsJwt,
-            ITokenValidationService tokenValidationService
+            ITokenValidationService tokenValidationService,
+            ICAuthorizationService authorizationService
             )
         {
             _logger = logger;
@@ -45,9 +47,10 @@ namespace app.Server.Controllers
             _httpContextAccessor = httpContextAccessor;
             _settingsJwt = settingsJwt.Value;
             _tokenValidationService = tokenValidationService;
+            _authorizationService = authorizationService;
         }
 
-        [HttpPost]
+        [HttpPost("get-account-balance")]
         [Authorize]
         public async Task<IActionResult> GetAccountBalance([FromBody] UserRequest request)
         {
@@ -67,7 +70,7 @@ namespace app.Server.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("get-user")]
         [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> GetUser([FromBody] UserRequest request)
         {
@@ -96,24 +99,28 @@ namespace app.Server.Controllers
                 //извлечь информацию из токена
                 var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
-                //пользователь
-                var payloadData = _tokenValidationService.GetPayloadData(token);
-                //var encrypt = _encryptionService.Encrypt(payloadData.Email);
-                var emailHash = _encryptionService.ComputeHash(payloadData.Email);
-                //
+                //данные сервера авторизации
+                var authorizationData = await _authorizationService.GetAuthorizationData(token);
+
+                //данные ecodb
+                var emailHash = _encryptionService.ComputeHash(authorizationData.Email);      
                 var user = await _userRepository.GetUserByEmail(emailHash);
-                if (user != null)//токен опознан
-                    return Ok(new UserResponse() { Bonus = user.Bonuses, Role = payloadData.Role });
-                return Ok(null);
+                return Ok(new UserResponse() 
+                { 
+                    UserName = authorizationData.UserName , 
+                    Email = authorizationData.Email, 
+                    Bonus = user.Bonuses, 
+                    Role = authorizationData.Roles[0] 
+                });
             }
             catch (Exception ex)
             {
-                return Ok(null);
+                return BadRequest();
             }
         }
 
-        [HttpPost]
-        [Authorize]
+        [HttpGet("login")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> Login()
         {
             try
@@ -137,6 +144,6 @@ namespace app.Server.Controllers
             {
                 return BadRequest();
             }            
-        }       
+        }
     }
 }

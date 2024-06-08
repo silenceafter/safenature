@@ -17,7 +17,7 @@ import logo from '../images/logo.png';
 
 function Header(props) {
   const { /*sections,*/ title } = props;
-  const { email, token } = useSelector((state) => state.auth);
+  const { username, email, token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   //список страниц для header
@@ -81,7 +81,7 @@ function Header(props) {
                 <IconButton>
                   <SearchIcon />
                 </IconButton>
-                <Typography component={RouterLink} to="/account" sx={{ textDecoration: 'none' }}>{email}</Typography>
+                <Typography component={RouterLink} to="/account" sx={{ textDecoration: 'none' }}>{username}</Typography>
                 <Button variant="outlined" size="small" component={RouterLink} to="/logout">
                   Выйти
                 </Button>

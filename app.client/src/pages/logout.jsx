@@ -1,52 +1,32 @@
-import { Password } from '@mui/icons-material';
+import * as React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '../store/actions/authActions';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import TextField from '@mui/material/TextField';
-import React, { useEffect, useRef, useState, useContext } from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import {
-  Routes,
-  Route,
-  Link,
-  BrowserRouter,
-  useParams,
-  Outlet,
-  Navigate
-} from "react-router-dom";
-
-import Avatar from '@mui/material/Avatar';
-/*import Button from '@mui/material/Button';*/
-//import CssBaseline from '@mui/material/CssBaseline';
-//import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-//import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
-//import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import { Link as RouterLink } from 'react-router-dom';
-import { login, logout } from '../store/actions/authActions';
-import { useSelector } from 'react-redux';
+import CircularProgress from '@mui/material/CircularProgress';
+import Backdrop from '@mui/material/Backdrop';
+import { makeStyles } from '@mui/styles';
+
+const useStyles = makeStyles((theme) => ({
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: '#fff',
+        backdropFilter: 'blur(5px)',//блюра
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',//светлый цвет с прозрачностью
+    },
+}));
 
 const Logout = () => {
-    const { email, token } = useSelector((state) => state.auth);
+    const { token } = useSelector((state) => state.auth);
+    const [loading, setLoading] = useState(true);
+    const classes = useStyles();
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        //доступ запрещен
-        /*if (!email)
-            navigate('/access-denied');*/
-        //
+    
+    useEffect(() => {    
         const handleSubmit = async () => {
             try {
                 const response = await fetch('https://localhost:7086/account/logout', {
@@ -57,23 +37,45 @@ const Logout = () => {
                 });
 
                 if (response.ok) {
-                    // Handle successful login here, such as redirecting the user
                     console.log('Logout successful');                    
                 } else {
-                // Handle unsuccessful login here, such as displaying an error message
                 console.error('Logout failed');
                 }
             } catch (error) {
                 console.error('Error:', error);
+            } finally {
+                //удалить токен
+                dispatch(logout());
+                navigate('/');
+                setLoading(false);
             }
-
-            //удалить токен
-            dispatch(logout());
-            navigate('/');
         };
         handleSubmit();
     }, []);
-    return null;
+    //
+    return (
+        <Container component="main" maxWidth="xs">
+            <CssBaseline />
+            <Box
+                sx={{
+                    marginTop: 8,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                }}
+            >
+                {loading ? (
+                    <Backdrop className={classes.backdrop} open={loading}>
+                        <CircularProgress />
+                    </Backdrop>
+                ) : (
+                    <Typography component="h1" variant="h5">
+                        Logout
+                    </Typography>
+                )}
+            </Box>
+        </Container>
+    );
 };
 
 export {Logout};

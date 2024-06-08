@@ -19,6 +19,8 @@ using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Newtonsoft.Json;
+using auth.Models;
+using auth.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -101,10 +103,9 @@ builder.Services.AddAuthorization(options =>
         }));
 });
 
-//builder.Services.AddAuthorization();
 builder.Services.AddTransient<IEncryptionService, EncryptionService>();
 builder.Services.AddTransient<ITokenValidationService, TokenValidationService>();
-//builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<ICAuthorizationService, CAuthorizationService>();
 builder.Services.AddTransient<IAcceptanceRepository, AcceptanceRepository>();
 builder.Services.AddTransient<IHazardousWasteRepository, HazardousWasteRepository>();
 builder.Services.AddTransient<IPartnerRepository, PartnerRepository>();
@@ -112,7 +113,6 @@ builder.Services.AddTransient<IHazardClassRepository, HazardClassRepository>();
 builder.Services.AddTransient<IReceivingDiscountRepository, ReceivingDiscountRepository>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddDbContext<EcodbContext>();
-//builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();

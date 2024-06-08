@@ -8,16 +8,14 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import Avatar from '@mui/material/Avatar';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Grid from '@mui/material/Grid';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import LockResetIcon from '@mui/icons-material/LockReset';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from 'react-router-dom';
 import { login } from '../store/actions/authActions';
 import CircularProgress from '@mui/material/CircularProgress';
 
-const Login = () => {
+const Forgot = () => {
     const [formData, setFormData] = useState({ username: '', email: '', password: ''});
     const [loading, setLoading] = useState(false);
     const dispatch = useDispatch();
@@ -26,7 +24,7 @@ const Login = () => {
     const handleSubmit = async () => {
       setLoading(true);
         try {
-          const response = await fetch('https://localhost:7086/account/login', {
+          const response = await fetch('https://localhost:7086/account/forgot', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json'                 
@@ -67,10 +65,10 @@ const Login = () => {
               }}
             >
               <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                <LockOutlinedIcon />
+                <LockResetIcon />
               </Avatar>
               <Typography component="h1" variant="h5">
-                Вход
+                Восстановить пароль
               </Typography>
               <Box component="form" noValidate sx={{ mt: 1 }}>
                 <TextField
@@ -84,23 +82,7 @@ const Login = () => {
                   autoFocus
                   value={formData.email}
                   onChange={handleChange}
-                />
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  autoComplete="current-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <FormControlLabel
-                  control={<Checkbox value="remember" color="primary" />}
-                  label="Запомнить"
-                />
+                />                
                 {loading 
                   ? (
                     <Box display="flex" justifyContent="center" sx={{ mt: 3, mb: 2 }}>
@@ -115,21 +97,16 @@ const Login = () => {
                       sx={{ mt: 3, mb: 2 }}
                       onClick={() => handleSubmit()}
                     >
-                      Войти
+                      Восстановить
                     </Button>
                   )
                 }
                 <Grid container>
                   <Grid item xs>
                     <Link component={RouterLink} to="/forgot" variant="body2">
-                      Забыли пароль?
+                      Вспомнили пароль?
                     </Link>
-                  </Grid>
-                  <Grid item>
-                    <Link component={RouterLink} to="/register" variant="body2">
-                      {"Нет аккаунта? Регистрация"}
-                    </Link>
-                  </Grid>
+                  </Grid>                  
                 </Grid>
               </Box>
             </Box>    
@@ -137,4 +114,4 @@ const Login = () => {
       );
 };
 
-export {Login};
+export {Forgot};

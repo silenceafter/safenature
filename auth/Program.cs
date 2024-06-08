@@ -12,6 +12,7 @@ using Microsoft.OpenApi.Models;
 using System.Diagnostics;
 using System.Security.Claims;
 using Newtonsoft.Json;
+using auth.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,12 +66,14 @@ builder.Services.AddCors(options =>
 
 //appsettings: jwt
 builder.Services.Configure<SettingsJwtDto>(builder.Configuration.GetSection("JWT"));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 //контроллеры, сервисы, ..
 builder.Services.AddControllers();
 builder.Services.AddTransient<IAccountService, AccountService>();
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddScoped<RoleManager<IdentityRole>>();
+builder.Services.AddTransient<EmailService>();
 
 //аутентификация
 builder.Services.AddAuthentication(options =>

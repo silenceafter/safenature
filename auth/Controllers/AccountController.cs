@@ -7,9 +7,12 @@ using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using System.Web.Helpers;
 
 namespace auth.Controllers
 {
@@ -20,12 +23,21 @@ namespace auth.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IAccountService _accountService;
         private readonly ITokenService _tokenService;
+        private readonly EmailService _emailService;
+        private readonly IUrlHelper _urlHelper;
 
-        public AccountController(UserManager<IdentityUser> userManager, IAccountService accountService, ITokenService tokenService)
+        public AccountController(
+            UserManager<IdentityUser> userManager, 
+            IAccountService accountService, 
+            ITokenService tokenService,
+            EmailService emailService,
+            IUrlHelperFactory urlHelperFactory)
         {
             _userManager = userManager;
             _accountService = accountService;
             _tokenService = tokenService;
+            _emailService = emailService;
+            _urlHelper = urlHelperFactory.GetUrlHelper(new ActionContext());
         }
 
         [HttpPost("login")]
@@ -43,7 +55,7 @@ namespace auth.Controllers
             var token = _tokenService.GenerateJwtToken(user);
             if (token == null) 
                 return Unauthorized("Invalid email or password.");
-            return Ok(new { Token = token });
+            return Ok(new { UserName = user.UserName, Token = token });
         }
 
         [HttpPost("logout")]
@@ -56,6 +68,7 @@ namespace auth.Controllers
         }
 
         [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             if (!ModelState.IsValid)
@@ -80,6 +93,25 @@ namespace auth.Controllers
                 return BadRequest(ModelState);
             }
             return StatusCode(201);//201 Created           
+        }
+
+        [HttpPost("forgot")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotDto model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                BadRequest();
+            //
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callbackUrl = _urlHelper.Action("ResetPassword", "Account", new { token, model.Email }, _urlHelper.ActionContext.HttpContext.Request.Scheme);
+
+            //отправить email с ссылкой на сброс пароля
+            await _emailService.SendEmailAsync(model.Email, "Reset Password", $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+            return Ok(new { message = "Отправлена ссылка на сброс пароля пользователя" });
         }
 
         [HttpPost("validate")]

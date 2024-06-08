@@ -38,21 +38,12 @@ import {
 import { fetchDataGet } from '../store/thunk/thunks';
 
 const Account = () => {
-    //const [userData, setUserData] = useState(null);
-    //const [error, setError] = useState(null);
-    //const [loading, setLoading] = useState(true);
     const { email, token } = useSelector((state) => state.auth);
     const { social } = useSelector((state) => state.social);    
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    /*const data = useSelector((state) => state.account.data);
-    const loading = useSelector((state) => state.account.loading);
-    const error = useSelector((state) => state.account.error);*/
-    const accountAuthRequest = useSelector((state) => state.getRequest.accountAuthRequest);
     const accountBackendRequest = useSelector((state) => state.getRequest.accountBackendRequest);
 
-    
-    
     //раздел
     const mainFeaturedPost = {
         title: 'Учетная запись',
@@ -76,66 +67,13 @@ const Account = () => {
         if (!email)
             navigate('/access-denied');
 
-        dispatch(fetchDataGet(token, 'https://localhost:7086/account/get-current-user', 'accountAuthRequest'));
-        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-current-user', 'accountBackendRequest'));        
-
-        //запросы: 1-й к сервису авторизации, 2-й к бекенд-части
-        /*const userRequest = async () => {
-            try {
-                const response = await fetch('https://localhost:7086/account/get-current-user', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                //
-                if (response.ok) {
-                    const userResponse = await response.json();
-                    if (userResponse == null || typeof userResponse == 'undefined')
-                        return null;
-
-                    //запрос 2 к бекенд-приложению
-                    const response2 = await fetch('https://localhost:7158/user/getuser', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ Email: userResponse.email })
-                    });
-                    //
-                    if (response2.ok) {
-                        const backendResponse = await response2.json();
-                        setUserData(
-                            {
-                                userName: userResponse.userName, 
-                                email: userResponse.email,
-                                phoneNumber: userResponse.phoneNumber, 
-                                role: backendResponse.role, 
-                                bonus: backendResponse.bonus
-                            }
-                        );
-                    }
-                } else {
-                    if (response.status === 401) {
-                        //токен не действует
-                        dispatch(logout());//удалить токен
-                        navigate('/login');
-                    }                
-                }
-            } catch (error) {
-                setError(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        userRequest();//запросы
-        */
+        //запрос данных пользователя
+        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-current-user', 'accountBackendRequest'));                
     }, [dispatch]);
 
     //состояния запросов
-    const isLoading = accountAuthRequest?.loading || accountBackendRequest?.loading;
-    const isError = accountAuthRequest?.error || accountBackendRequest?.error;
+    const isLoading = accountBackendRequest?.loading;
+    const isError = accountBackendRequest?.error;
 
     //рендер
     if (isLoading) {
@@ -184,10 +122,10 @@ const Account = () => {
                             { accountBackendRequest?.data
                                 ? (
                                     <>
-                                        <TableCell>{accountAuthRequest?.data.userName}</TableCell>
-                                        <TableCell>{accountAuthRequest?.data.email}</TableCell>
-                                        <TableCell>{accountAuthRequest?.data.roles[0]}</TableCell>
-                                        <TableCell>{accountAuthRequest?.data.phoneNumber != null ? accountAuthRequest?.data.phoneNumber : 'не указан'}</TableCell>
+                                        <TableCell>{accountBackendRequest?.data.userName}</TableCell>
+                                        <TableCell>{accountBackendRequest?.data.email}</TableCell>
+                                        <TableCell>{accountBackendRequest?.data.role}</TableCell>
+                                        <TableCell>{accountBackendRequest?.data.phoneNumber != null ? accountBackendRequest?.data.phoneNumber : 'не указан'}</TableCell>
                                         <TableCell>{accountBackendRequest?.data.bonus}</TableCell>
                                     </>
                                 ) 

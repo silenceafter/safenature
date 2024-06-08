@@ -15,6 +15,7 @@ import { Article } from './pages/article';
 import { AccessDenied } from './pages/accessDenied';
 import { BonusExchange } from './pages/bonusExchange';
 import { Acceptance } from './pages/acceptance';
+import { Forgot } from './pages/forgot';
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import Header from './components/header';
 import Footer from './components/footer';
@@ -38,6 +39,7 @@ const App = () => {
                   <Route path="/register" element={<Register />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/logout" element={<Logout />} />
+                  <Route path="/forgot" element={<Forgot />} />
                   <Route path="/callback" element={<Callback />} />
                   <Route path="/account" element={<Account />} />
                   <Route path="/about" element={<About />} />

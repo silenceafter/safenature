@@ -57,14 +57,19 @@ namespace auth.Services
             {
                 try
                 {
-                    var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+                    var user = new IdentityUser 
+                    { 
+                        UserName = model.Username, 
+                        Email = model.Email,
+                        PhoneNumber = model.PhoneNumber
+                    };
+                    //
                     var result = await _userManager.CreateAsync(user, model.Password);
                     if (!result.Succeeded)
                         return result;
 
                     //сохранить
                     await _context.SaveChangesAsync();
-                    //await transaction.CommitAsync();
 
                     //временное подтверждение email
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -126,6 +131,16 @@ namespace auth.Services
                 return false;
             }
         }      
+
+        /*public async Task<IdentityResult> Forgot(ForgotDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                // Если пользователь не существует или не подтвердил свой адрес электронной почты
+                //return BadRequest("User does not exist or email not confirmed.");
+            }
+        }*/
 
         public async Task<UserDto>? GetIdentityUser()
         {
