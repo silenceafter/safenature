@@ -5,6 +5,7 @@ using auth.Services;
 using auth.Services.Interfaces;
 using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -24,20 +25,20 @@ namespace auth.Controllers
         private readonly IAccountService _accountService;
         private readonly ITokenService _tokenService;
         private readonly EmailService _emailService;
-        private readonly IUrlHelper _urlHelper;
+        //private readonly IUrlHelper _urlHelper;
 
         public AccountController(
             UserManager<IdentityUser> userManager, 
             IAccountService accountService, 
             ITokenService tokenService,
-            EmailService emailService,
-            IUrlHelperFactory urlHelperFactory)
+            EmailService emailService/*,
+            IUrlHelperFactory urlHelperFactory*/)
         {
             _userManager = userManager;
             _accountService = accountService;
             _tokenService = tokenService;
             _emailService = emailService;
-            _urlHelper = urlHelperFactory.GetUrlHelper(new ActionContext());
+            //_urlHelper = urlHelperFactory.GetUrlHelper(new ActionContext());
         }
 
         [HttpPost("login")]
@@ -67,19 +68,20 @@ namespace auth.Controllers
                 : BadRequest("Произошла ошибка при обработке токена");
         }
 
+        //[DisableCors]
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
             //
             var result = await _accountService.Register(model);
             if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
                     ModelState.AddModelError(string.Empty, error.Description);
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
             }
                
             //присваиваем пользователю роль "User"
@@ -90,9 +92,9 @@ namespace auth.Controllers
                 await _accountService.DeleteUserByEmail(model.Email);
                 foreach (var error in roleResult.Errors)
                     ModelState.AddModelError(string.Empty, error.Description);
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
             }
-            return StatusCode(201);//201 Created           
+            return Created("", new { });//201 Created           
         }
 
         [HttpPost("forgot")]
@@ -107,7 +109,8 @@ namespace auth.Controllers
                 BadRequest();
             //
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callbackUrl = _urlHelper.Action("ResetPassword", "Account", new { token, model.Email }, _urlHelper.ActionContext.HttpContext.Request.Scheme);
+            var urlHelper = new UrlHelper(ControllerContext);
+            var callbackUrl = urlHelper.Action("ResetPassword", "Account", new { token, model.Email }, urlHelper.ActionContext.HttpContext.Request.Scheme);
 
             //отправить email с ссылкой на сброс пароля
             await _emailService.SendEmailAsync(model.Email, "Reset Password", $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");

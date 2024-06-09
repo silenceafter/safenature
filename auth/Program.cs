@@ -13,6 +13,10 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Newtonsoft.Json;
 using auth.Models;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
+using Microsoft.Extensions.Options;
+using auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,7 +55,8 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.User.RequireUniqueEmail = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+.AddDefaultTokenProviders()
+.AddErrorDescriber<CustomIdentityErrorDescriber>();
 
 //cors
 builder.Services.AddCors(options =>
@@ -67,6 +72,21 @@ builder.Services.AddCors(options =>
 //appsettings: jwt
 builder.Services.Configure<SettingsJwtDto>(builder.Configuration.GetSection("JWT"));
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
+//локализация
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+        new CultureInfo("en"),
+        new CultureInfo("ru")
+    };
+
+    options.DefaultRequestCulture = new RequestCulture("ru");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
 
 //контроллеры, сервисы, ..
 builder.Services.AddControllers();
@@ -200,6 +220,11 @@ else
 }
 
 app.UseCors("policy");
+
+//локацизация
+var locOptions = app.Services.GetService<IOptions<RequestLocalizationOptions>>();
+app.UseRequestLocalization(locOptions.Value);
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();

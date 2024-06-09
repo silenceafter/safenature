@@ -13,22 +13,42 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { useDispatch } from 'react-redux';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
 
 const Register = () => {
     const [formData, setFormData] = useState({
       userName: '',
       email: '',
+      phoneNumber: '',
       password: '',
+      confirmPassword: ''
     });
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [errors, setErrors] = useState({});
+    const [message, setMessage] = useState(null);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const validate = () => {
+      let tempErrors = {};
+      if (!formData.userName) tempErrors.userName = 'Имя пользователя обязательно';
+      if (!formData.email) tempErrors.email = 'Электронная почта обязательна';
+      if (!formData.password) tempErrors.password = 'Пароль обязателен';
+      if (formData.password !== formData.confirmPassword) tempErrors.confirmPassword = 'Пароли не совпадают';
+      setErrors(tempErrors);
+      return Object.keys(tempErrors).length === 0;
+    };
+
     const handleSubmit = async (event) => {
       event.preventDefault();
+      if (!validate())
+        return;
+      //
       setLoading(true);
+      setMessage(null);
+
       try {
         const response = await fetch('https://localhost:7086/account/register', {
             method: 'POST',
@@ -39,24 +59,37 @@ const Register = () => {
               {
                 UserName: formData.userName,
                 Email: formData.email, 
-                Password: formData.password 
+                PhoneNumber: formData.phoneNumber,
+                Password: formData.password,
+                ConfirmPassword: formData.confirmPassword
               }
-            )
+            )/*,
+            credentials: 'include'*/
         });
 
         if (response.ok) {
             console.log('Login successful');
             const result = await response.json();
+            setMessage({ type: 'success', text: 'Регистрация успешна!' });
 
             //сохранить токен
-            dispatch(login(result.userName, formData.email, result.token.result));           
-            navigate('/');
+            //dispatch(login(result.userName, formData.email, result.token.result));           
+            //navigate('/');
         } else {
           console.error('Login failed');
+          const errorResult = await response.json();
+
+          //запишем ошибки
+          let errorMessages = '';
+          for(let error of errorResult)
+            errorMessages += `${error}, `;
+          errorMessages = errorMessages.slice(0, -2);
+          //
+          setMessage({ type: 'error', text: 'Ошибка регистрации: ' + errorMessages });
         }
       } catch (error) {
         console.error('Error:', error);
-        setError(error.message);
+        setMessage({ type: 'error', text: 'Ошибка: ' + error.message });
       } finally {
         setLoading(false);
       }
@@ -70,81 +103,115 @@ const Register = () => {
       }));
     };
     
-      return (
-          <Container component="main" maxWidth="xs">
-            <CssBaseline />
-            <Box
+    return (
+      <Container component="main" maxWidth="xs">
+          <CssBaseline />
+          <Box
               sx={{
-                marginTop: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
+                  marginTop: 8,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
               }}
-            >
+          >
               <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                <LockOutlinedIcon />
+                  <LockOutlinedIcon />
               </Avatar>
               <Typography component="h1" variant="h5">
-                Регистрация
+                  Регистрация
               </Typography>
+              {message && (
+                  <Alert severity={message.type} sx={{ width: '100%', mb: 2 }}>
+                      {message.text}
+                  </Alert>
+              )}
               <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      autoComplete="given-name"
-                      name="userName"
-                      required
-                      fullWidth
-                      id="userName"
-                      label="Имя пользователя"
-                      autoFocus
-                      onChange={handleChange}
-                    />
-                  </Grid>                  
-                  <Grid item xs={12}>
-                    <TextField
-                      required
-                      fullWidth
-                      id="email"
-                      label="Электронная почта"
-                      name="email"
-                      autoComplete="email"
-                      onChange={handleChange}
-                    />
+                  <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                          <TextField
+                              autoComplete="given-name"
+                              name="userName"
+                              required
+                              fullWidth
+                              id="userName"
+                              label="Имя пользователя"
+                              autoFocus
+                              onChange={handleChange}
+                              error={!!errors.userName}
+                              helperText={errors.userName}
+                          />
+                      </Grid>
+                      <Grid item xs={12}>
+                          <TextField
+                              required
+                              fullWidth
+                              id="email"
+                              label="Электронная почта"
+                              name="email"
+                              autoComplete="email"
+                              onChange={handleChange}
+                              error={!!errors.email}
+                              helperText={errors.email}
+                          />
+                      </Grid>
+                      <Grid item xs={12}>
+                          <TextField
+                              fullWidth
+                              id="phoneNumber"
+                              label="Номер телефона"
+                              name="phoneNumber"
+                              autoComplete="phoneNumber"
+                              onChange={handleChange}
+                          />
+                      </Grid>
+                      <Grid item xs={12}>
+                          <TextField
+                              required
+                              fullWidth
+                              name="password"
+                              label="Пароль"
+                              type="password"
+                              id="password"
+                              autoComplete="new-password"
+                              onChange={handleChange}
+                              error={!!errors.password}
+                              helperText={errors.password}
+                          />
+                      </Grid>
+                      <Grid item xs={12}>
+                          <TextField
+                              required
+                              fullWidth
+                              name="confirmPassword"
+                              label="Повторите пароль"
+                              type="password"
+                              id="confirmPassword"
+                              onChange={handleChange}
+                              error={!!errors.confirmPassword}
+                              helperText={errors.confirmPassword}
+                          />
+                      </Grid>
                   </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      required
+                  <Button
+                      type="submit"
                       fullWidth
-                      name="password"
-                      label="Пароль"
-                      type="password"
-                      id="password"
-                      autoComplete="new-password"
-                      onChange={handleChange}
-                    />
-                  </Grid>                 
-                </Grid>
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                  disabled={loading}
-                >
-                  Зарегистрироваться
-                </Button>
-                <Grid container justifyContent="flex-end">
-                  <Grid item>
-                    <Link component={RouterLink} to="/login" variant="body2">
-                      Уже есть учетная запись? Войти
-                    </Link>
+                      variant="contained"
+                      sx={{ mt: 3, mb: 2 }}
+                      disabled={loading}
+                  >
+                      {loading ? <CircularProgress size={24} /> : 'Зарегистрироваться'}
+                  </Button>
+                  <Grid container justifyContent="flex-end">
+                      <Grid item>
+                          <RouterLink to="/login" variant="body2">
+                              Уже есть учетная запись? Войти
+                          </RouterLink>
+                      </Grid>
                   </Grid>
-                </Grid>
               </Box>
-            </Box>
-          </Container>
-      );
+          </Box>
+      </Container>
+  );
 };
 
 export {Register};
