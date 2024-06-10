@@ -36,13 +36,19 @@ import {
     Paper,
 } from '@mui/material';
 import { fetchDataGet } from '../store/thunk/thunks';
+import { updateRoute } from '../store/actions/routerActions';
 
 const Account = () => {
     const { email, token } = useSelector((state) => state.auth);
-    const { social } = useSelector((state) => state.social);    
+    const { social } = useSelector((state) => state.social);
+    const currentRoute = useSelector(state => state.router.currentRoute);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const accountBackendRequest = useSelector((state) => state.getRequest.accountBackendRequest);
+
+    const handleRouteChange = (newRoute) => {
+        dispatch(updateRoute(newRoute));
+    };
 
     //раздел
     const mainFeaturedPost = {

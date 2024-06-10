@@ -46,6 +46,8 @@ function srcset(image, size, rows = 1, cols = 1) {
 
 const About = () => {
   const { social } = useSelector((state) => state.social);
+  const currentRoute = useSelector(state => state.router.currentRoute);
+
   //раздел
   const mainFeaturedPost = {
     title: 'О нас',

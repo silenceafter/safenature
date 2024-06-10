@@ -1,28 +1,15 @@
-//import * as React from 'react';
-//import CssBaseline from '@mui/material/CssBaseline';
-//import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-//import Link from '@mui/material/Link';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import XIcon from '@mui/icons-material/X';
-import Main from '../components/main';
 import Sidebar from '../components/sidebar';
 import MainFeaturedPost from '../components/mainFeaturedPost';
 import image from '../images/acceptance.jpg';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper, IconButton, Divider
-} from '@mui/material';
-import { Container, Grid, TextField, FormControlLabel, Checkbox, Box, Autocomplete, Chip  } from '@mui/material';
+import { Divider } from '@mui/material';
+import { Grid, TextField, Box  } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -30,11 +17,7 @@ import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import Stack from '@mui/material/Stack';
-import DeleteIcon from '@mui/icons-material/Delete';
 import CircularProgress from '@mui/material/CircularProgress';
-import FormHelperText from '@mui/material/FormHelperText';
-import InputAdornment from '@mui/material/InputAdornment';
 import { login, logout } from '../store/actions/authActions';
 
 const Acceptance = () => {
@@ -70,12 +53,12 @@ const Acceptance = () => {
 
     //state формы
     const [fields, setFields] = useState([
-        { id: 1, selectValue: '', textFieldValue: 1 }
+        { id: 1, selectValue: '', textFieldQuantityValue: 1, textFieldBonusValue: 1 }
       ]);
 
     //добавить строку
     const handleAddField = () => {
-        setFields([...fields, { id: fields.length + 1, selectValue: '', textFieldValue: 1 }]);
+        setFields([...fields, { id: fields.length + 1, selectValue: '', textFieldQuantityValue: 1, textFieldBonusValue: 1 }]);
     };
 
     //удалить строку
@@ -90,11 +73,18 @@ const Acceptance = () => {
         ));
     };
     
-    //изменить значение TextValue
-    const handleTextFieldChange = (id, newValue) => {
-    setFields(fields.map((field) =>
-        field.id === id ? { ...field, textFieldValue: newValue } : field
-    ));
+    //изменить значение TextValue1
+    const handleTextFieldQuantityChange = (id, newValue) => {
+        setFields(fields.map((field) =>
+            field.id === id ? { ...field, textFieldQuantityValue: newValue } : field
+        ));
+    };
+
+    //изменить значение TextValue2
+    const handleTextFieldBonusChange = (id, newValue) => {
+        setFields(fields.map((field) =>
+            field.id === id ? { ...field, textFieldBonusValue: newValue } : field
+        ));
     };
 
     //собрать данные из элементов и отправить запрос на сервер
@@ -103,7 +93,7 @@ const Acceptance = () => {
         const dataToSend = fields.map(field => ({
           email: email,
           hazardousWasteId: field.selectValue,
-          quantity: field.textFieldValue
+          quantity: field.textFieldQuantityValue
         }));
     
         try {
@@ -215,7 +205,7 @@ const Acceptance = () => {
                             >
                                 {fields.map((field, index) => (
                                     <Grid container spacing={2} alignItems="center" key={field.id}>
-                                    <Grid item xs={7}>
+                                    <Grid item xs={5}>
                                         <FormControl required sx={{ mb: 2 }} fullWidth>
                                             <InputLabel id={`select-label-${field.id}`}>Отход</InputLabel>
                                             <Select                                            
@@ -232,12 +222,20 @@ const Acceptance = () => {
                                             </Select>                                            
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={3} mb={2}>
+                                    <Grid item xs={2.5} mb={2}>
                                         <TextField
                                             label="Кол-во"
                                             type="number"
-                                            value={field.textFieldValue}
-                                            onChange={(event) => handleTextFieldChange(field.id, parseInt(event.target.value, 10) || 0)}
+                                            value={field.textFieldQuantityValue}
+                                            onChange={(event) => handleTextFieldQuantityChange(field.id, parseInt(event.target.value, 10) || 0)}
+                                            />
+                                    </Grid>
+                                    <Grid item xs={2.5} mb={2}>
+                                        <TextField
+                                            label="Бонусы"
+                                            type="number"
+                                            value={field.textFieldBonusValue}
+                                            onChange={(event) => handleTextFieldBonusChange(field.id, parseInt(event.target.value, 10) || 0)}
                                             />
                                     </Grid>
                                     <Grid item xs={2} mb={2}>

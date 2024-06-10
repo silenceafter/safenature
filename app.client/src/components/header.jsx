@@ -14,11 +14,16 @@ import { logout } from '../store/actions/authActions';
 import { styled } from '@mui/system';
 import { Box } from '@mui/material';
 import logo from '../images/logo.png';
+import { updateRoute } from '../store/actions/routerActions';
 
 function Header(props) {
   const { /*sections,*/ title } = props;
   const { username, email, token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+
+  React.useEffect(() => {
+    dispatch(updateRoute(location.pathname));
+  }, [location.pathname, dispatch]);
 
   //список страниц для header
   let sections = [];
@@ -46,11 +51,12 @@ function Header(props) {
   }
 
   //кастомный RouterLink
-  const StyledRouterLink = styled(RouterLink)(({ theme }) => ({
-    color: 'inherit',
+  const StyledRouterLink = styled(RouterLink)(({ theme, active }) => ({
+    color: active ? theme.palette.primary.main : 'inherit',
     textDecoration: 'none',
     padding: '8px',
     flexShrink: 0,
+    fontWeight: active ? 'bold' : 'normal',
   }));
   //
   return (
@@ -116,7 +122,7 @@ function Header(props) {
           <StyledRouterLink
             key={section.title}
             to={section.url}
-            sx={{ p: 1, flexShrink: 0 }}
+            sx={{ p: 1, flexShrink: 0, }}
           >
             {section.title}
           </StyledRouterLink>
