@@ -44,18 +44,40 @@ namespace auth.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
-            var result = await _accountService.Login(model);
-            if (!result)
-                return Unauthorized("Invalid email or password.");
+            var result = await _accountService.Login(model);            
+            if (result.Count > 0)
+            {
+                var errors = result;
+                ModelState.AddModelError("EmailPassword", "Email или пароль");
+                /*var errors = new Dictionary<string, string[]>
+                {
+                    { "error", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToArray() }
+                };*/
+                return BadRequest(new { errors });
+            }              
 
             //генерация токена
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
-                return Unauthorized("User not found");
+            {
+                ModelState.AddModelError("User", "Пользователь не найден");
+                var errors = new Dictionary<string, string[]>
+                {
+                    { "User", new string[] { "Пользователь не найден" } }
+                };
+                return BadRequest(new { errors });//return Unauthorized("User not found");
+            }                
             //
             var token = _tokenService.GenerateJwtToken(user);
-            if (token == null) 
-                return Unauthorized("Invalid email or password.");
+            if (token == null)
+            {
+                ModelState.AddModelError("Token", "Внутренняя ошибка");
+                var errors = new Dictionary<string, string[]>
+                {
+                    { "Token", new string[] { "Внутренняя ошибка" } }
+                };
+                return BadRequest(new { errors });//return Unauthorized("Invalid email or password.");
+            }                
             return Ok(new { UserName = user.UserName, Token = token });
         }
 
@@ -68,7 +90,6 @@ namespace auth.Controllers
                 : BadRequest("Произошла ошибка при обработке токена");
         }
 
-        //[DisableCors]
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)

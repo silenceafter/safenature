@@ -63,10 +63,15 @@ namespace auth.Services
                         Email = model.Email,
                         PhoneNumber = model.PhoneNumber
                     };
-                    //
+                    
+                    //создание пользователя
                     var result = await _userManager.CreateAsync(user, model.Password);
                     if (!result.Succeeded)
+                    {
+                        //откат
+                        await transaction.RollbackAsync();
                         return result;
+                    }                        
 
                     //сохранить
                     await _context.SaveChangesAsync();
@@ -88,24 +93,39 @@ namespace auth.Services
             }
         }
 
-        public async Task<bool> Login(LoginDto model)
+        public async Task<Dictionary<string, string[]>> Login(LoginDto model)
         {
             try
             {
                 //пользователь
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null)
-                    return false;//пользователь не найден
+                {                 
+                    return new Dictionary<string, string[]>
+                    {
+                         { "Email", new string[] { "Email" } },
+                    };
+                }//пользователь не найден
 
                 //вход по паролю
                 var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, lockoutOnFailure: true);
-                return result.Succeeded ? true : false;
+                if (!result.Succeeded)
+                {
+                    return new Dictionary<string, string[]>
+                    {
+                        { "Password", new string[] { "Пароль" } },
+                    };
+                }
+                return new Dictionary<string, string[]> { };
             }
             catch (Exception ex)
             {
-                //логирование
+                return new Dictionary<string, string[]>
+                {
+                    { "Email", new string[] { "Email" } },
+                    { "Password", new string[] { "Пароль" } },
+                };
             }
-            return false;
         }
 
         public async Task<bool> Logout()

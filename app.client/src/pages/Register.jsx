@@ -3,15 +3,12 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import React, { useState } from 'react';
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
-import Checkbox from '@mui/material/Checkbox';
 import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { useDispatch } from 'react-redux';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
@@ -30,6 +27,15 @@ const Register = () => {
     const [message, setMessage] = useState(null);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (message && message.type === 'success') {
+            const timer = setTimeout(() => {
+                navigate('/login');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [message, navigate]);
 
     const validate = () => {
       let tempErrors = {};
@@ -63,20 +69,13 @@ const Register = () => {
                 Password: formData.password,
                 ConfirmPassword: formData.confirmPassword
               }
-            )/*,
-            credentials: 'include'*/
+            )
         });
 
         if (response.ok) {
-            console.log('Login successful');
             const result = await response.json();
-            setMessage({ type: 'success', text: 'Регистрация успешна!' });
-
-            //сохранить токен
-            //dispatch(login(result.userName, formData.email, result.token.result));           
-            //navigate('/');
+            setMessage({ type: 'success', text: 'Регистрация успешна!' });          
         } else {
-          console.error('Login failed');
           const errorResult = await response.json();
 
           //запишем ошибки

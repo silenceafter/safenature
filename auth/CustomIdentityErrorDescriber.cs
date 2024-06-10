@@ -21,6 +21,15 @@ namespace auth
             };
         }
 
+        public override IdentityError DuplicateEmail(string email)
+        {
+            return new IdentityError
+            {
+                Code = nameof(DuplicateEmail),
+                Description = $"Электронная почта '{email}' уже используется."
+            };
+        }
+
         public override IdentityError InvalidEmail(string email)
         {
             return new IdentityError
@@ -79,7 +88,7 @@ namespace auth
         {
             return new IdentityError
             {
-                Code = nameof(),
+                Code = nameof(DefaultError),
                 Description = "Пароль обязателен."
             };
         }

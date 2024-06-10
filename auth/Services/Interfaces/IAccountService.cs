@@ -7,7 +7,7 @@ namespace auth.Services.Interfaces
     public interface IAccountService
     {
         Task<IdentityResult> Register(RegisterDto model);
-        Task<bool> Login(LoginDto model);
+        Task<Dictionary<string, string[]>> Login(LoginDto model);
         Task<bool> Logout();
         //Task<IdentityResult> Forgot(ForgotDto model);
         Task<UserDto>? GetIdentityUser();

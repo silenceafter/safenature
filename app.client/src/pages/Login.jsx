@@ -25,11 +25,6 @@ const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const errorMessagesRu = {
-      requiredEmail: 'Поле Email обязательно для заполнения',
-      requiredPassword: 'Поле Password обязательно для заполнения',
-  };
-
     const handleSubmit = async () => {
       setLoading(true);
       setMessage(null);
@@ -44,23 +39,43 @@ const Login = () => {
         });
 
         if (response.ok) {
-            console.log('Login successful');
             const result = await response.json();
 
             //сохранить токен
-            dispatch(login(result.userName, formData.email, result.token.result));           
+            dispatch(login(result.userName, formData.email, result.token.result));   
+            
+            //запрос к бекенд-приложению
+            const backendResponse = await fetch('https://localhost:7158/user/login', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${result.token.result}`,
+                    'Content-Type': 'application/json'    
+                }
+            });
+
+            //результат
+            if (backendResponse.ok) {
+                const data = await backendResponse.json();
+                if (data.status === 401)
+                  throw new Error('Ошибка авторизации');
+            } else {
+                throw new Error('Ошибка авторизации');
+            }
             navigate('/');
         } else {
-          console.error('Login failed');
           const errorResult = await response.json();
-
-            // Обработка ошибок
-            let errorMessages = '';
-            for (let error in errorResult.errors) {
-              errorMessages += `${error}, `;
+          let errorMessages = '';
+          for (let key in errorResult.errors) {
+            if (errorResult.errors.hasOwnProperty(key)) {
+              let values = errorResult.errors[key];
+              values.forEach(value => {
+                errorMessages += `${value}, `;
+              });
             }
-            errorMessages = errorMessages.slice(0, -2);
-            setMessage({ type: 'error', text: 'Ошибка входа: ' + errorMessages });
+          }
+          //
+          errorMessages = errorMessages.slice(0, -2);
+          setMessage({ type: 'error', text: 'Ошибка входа: ' + errorMessages });
         }
       } catch (error) {
         console.error('Error:', error);
@@ -108,8 +123,6 @@ const Login = () => {
                 autoFocus
                 value={formData.email}
                 onChange={handleChange}
-                /*error={!!errorMessagesRu.requiredEmail}
-                helperText={errorMessagesRu.requiredEmail}*/
             />
             <TextField
                 margin="normal"
@@ -122,8 +135,6 @@ const Login = () => {
                 autoComplete="current-password"
                 value={formData.password}
                 onChange={handleChange}
-                /*error={!!errorMessagesRu.requiredPassword}
-                helperText={errorMessagesRu.requiredPassword}*/
             />
             <FormControlLabel
                 control={<Checkbox value="remember" color="primary" />}
@@ -137,7 +148,7 @@ const Login = () => {
               ) 
               : (
                   <Button
-                      type="button"
+                      type="submit"
                       fullWidth
                       variant="contained"
                       sx={{ mt: 3, mb: 2 }}
