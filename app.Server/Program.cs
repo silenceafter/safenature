@@ -112,6 +112,7 @@ builder.Services.AddTransient<IPartnerRepository, PartnerRepository>();
 builder.Services.AddTransient<IHazardClassRepository, HazardClassRepository>();
 builder.Services.AddTransient<IReceivingDiscountRepository, ReceivingDiscountRepository>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
+builder.Services.AddTransient<IProductRepository, ProductRepository>();
 builder.Services.AddDbContext<EcodbContext>();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();

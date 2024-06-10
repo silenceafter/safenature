@@ -229,7 +229,7 @@ const Acceptance = () => {
                             >
                                 {fields.map((field, index) => (
                                     <Grid container spacing={2} alignItems="center" key={field.id}>
-                                    <Grid item xs={5}>
+                                    <Grid item xs={6}>
                                         <FormControl required sx={{ mb: 2 }} fullWidth>
                                             <InputLabel id={`select-label-${field.id}`}>Отход</InputLabel>
                                             <Select                                            
@@ -246,7 +246,7 @@ const Acceptance = () => {
                                             </Select>                                            
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={2.5} mb={2}>
+                                    <Grid item xs={2} mb={2}>
                                         <TextField
                                             label="Кол-во"
                                             type="number"
@@ -254,7 +254,7 @@ const Acceptance = () => {
                                             onChange={(event) => handleTextFieldQuantityChange(field.id, parseInt(event.target.value, 10) || 0)}
                                             />
                                     </Grid>
-                                    <Grid item xs={2.5} mb={2}>
+                                    <Grid item xs={2} mb={2}>
                                         <TextField
                                             readOnly={true}
                                             label="Бонусы"

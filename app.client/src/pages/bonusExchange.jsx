@@ -39,10 +39,18 @@ const BonusExchange = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const PlaceholderCard = ({ couponNumber }) => (
+        <Card style={{ margin: '10px', padding: '20px', backgroundColor: '#f5f5f5' }}>
+          <CardContent>
+            <Typography variant="h6" component="div">Купон {couponNumber}</Typography>
+            <Typography variant="body2" component="div" sx={{ textAlign: 'left' }}>Ошибка загрузки данных</Typography>
+          </CardContent>
+        </Card>
+    );
+
     const handleSelect = (id, bonus) => {
         setSelectedDiscountId(id);//храним выбранный id карты
         setSelectedDiscountBonus(bonus);//храним количество бонусов, которое стоит купон
-        console.log('Selected Discount ID:', id); // Здесь вы получаете значение выбранной карточки
     };
     const DiscountCard = ({ discount, isSelected, onSelect }) => (
         <Card
@@ -74,19 +82,29 @@ const BonusExchange = () => {
           </CardContent>
         </Card>
     );
-    const DiscountCardList = ({ discounts }) => {
+    const DiscountCardList = ({ discounts, error }) => {
         return (
-            <Grid container spacing={2} sx={{maxHeight: 600, overflowY: 'auto', p: 2}}>
-            {discounts.map((discount) => (
+          <Grid container spacing={2} sx={{ maxHeight: 600, overflowY: 'auto', p: 2 }}>
+            {error ? (
+              // Если есть ошибка, отображаем заглушки
+              <>
+                <Grid item xs={12} sm={6} md={4}><PlaceholderCard couponNumber={1} /></Grid>
+                <Grid item xs={12} sm={6} md={4}><PlaceholderCard couponNumber={2} /></Grid>
+                <Grid item xs={12} sm={6} md={4}><PlaceholderCard couponNumber={3} /></Grid>
+              </>
+            ) : (
+              // В противном случае отображаем реальные данные
+              discounts.map((discount) => (
                 <Grid item xs={12} sm={6} md={4} key={discount.id}>
-                <DiscountCard
+                  <DiscountCard
                     discount={discount}
                     isSelected={selectedDiscountId === discount.id}
                     onSelect={handleSelect}
-                />
+                  />
                 </Grid>
-            ))}
-            </Grid>
+              ))
+            )}
+          </Grid>
         );
     };
 
@@ -272,12 +290,12 @@ const BonusExchange = () => {
                             </Typography>
                             <Typography variant="body1" paragraph>
                                 Выберите скидочный купон из списка. Подтвердите списание бонусных баллов со счета.
-                            </Typography>            
-                            <DiscountCardList discounts={userData} onSelect={handleSelect} />
+                            </Typography>
+                            <DiscountCardList discounts={userData} error={!!error} onSelect={handleSelect} />
                             <Box sx={{ mt: 2, mb: 2 }}>
                                 <TextField
                                     label='Кол-во бонусов'
-                                    value={userBalance.bonus}
+                                    value={userBalance?.bonus}
                                     variant="outlined"
                                     fullWidth
                                     InputProps={{
@@ -285,12 +303,14 @@ const BonusExchange = () => {
                                     }}
                                     margin="normal"
                                 />
-                                <Typography variant="body1" paragraph>
-                                    Будет списано { selectedDiscountBonus } бонусов. Баллов на счете 
-                                    <Box component="span" sx={{ color: userBalance.bonus >= selectedDiscountBonus ? 'inherit' : 'red' }}>
-                                        { userBalance.bonus >= selectedDiscountBonus ? ' достаточно' : ' не достаточно' }.
-                                    </Box>
-                                </Typography>
+                                {selectedDiscountBonus && (
+                                    <Typography variant="body1" paragraph>
+                                        Будет списано { selectedDiscountBonus } бонусов. Баллов на счете 
+                                        <Box component="span" sx={{ color: userBalance?.bonus >= selectedDiscountBonus ? 'inherit' : 'red' }}>
+                                            { userBalance?.bonus >= selectedDiscountBonus ? ' достаточно' : ' не достаточно' }.
+                                        </Box>
+                                    </Typography>
+                                )}                                
                                 <Button                            
                                     variant="contained"
                                     color="secondary"

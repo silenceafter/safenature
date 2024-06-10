@@ -15,15 +15,46 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { logout } from '../store/actions/authActions';
 import { Card, CardContent, Radio } from '@mui/material';
 import { Alert } from '@mui/material';
+import { Paper } from '@mui/material';
+import { CardMedia } from '@mui/material';
+import product_1 from '../images/shopper_1.jpg';
+import product_2 from '../images/cap_2.jpg';
+import product_3 from '../images/t-shirt_3.jpg';
+import product_4 from '../images/hoodie_4.jpg';
 
-function formatDate(dateString) {
-    //форматирование даты в дд.мм.гггг
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяцы от 0 до 11
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
-}
+const productImages = {
+    1: product_1,
+    2: product_2,
+    3: product_3,
+    4: product_4
+  };
+
+const ProductCard = ({ product, onQuantityChange }) => {
+    const imageUrl = productImages[product.id];
+    return (
+        <Card style={{ margin: '20px', width: '200px' }}>
+          <CardMedia
+            component="img"
+            image={imageUrl}
+            alt={product.name}
+            style={{ width: '100%', height: 200, objectFit: 'cover' }}
+          />
+          <CardContent>
+            <Typography variant="h5" component="div">{product.name}</Typography>
+            <Typography variant="body1" color="textSecondary">Цена: {product.bonus} бонусов</Typography>
+            <TextField
+              label="Количество"
+              type="number"
+              variant="outlined"
+              size="medium"
+              value={product.quantity}
+              onChange={(e) => onQuantityChange(product.id, e.target.value)}
+              style={{ marginTop: '20px', width: '100%' }}
+            />
+          </CardContent>
+        </Card>
+    );
+  };
 
 const Products = () => {
     const { email, token } = useSelector((state) => state.auth);
@@ -35,59 +66,50 @@ const Products = () => {
     const [selectedDiscountBonus, setSelectedDiscountBonus] = useState(null);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [submitResult, setSubmitResult] = useState(null);
+    const [products, setProducts] = useState([]);
     //
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+          try {
+            const response = await fetch('https://localhost:7158/product/get-products', {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+    
+            if (response.ok) {
+              const data = await response.json();
+              const productsWithQuantity = data.map(product => ({ ...product, quantity: 0 }));
+              setProducts(productsWithQuantity);
+            } else {
+              console.error('Failed to fetch products');
+            }
+          } catch (error) {
+            console.error('Error:', error);
+          } finally {
+            setLoading(false);
+          }
+        };
+    
+        fetchProducts();
+      }, [token]);
+    
+      const handleQuantityChange = (id, quantity) => {
+        setProducts(products.map(product => 
+          product.id === id ? { ...product, quantity: parseInt(quantity, 10) } : product
+        ));
+      };
+    
 
     const handleSelect = (id, bonus) => {
         setSelectedDiscountId(id);//храним выбранный id карты
         setSelectedDiscountBonus(bonus);//храним количество бонусов, которое стоит купон
         console.log('Selected Discount ID:', id); // Здесь вы получаете значение выбранной карточки
-    };
-    const DiscountCard = ({ discount, isSelected, onSelect }) => (
-        <Card
-          key={discount.id}
-          onClick={() => onSelect(discount.id, discount.bonus)}
-          style={{
-            margin: '10px',
-            cursor: 'pointer',
-            border: isSelected ? '2px solid #3f51b5' : '1px solid #ccc'
-          }}
-        >
-          <CardContent>        
-            <Typography variant="body2" component="div"><strong>Описание:</strong> {discount.conditions}</Typography>
-            <Box mt={0.5}>
-                <Typography variant="body2" component="div">
-                    <strong>Магазин:</strong> {discount.storeName}
-                </Typography>
-            </Box>
-            <Box mt={0.5}>
-                <Typography variant="body2" component="div" align="left">
-                    <strong>Действует:</strong> {formatDate(discount.dateStart)} - {formatDate(discount.dateEnd)}
-                </Typography>
-            </Box>
-            <Radio
-              checked={isSelected}
-              value={discount.id}
-              readOnly
-            />
-          </CardContent>
-        </Card>
-    );
-    const DiscountCardList = ({ discounts }) => {
-        return (
-            <Grid container spacing={2} sx={{maxHeight: 600, overflowY: 'auto', p: 2}}>
-            {discounts.map((discount) => (
-                <Grid item xs={12} sm={6} md={4} key={discount.id}>
-                <DiscountCard
-                    discount={discount}
-                    isSelected={selectedDiscountId === discount.id}
-                    onSelect={handleSelect}
-                />
-                </Grid>
-            ))}
-            </Grid>
-        );
     };
 
     //раздел
@@ -101,10 +123,9 @@ const Products = () => {
 
     //информация о странице
     const sidebar = {
-    title: 'About',
+    title: 'Товары',
     description:
-        'Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.',
-    
+        'Наши товары прекрасно дополнят любой гардероб благодаря своим базовым цветам - белому, бежевому и черному. Не упустите шанс добавить стильные и экологически чистые вещи в свою коллекцию!',    
     social: [
         { name: 'GitHub', icon: GitHubIcon },
         { name: 'X', icon: XIcon },
@@ -170,7 +191,7 @@ const Products = () => {
       };  
 
     //useEffect
-    useEffect(() => {
+    /*useEffect(() => {
         //доступ запрещен
         if (!email)
             navigate('/access-denied');
@@ -240,16 +261,19 @@ const Products = () => {
             }
         };
         userRequest();
-    }, []);
+    }, []);*/
+
+    const selectedProducts = products.filter(product => product.quantity > 0);
 
     //рендер
-    if (loading) {
+    /*if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 <CircularProgress />
             </Box>
         );
-    }
+    }*/
+    //
     return (
         <> 
             <MainFeaturedPost post={mainFeaturedPost} />   
@@ -265,25 +289,45 @@ const Products = () => {
                     }}
                 >
                     <Divider />
-                    <div>                                                 
-                        <Box sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
+                    <div>
+                    <Paper elevation={3} style={{ padding: '16px', marginTop: '16px', height: '100%', overflow: 'hidden' }}>
+                        <Box sx={{ textAlign: 'justify', mt: 2, mb: 2, height: '100%', overflow: 'hidden' }}>
                             <Typography variant="h4" component="h1" gutterBottom>
-                                Наши товары
+                                Список товаров
                             </Typography>
                             <Typography variant="body1" paragraph>
                                 Посмотрите наши прекрасные товары! Теперь у нас есть шопперы, худи, футболки и кепки - все с логотипом 
                                 нашего экологического бренда. Они изготовлены из натуральных тканей, и самое классное - их можно обменять 
                                 на бонусы для всех участников нашего экологического проекта!
-                            </Typography>
-                            <Typography variant="body1" paragraph>
-                                Наши товары прекрасно дополнят любой гардероб благодаря своим базовым цветам - белому, бежевому и черному.
-                                Не упустите шанс добавить стильные и экологически чистые вещи в свою коллекцию!    
                             </Typography>            
-                            <DiscountCardList discounts={userData} onSelect={handleSelect} />
+                            <Grid container direction="row" spacing={2}> {}
+                                {products.map((product) => (
+                                <Grid item xs={12} md={6} key={product.id}> {/* для экранов меньших (xs) один элемент в строке, для экранов больших (md) два элемента в строке */}
+                                    <ProductCard product={product} onQuantityChange={handleQuantityChange} />
+                                </Grid>
+                                ))}
+                            </Grid>
+                            <Divider style={{ marginTop: '32px' }} />
+                            <Box sx={{ textAlign: 'justify', mt: 2, mb: 2, height: '100%', overflow: 'hidden' }}>
+                                <Typography variant="h4" component="h1" gutterBottom>
+                                    Итого
+                                </Typography>
+                            </Box>
+                            {selectedProducts.length > 0 && (
+                                <Box sx={{ mt: 2, mb: 2 }}>
+                                    {selectedProducts.map((product) => (
+                                        <Typography key={product.id} variant="body2" color="textSecondary">
+                                            {product.name} {product.quantity} штуки = {product.quantity * product.bonus} бонусов
+                                        </Typography>
+                                    ))}
+                                </Box>
+                            )}
+                            
+
                             <Box sx={{ mt: 2, mb: 2 }}>
                                 <TextField
                                     label='Кол-во бонусов'
-                                    value={userBalance.bonus}
+                                    value={userBalance?.bonus}
                                     variant="outlined"
                                     fullWidth
                                     InputProps={{
@@ -291,12 +335,14 @@ const Products = () => {
                                     }}
                                     margin="normal"
                                 />
-                                <Typography variant="body1" paragraph>
-                                    Будет списано { selectedDiscountBonus } бонусов. Баллов на счете 
-                                    <Box component="span" sx={{ color: userBalance.bonus >= selectedDiscountBonus ? 'inherit' : 'red' }}>
-                                        { userBalance.bonus >= selectedDiscountBonus ? ' достаточно' : ' не достаточно' }.
-                                    </Box>
-                                </Typography>
+                                {selectedDiscountBonus && (
+                                    <Typography variant="body1" paragraph>
+                                        Будет списано { selectedDiscountBonus } бонусов. Баллов на счете 
+                                        <Box component="span" sx={{ color: userBalance?.bonus >= selectedDiscountBonus ? 'inherit' : 'red' }}>
+                                            { userBalance?.bonus >= selectedDiscountBonus ? ' достаточно' : ' не достаточно' }.
+                                        </Box>
+                                    </Typography>
+                                )}                                
                                 <Button                            
                                     variant="contained"
                                     color="secondary"
@@ -315,9 +361,10 @@ const Products = () => {
                                     </Alert>
                                 </Box>
                             )}
-                        </Box>                                    
+                        </Box>
+                    </Paper>
                     </div>
-                </Grid> 
+                </Grid>
                 <Sidebar
                     title={sidebar.title}
                     description={sidebar.description}
