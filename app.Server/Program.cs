@@ -118,7 +118,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Backend API", Version = "v1" });
 
     // Add JWT Authentication
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

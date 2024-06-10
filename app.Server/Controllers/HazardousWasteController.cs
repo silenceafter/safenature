@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace app.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("[controller]")]
     public class HazardousWasteController : Controller
     {
         private readonly ILogger<HazardousWasteController> _logger;
@@ -27,8 +27,8 @@ namespace app.Server.Controllers
             _hazardousWasteRepository = hazardousWasteRepository;
         }
 
-        [HttpGet]
-        [Authorize]
+        [HttpGet("get-hazardous-waste")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> GetHazardousWaste()
         {
             var data = await _hazardousWasteRepository.GetHazardousWasteAll();

@@ -2,6 +2,7 @@
 using app.Server.Models;
 using app.Server.Repositories;
 using app.Server.Repositories.Interfaces;
+using app.Server.Services;
 using app.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace app.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("[controller]")]
     public class AcceptanceController : Controller
     {
         private readonly ILogger<AcceptanceController> _logger;
@@ -18,29 +19,42 @@ namespace app.Server.Controllers
         private readonly IAcceptanceRepository _acceptanceRepository;
         private readonly IEncryptionService _encryptionService;
         private readonly IUserRepository _userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICAuthorizationService _authorizationService;
 
         public AcceptanceController(
             ILogger<AcceptanceController> logger, 
             EcodbContext context,
             IAcceptanceRepository acceptanceRepository,
             IEncryptionService encryptionService,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            IHttpContextAccessor httpContextAccessor,
+            ICAuthorizationService authorizationService)
         {
             _logger = logger;
             _context = context;
             _acceptanceRepository = acceptanceRepository;
             _encryptionService = encryptionService;
             _userRepository = userRepository;
+            _httpContextAccessor = httpContextAccessor;
+            _authorizationService = authorizationService;
         }
 
-        [HttpPost]
-        [Authorize]
+        [HttpPost("register-dispose")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> RegisterDispose([FromBody] List<AcceptanceRequest> request)
         {
             try
-            {                
+            {
+                //извлечь информацию из токена
+                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                //данные сервера авторизации
+                var authorizationData = await _authorizationService.GetAuthorizationData(token);
+
+
                 //пользователь
-                var emailHash = _encryptionService.ComputeHash(request[0].Email);
+                var emailHash = _encryptionService.ComputeHash(authorizationData.Email);
                 var user = await _userRepository.GetUserByEmail(emailHash);
 
                 //пользователь не найден
@@ -55,25 +69,6 @@ namespace app.Server.Controllers
             {
                 return BadRequest();
             }            
-        }
-
-        /*[HttpGet]
-        public async Task<IActionResult> GetDisposeAll()
-        {
-            var data = await _wasteDisposalRepository.GetDisposeAll();
-            return Ok(data);           
-        }*/
-
-        //действие по умолчанию при обращении к ecoproducts/, например, список товаров
-        //выдать карточку конкретного товара
-        //CRUD для товара
-        //возможно, CRUD для категорий товара
-        //"приобрести" товар за бонусы
-        //какие еще действия могут быть с товарами?
-
-        /*public IActionResult Index()
-        {
-            return View();
-        }*/
+        }   
     }
 }

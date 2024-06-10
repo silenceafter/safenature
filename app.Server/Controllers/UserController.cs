@@ -50,14 +50,19 @@ namespace app.Server.Controllers
             _authorizationService = authorizationService;
         }
 
-        [HttpPost("get-account-balance")]
-        [Authorize]
-        public async Task<IActionResult> GetAccountBalance([FromBody] UserRequest request)
+        [HttpGet("get-account-balance")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
+        public async Task<IActionResult> GetAccountBalance()
         {
             try
             {
-                var encrypt = _encryptionService.Encrypt(request.Email);
-                var emailHash = _encryptionService.ComputeHash(request.Email);
+                //извлечь информацию из токена
+                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                //данные сервера авторизации
+                var authorizationData = await _authorizationService.GetAuthorizationData(token);
+                var encrypt = _encryptionService.Encrypt(authorizationData.Email);
+                var emailHash = _encryptionService.ComputeHash(authorizationData.Email);
                 //
                 var user = await _userRepository.GetUserByEmail(emailHash);
                 if (user == null)

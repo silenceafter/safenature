@@ -1,42 +1,20 @@
-//import * as React from 'react';
-//import CssBaseline from '@mui/material/CssBaseline';
-//import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-//import Link from '@mui/material/Link';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import XIcon from '@mui/icons-material/X';
-import Main from '../components/main';
 import Sidebar from '../components/sidebar';
 import MainFeaturedPost from '../components/mainFeaturedPost';
 import image from '../images/bonusExchange.jpg';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper, IconButton, Divider
-} from '@mui/material';
-import { Container, Grid, TextField, FormControlLabel, Checkbox, Box, Autocomplete, Chip  } from '@mui/material';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
+import { Divider } from '@mui/material';
+import { Grid, TextField, Box } from '@mui/material';
 import Button from '@mui/material/Button';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-import Stack from '@mui/material/Stack';
-import DeleteIcon from '@mui/icons-material/Delete';
 import CircularProgress from '@mui/material/CircularProgress';
-import FormHelperText from '@mui/material/FormHelperText';
-import InputAdornment from '@mui/material/InputAdornment';
-import { login, logout } from '../store/actions/authActions';
+import { logout } from '../store/actions/authActions';
 import { Card, CardContent, Radio } from '@mui/material';
+import { Alert } from '@mui/material';
 
 function formatDate(dateString) {
     //форматирование даты в дд.мм.гггг
@@ -55,6 +33,8 @@ const BonusExchange = () => {
     const [loading, setLoading] = useState(true);
     const [selectedDiscountId, setSelectedDiscountId] = useState(null);
     const [selectedDiscountBonus, setSelectedDiscountBonus] = useState(null);
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const [submitResult, setSubmitResult] = useState(null);
     //
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -132,18 +112,17 @@ const BonusExchange = () => {
     ],
     };
 
-
-
     //собрать данные из элементов и отправить запрос на сервер
     const handleSubmit = async (event) => {
         event.preventDefault();
+        setSubmitLoading(true);
         const dataToSend = {
             email: email,
             discountId: selectedDiscountId
         };
     
         try {
-          const response = await fetch('https://localhost:7158/receivingdiscount/registerdiscountreserve', {
+          const response = await fetch('https://localhost:7158/receivingdiscount/register-discount-reserve', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -157,11 +136,36 @@ const BonusExchange = () => {
           }
     
           const result = await response.json();
-          console.log('Success:', result);
-          // Handle success (e.g., show a success message)
+          setSubmitResult({ success: true, message: 'Данные приняты!' });
         } catch (error) {
           console.error('Error:', error);
-          // Handle error (e.g., show an error message)
+          setSubmitResult({ success: false, message: 'Ошибка. Данные не приняты.' });
+        } finally {
+            setSubmitLoading(false);
+            setTimeout(() => setSubmitResult(null), 3000);
+
+            //обновляем баланс после успешного запроса
+            try {
+                const response2 = await fetch('https://localhost:7158/user/get-account-balance', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+    
+                if (response2.ok) {
+                    const balanceResponse = await response2.json();
+                    setUserBalance(balanceResponse);
+                } else {
+                    if (response2.status === 401) {
+                        dispatch(logout());
+                        navigate('/login');
+                    }
+                }
+            } catch (error) {
+                setError(error);
+            }
         }
       };  
 
@@ -174,10 +178,11 @@ const BonusExchange = () => {
         //1 получить список доступных купонов
         const userRequest = async () => {
             try {
-                const response = await fetch('https://localhost:7158/receivingdiscount/getdiscounts', {
+                const response = await fetch('https://localhost:7158/receivingdiscount/get-discounts', {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
                     }
                 });
                 //
@@ -200,13 +205,12 @@ const BonusExchange = () => {
 
                     //2 запрос баланса
                     try {
-                        const response2 = await fetch('https://localhost:7158/user/getaccountbalance', {
-                            method: 'POST',
+                        const response2 = await fetch('https://localhost:7158/user/get-account-balance', {
+                            method: 'GET',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
                                 'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ Email: email })
+                            }
                         });
                         //
                         if (response2.ok) {
@@ -277,7 +281,7 @@ const BonusExchange = () => {
                                     variant="outlined"
                                     fullWidth
                                     InputProps={{
-                                    readOnly: true,
+                                        readOnly: true,
                                     }}
                                     margin="normal"
                                 />
@@ -292,10 +296,19 @@ const BonusExchange = () => {
                                     color="secondary"
                                     type="submit"
                                     onClick={handleSubmit}
-                                >
-                                Подтвердить
+                                    disabled={submitLoading}
+                                    startIcon={submitLoading ? <CircularProgress size={24} /> : null}
+                                >                                    
+                                    Подтвердить
                                 </Button>
                             </Box>
+                            {submitResult && (
+                                <Box sx={{ mt: 2 }}>
+                                    <Alert severity={submitResult.success ? 'success' : 'error'}>
+                                        {submitResult.message}
+                                    </Alert>
+                                </Box>
+                            )}
                         </Box>                                    
                     </div>
                 </Grid> 

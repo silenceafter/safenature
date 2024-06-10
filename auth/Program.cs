@@ -166,7 +166,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Auth API", Version = "v1" });
 
     // Add JWT Authentication
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -209,7 +209,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth API V1");
         c.RoutePrefix = string.Empty; // This makes swagger the default page
     });
 }

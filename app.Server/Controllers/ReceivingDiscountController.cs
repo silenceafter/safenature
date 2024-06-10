@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace app.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("[controller]")]
     public class ReceivingDiscountController : Controller
     {
         private readonly ILogger<ReceivingDiscountController> _logger;
@@ -35,8 +35,8 @@ namespace app.Server.Controllers
             _userRepository = userRepository;
         }
 
-        [HttpPost]
-        [Authorize]
+        [HttpPost("register-discount-reserve")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> RegisterDiscountReserve([FromBody] ReceivingDiscountRequest request)
         {
             try
@@ -50,7 +50,7 @@ namespace app.Server.Controllers
                     return BadRequest();
 
                 var data = await _receivingDiscountRepository.RegisterDiscountReserve(request, user);
-                return Ok(data);
+                return data > 0 ? Ok(data) : BadRequest();
             }
             catch(Exception ex)
             {
@@ -58,8 +58,8 @@ namespace app.Server.Controllers
             }            
         }
 
-        [HttpGet]
-        [Authorize]
+        [HttpGet("get-discounts")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> GetDiscounts()
         {
             var data = await _receivingDiscountRepository.GetDiscountsAll();

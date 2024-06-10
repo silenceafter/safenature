@@ -19,16 +19,21 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import CircularProgress from '@mui/material/CircularProgress';
 import { login, logout } from '../store/actions/authActions';
+import Alert from '@mui/material/Alert';
 
 const Acceptance = () => {
     const { email, token } = useSelector((state) => state.auth);
     const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [submitLoading, setSubmitLoading] = useState(false);//для submit
+    const [submitResult, setSubmitResult] = useState(null);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const [value, setValue] = useState(1);
+    let timeoutId;
+
     //раздел
     const mainFeaturedPost = {
         title: 'Принять отходы',
@@ -51,14 +56,20 @@ const Acceptance = () => {
     ],
     };
 
+    //рассчитаем бонусы
+    const calculateBonus = (selectValue, quantityValue) => {
+        const selectedItem = userData.find(item => item.id === selectValue);
+        return selectedItem ? selectedItem.bonuses * quantityValue : 0;
+    };
+
     //state формы
     const [fields, setFields] = useState([
-        { id: 1, selectValue: '', textFieldQuantityValue: 1, textFieldBonusValue: 1 }
+        { id: 1, selectValue: '', textFieldQuantityValue: 1, textFieldBonusValue: 0 }
       ]);
 
     //добавить строку
     const handleAddField = () => {
-        setFields([...fields, { id: fields.length + 1, selectValue: '', textFieldQuantityValue: 1, textFieldBonusValue: 1 }]);
+        setFields([...fields, { id: fields.length + 1, selectValue: '', textFieldQuantityValue: 1, textFieldBonusValue: 0 }]);
     };
 
     //удалить строку
@@ -68,15 +79,21 @@ const Acceptance = () => {
 
     //изменить значение Select
     const handleSelectChange = (id, newValue) => {
+        const field = fields.find(field => field.id === id);
+        const quantityValue = field ? field.textFieldQuantityValue : 0;
+        //
         setFields(fields.map((field) =>
-          field.id === id ? { ...field, selectValue: newValue } : field
+          field.id === id ? { ...field, selectValue: newValue, textFieldBonusValue: calculateBonus(newValue, quantityValue) } : field
         ));
     };
     
     //изменить значение TextValue1
     const handleTextFieldQuantityChange = (id, newValue) => {
+        const field = fields.find(field => field.id === id);
+        const selectValue = field ? field.selectValue : '';
+
         setFields(fields.map((field) =>
-            field.id === id ? { ...field, textFieldQuantityValue: newValue } : field
+            field.id === id ? { ...field, textFieldQuantityValue: newValue, textFieldBonusValue: calculateBonus(selectValue, newValue) } : field
         ));
     };
 
@@ -90,6 +107,7 @@ const Acceptance = () => {
     //собрать данные из элементов и отправить запрос на сервер
     const handleSubmit = async (event) => {
         event.preventDefault();
+        setSubmitLoading(true);
         const dataToSend = fields.map(field => ({
           email: email,
           hazardousWasteId: field.selectValue,
@@ -97,7 +115,7 @@ const Acceptance = () => {
         }));
     
         try {
-          const response = await fetch('https://localhost:7158/acceptance/registerdispose', {
+          const response = await fetch('https://localhost:7158/acceptance/register-dispose', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -111,11 +129,14 @@ const Acceptance = () => {
           }
     
           const result = await response.json();
-          console.log('Success:', result);
-          // Handle success (e.g., show a success message)
+          setSubmitResult({ success: true, message: 'Данные приняты!' });
+          setFields([{ id: 1, selectValue: '', textFieldQuantityValue: 1, textFieldBonusValue: 0 }]);//оставить первую строку, очистить элементы
         } catch (error) {
           console.error('Error:', error);
-          // Handle error (e.g., show an error message)
+          setSubmitResult({ success: false, message: 'Ошибка при отправке данных.' });
+        } finally {
+            setSubmitLoading(false);
+            setTimeout(() => setSubmitResult(null), 3000);
         }
       };  
 
@@ -128,7 +149,7 @@ const Acceptance = () => {
         //запросы: 1-й к сервису авторизации, 2-й к бекенд-части
         const userRequest = async () => {
             try {
-                const response = await fetch('https://localhost:7158/hazardouswaste/gethazardouswaste', {
+                const response = await fetch('https://localhost:7158/hazardouswaste/get-hazardous-waste', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -152,6 +173,9 @@ const Acceptance = () => {
             }
         };
         userRequest();
+        return () => 
+            // Очистка таймера при размонтировании компонента
+            clearTimeout();
     }, []);
 
     //рендер
@@ -212,10 +236,10 @@ const Acceptance = () => {
                                                 labelId={`select-label-${field.id}`}
                                                 value={field.selectValue}
                                                 label="Отход"
-                                                onChange={(event) => handleSelectChange(field.id, event.target.value)}
+                                                onChange={(event) => handleSelectChange(field.id, event.target.value, 0)}
                                             >
                                                 {userData.map((option) => (
-                                                <MenuItem key={option.id} value={option.id}>
+                                                <MenuItem key={option.id} value={option.id}> 
                                                     {option.name}
                                                 </MenuItem>
                                                 ))}
@@ -232,11 +256,11 @@ const Acceptance = () => {
                                     </Grid>
                                     <Grid item xs={2.5} mb={2}>
                                         <TextField
+                                            readOnly={true}
                                             label="Бонусы"
                                             type="number"
-                                            value={field.textFieldBonusValue}
-                                            onChange={(event) => handleTextFieldBonusChange(field.id, parseInt(event.target.value, 10) || 0)}
-                                            />
+                                            value={field.textFieldBonusValue}                                           
+                                        />
                                     </Grid>
                                     <Grid item xs={2} mb={2}>
                                         <Button
@@ -266,10 +290,19 @@ const Acceptance = () => {
                                     variant="contained"
                                     color="secondary"
                                     type="submit"
+                                    disabled={submitLoading}
+                                    startIcon={submitLoading ? <CircularProgress size={24} /> : null}
                                     >
                                     Подтвердить
                                     </Button>
                                 </Box>
+                                {submitResult && (
+                                    <Box sx={{ mt: 2 }}>
+                                        <Alert severity={submitResult.success ? 'success' : 'error'}>
+                                            {submitResult.message}
+                                        </Alert>
+                                    </Box>
+                                )}
                             </Box>
                         </Box>                                    
                     </div>
