@@ -35,6 +35,7 @@ const BonusExchange = () => {
     const [selectedDiscountBonus, setSelectedDiscountBonus] = useState(null);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [submitResult, setSubmitResult] = useState(null);
+    const { social } = useSelector((state) => state.social);
     //
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -119,15 +120,10 @@ const BonusExchange = () => {
 
     //информация о странице
     const sidebar = {
-    title: 'About',
-    description:
-        'Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.',
-    
-    social: [
-        { name: 'GitHub', icon: GitHubIcon },
-        { name: 'X', icon: XIcon },
-        { name: 'Facebook', icon: FacebookIcon },
-    ],
+        title: 'About',
+        description:
+            'Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.',        
+        social: social,
     };
 
     //собрать данные из элементов и отправить запрос на сервер

@@ -28,6 +28,7 @@ const Acceptance = () => {
     const [loading, setLoading] = useState(true);
     const [submitLoading, setSubmitLoading] = useState(false);//для submit
     const [submitResult, setSubmitResult] = useState(null);
+    const { social } = useSelector((state) => state.social);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -49,11 +50,7 @@ const Acceptance = () => {
     description:
         'Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.',
     
-    social: [
-        { name: 'GitHub', icon: GitHubIcon },
-        { name: 'X', icon: XIcon },
-        { name: 'Facebook', icon: FacebookIcon },
-    ],
+    social: social,
     };
 
     //рассчитаем бонусы

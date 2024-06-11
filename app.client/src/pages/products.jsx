@@ -29,10 +29,23 @@ const productImages = {
     4: product_4
   };
 
+function getCorrectForm(quantity, forms) {
+    const lastDigit = quantity % 10;
+    const lastTwoDigits = quantity % 100;
+
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 19)
+        return forms[2];
+    if (lastDigit === 1)
+        return forms[0];
+    if (lastDigit >= 2 && lastDigit <= 4)
+        return forms[1];
+    return forms[2];
+}
+
 const ProductCard = ({ product, onQuantityChange }) => {
     const imageUrl = productImages[product.id];
     return (
-        <Card style={{ margin: '20px', width: '200px' }}>
+        <Card style={{ margin: '20px', width: '300px' }}>
           <CardMedia
             component="img"
             image={imageUrl}
@@ -42,6 +55,7 @@ const ProductCard = ({ product, onQuantityChange }) => {
           <CardContent>
             <Typography variant="h5" component="div">{product.name}</Typography>
             <Typography variant="body1" color="textSecondary">Цена: {product.bonus} бонусов</Typography>
+            <Typography variant="body2" style={{ marginTop: '10px' }}>Описание: {product.description}</Typography>
             <TextField
               label="Количество"
               type="number"
@@ -59,7 +73,7 @@ const ProductCard = ({ product, onQuantityChange }) => {
 const Products = () => {
     const { email, token } = useSelector((state) => state.auth);
     const [userData, setUserData] = useState(null);
-    const [userBalance, setUserBalance] = useState(null);
+    const [userBalance, setUserBalance] = useState(0);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedDiscountId, setSelectedDiscountId] = useState(null);
@@ -67,6 +81,8 @@ const Products = () => {
     const [submitLoading, setSubmitLoading] = useState(false);
     const [submitResult, setSubmitResult] = useState(null);
     const [products, setProducts] = useState([]);
+    const [totalBonus, setTotalBonus] = useState(0);
+    const { social } = useSelector((state) => state.social);
     //
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -74,7 +90,29 @@ const Products = () => {
     useEffect(() => {
         const fetchProducts = async () => {
           try {
-            const response = await fetch('https://localhost:7158/product/get-products', {
+            //запрос 1 = список товаров
+            const response1 = await fetch('https://localhost:7158/product/get-products', {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+            //
+            if (!response1.ok) {
+                //редирект
+                if (response1.status === 401) {
+                    dispatch(logout());
+                    navigate('/login');
+                }
+            }
+
+            const data1 = await response1.json();
+            const productsWithQuantity = data1.map(product => ({ ...product, quantity: 0 }));
+            setProducts(productsWithQuantity);
+
+            //запрос 2 = баланс пользователя
+            const response2 = await fetch('https://localhost:7158/user/get-account-balance', {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -82,27 +120,32 @@ const Products = () => {
               },
             });
     
-            if (response.ok) {
-              const data = await response.json();
-              const productsWithQuantity = data.map(product => ({ ...product, quantity: 0 }));
-              setProducts(productsWithQuantity);
-            } else {
-              console.error('Failed to fetch products');
+            if (!response2.ok) {
+                //редирект
+                if (response2.status === 401) {
+                    dispatch(logout());
+                    navigate('/login');
+                }
             }
+            //
+            const data2 = await response2.json();
+            setUserBalance(data2.bonus);
           } catch (error) {
             console.error('Error:', error);
           } finally {
             setLoading(false);
           }
         };
-    
         fetchProducts();
       }, [token]);
     
       const handleQuantityChange = (id, quantity) => {
-        setProducts(products.map(product => 
-          product.id === id ? { ...product, quantity: parseInt(quantity, 10) } : product
-        ));
+        const updatedProducts = products.map(product =>
+            product.id === id ? { ...product, quantity: parseInt(quantity, 10) } : product
+        );
+        setProducts(updatedProducts);
+        const total = updatedProducts.reduce((sum, product) => sum + (product.quantity * product.bonus), 0);
+        setTotalBonus(total);
       };
     
 
@@ -125,12 +168,8 @@ const Products = () => {
     const sidebar = {
     title: 'Товары',
     description:
-        'Наши товары прекрасно дополнят любой гардероб благодаря своим базовым цветам - белому, бежевому и черному. Не упустите шанс добавить стильные и экологически чистые вещи в свою коллекцию!',    
-    social: [
-        { name: 'GitHub', icon: GitHubIcon },
-        { name: 'X', icon: XIcon },
-        { name: 'Facebook', icon: FacebookIcon },
-    ],
+        'Спасибо, что выбираете товары нашего эко-бренда и поддерживаете наш проект. Вместе мы можем сделать мир чище и безопаснее! Если у вас возникли вопросы или нужны рекомендации по выбору товаров, пожалуйста, свяжитесь с нами:',    
+    social: social,
     };
 
     //собрать данные из элементов и отправить запрос на сервер
@@ -189,94 +228,20 @@ const Products = () => {
             }
         }
       };  
-
-    //useEffect
-    /*useEffect(() => {
-        //доступ запрещен
-        if (!email)
-            navigate('/access-denied');
-        
-        //1 получить список доступных купонов
-        const userRequest = async () => {
-            try {
-                const response = await fetch('https://localhost:7158/receivingdiscount/get-discounts', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    }
-                });
-                //
-                if (response.ok) {
-                    const userResponse = await response.json();
-                    let items = [];
-                    for(const item of userResponse) {
-                        items.push(
-                            {
-                                id: item.id,
-                                storeName: item.partner.name,
-                                conditions: item.terms,
-                                bonus: item.bonuses,
-                                dateStart: item.dateStart,
-                                dateEnd: item.dateEnd
-                            }
-                        );
-                    }
-                    setUserData(items);
-
-                    //2 запрос баланса
-                    try {
-                        const response2 = await fetch('https://localhost:7158/user/get-account-balance', {
-                            method: 'GET',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json',
-                            }
-                        });
-                        //
-                        if (response2.ok) {
-                            const balanceResponse = await response2.json();
-                            setUserBalance(balanceResponse);
-                        } else {
-                            if (response.status === 401) {
-                                //токен не действует
-                                dispatch(logout());//удалить токен
-                                navigate('/login');
-                            }
-                        }
-                    } catch(error) {
-                        setError(error);
-                    }
-                } else {
-                    if (response.status === 401) {
-                        //токен не действует
-                        dispatch(logout());//удалить токен
-                        navigate('/login');
-                    }                
-                }
-            } catch (error) {
-                setError(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        userRequest();
-    }, []);*/
-
     const selectedProducts = products.filter(product => product.quantity > 0);
 
     //рендер
-    /*if (loading) {
+    if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 <CircularProgress />
             </Box>
         );
-    }*/
+    }
     //
     return (
         <> 
-            <MainFeaturedPost post={mainFeaturedPost} />   
+            <MainFeaturedPost post={mainFeaturedPost} />
             <Grid container spacing={5} sx={{ mt: 3 }}>                           
                 <Grid
                     item
@@ -299,6 +264,10 @@ const Products = () => {
                                 Посмотрите наши прекрасные товары! Теперь у нас есть шопперы, худи, футболки и кепки - все с логотипом 
                                 нашего экологического бренда. Они изготовлены из натуральных тканей, и самое классное - их можно обменять 
                                 на бонусы для всех участников нашего экологического проекта!
+                            </Typography>
+                            <Typography variant="body1" paragraph>
+                            Наши товары прекрасно дополнят любой гардероб благодаря своим базовым цветам - белому, бежевому и черному. 
+                            Не упустите шанс добавить стильные и экологически чистые вещи в свою коллекцию!    
                             </Typography>            
                             <Grid container direction="row" spacing={2}> {}
                                 {products.map((product) => (
@@ -317,30 +286,43 @@ const Products = () => {
                                 <Box sx={{ mt: 2, mb: 2 }}>
                                     {selectedProducts.map((product) => (
                                         <Typography key={product.id} variant="body2" color="textSecondary">
-                                            {product.name} {product.quantity} штуки = {product.quantity * product.bonus} бонусов
+                                            {product.name} {product.quantity} {getCorrectForm(product.quantity, ['штука', 'штуки', 'штук'])} = {product.quantity * product.bonus} бонусов
                                         </Typography>
                                     ))}
                                 </Box>
-                            )}
-                            
-
-                            <Box sx={{ mt: 2, mb: 2 }}>
-                                <TextField
-                                    label='Кол-во бонусов'
-                                    value={userBalance?.bonus}
-                                    variant="outlined"
-                                    fullWidth
-                                    InputProps={{
-                                        readOnly: true,
-                                    }}
-                                    margin="normal"
-                                />
-                                {selectedDiscountBonus && (
+                            )}                            
+                            <Grid container spacing={2} mb={2}>
+                                <Grid item xs={6} mb={2}>
+                                    <TextField
+                                        label='Стоимость'
+                                        value={totalBonus}
+                                        variant="outlined"
+                                        fullWidth
+                                        InputProps={{
+                                            readOnly: true,
+                                        }}
+                                        margin="normal"
+                                    />
+                                </Grid>
+                                <Grid item xs={6} mb={2}>
+                                    <TextField
+                                        label='Кол-во бонусов'
+                                        value={userBalance}
+                                        variant="outlined"
+                                        fullWidth
+                                        InputProps={{
+                                            readOnly: true,
+                                        }}
+                                        margin="normal"
+                                    />                                    
+                                </Grid>                                
+                            </Grid>
+                                {totalBonus > 0 && (
                                     <Typography variant="body1" paragraph>
-                                        Будет списано { selectedDiscountBonus } бонусов. Баллов на счете 
-                                        <Box component="span" sx={{ color: userBalance?.bonus >= selectedDiscountBonus ? 'inherit' : 'red' }}>
-                                            { userBalance?.bonus >= selectedDiscountBonus ? ' достаточно' : ' не достаточно' }.
-                                        </Box>
+                                    Будет списано {totalBonus} бонусов. Баллов на счете
+                                    <Box component="span" sx={{ color: userBalance >= totalBonus ? 'inherit' : 'red' }}>
+                                        {userBalance >= totalBonus ? ' достаточно' : ' не достаточно'}.
+                                    </Box>
                                     </Typography>
                                 )}                                
                                 <Button                            
@@ -352,15 +334,14 @@ const Products = () => {
                                     startIcon={submitLoading ? <CircularProgress size={24} /> : null}
                                 >                                    
                                     Подтвердить
-                                </Button>
-                            </Box>
-                            {submitResult && (
-                                <Box sx={{ mt: 2 }}>
-                                    <Alert severity={submitResult.success ? 'success' : 'error'}>
-                                        {submitResult.message}
-                                    </Alert>
-                                </Box>
-                            )}
+                                </Button>                            
+                                {submitResult && (
+                                    <Box sx={{ mt: 2 }}>
+                                        <Alert severity={submitResult.success ? 'success' : 'error'}>
+                                            {submitResult.message}
+                                        </Alert>
+                                    </Box>
+                                )}
                         </Box>
                     </Paper>
                     </div>

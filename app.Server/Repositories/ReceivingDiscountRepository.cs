@@ -20,7 +20,6 @@ namespace app.Server.Repositories
             {
                 try
                 {
-                    //var user = await _context.Users.FindAsync(request.UserId);
                     var discount = await _context.Discounts.FindAsync(request.DiscountId);
                     var bonusesEnd = user.Bonuses - discount.Bonuses;
 

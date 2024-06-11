@@ -41,6 +41,7 @@
 
   <ItemGroup>
     <Folder Include="Controllers\Response\HazardClassResponse.cs\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>
