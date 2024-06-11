@@ -47,10 +47,6 @@ const Partners = () => {
   };
   //
   useEffect(() => {
-      //доступ запрещен
-      if (!email)
-          navigate('/access-denied');
-
       const userRequest = async () => {
       try {
           const response = await fetch('https://localhost:7158/partner/getpartners', {

@@ -12,4 +12,6 @@ public partial class Product
     public string Description { get; set; } = null!;
 
     public int Bonus { get; set; }
+
+    public virtual ReceivingProduct? ReceivingProduct { get; set; }
 }

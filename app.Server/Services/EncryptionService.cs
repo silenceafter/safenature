@@ -28,15 +28,6 @@ namespace app.Server.Services
             using (Aes aesAlg = Aes.Create())
             {
                 //генерация ключа
-                /*string gkey = "";
-                using (var rng = new RNGCryptoServiceProvider())
-                {
-                    byte[] key = new byte[32];
-                    rng.GetBytes(key);
-                    gkey = Convert.ToBase64String(key);
-                }*/
-
-                //string hh = _configuration["Encryption:Key"];
                 byte[] keyBytes = Convert.FromBase64String(_configuration["Encryption:Key"]);
                 aesAlg.Key = keyBytes;
                 aesAlg.GenerateIV();
@@ -89,23 +80,6 @@ namespace app.Server.Services
                     return srDecrypt.ReadToEnd();
                 }
             }
-        }
-    
-        /*public async Task<bool> Validate(string token)
-        {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync("https://localhost:7086/account/validate", new { Token = token });
-                response.EnsureSuccessStatusCode();
-                using (var stream = await response.Content.ReadAsStreamAsync())
-                {
-                    return await JsonSerializer.DeserializeAsync<bool>(stream);                    
-                }
-            }
-            catch(Exception ex)
-            {
-                return false;
-            }
-        }*/
+        } 
     }
 }

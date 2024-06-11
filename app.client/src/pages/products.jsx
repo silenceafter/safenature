@@ -2,9 +2,6 @@ import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import XIcon from '@mui/icons-material/X';
 import Sidebar from '../components/sidebar';
 import MainFeaturedPost from '../components/mainFeaturedPost';
 import image from '../images/products.jpg';
@@ -42,7 +39,7 @@ function getCorrectForm(quantity, forms) {
     return forms[2];
 }
 
-const ProductCard = ({ product, onQuantityChange }) => {
+const ProductCard = ({ product, onQuantityChange, role }) => {
     const imageUrl = productImages[product.id];
     return (
         <Card style={{ margin: '20px', width: '300px' }}>
@@ -54,25 +51,26 @@ const ProductCard = ({ product, onQuantityChange }) => {
           />
           <CardContent>
             <Typography variant="h5" component="div">{product.name}</Typography>
-            <Typography variant="body1" color="textSecondary">Цена: {product.bonus} бонусов</Typography>
+            <Typography variant="body1" color="textSecondary">Стоимость: {product.bonus} бонусов</Typography>
             <Typography variant="body2" style={{ marginTop: '10px' }}>Описание: {product.description}</Typography>
-            <TextField
-              label="Количество"
-              type="number"
-              variant="outlined"
-              size="medium"
-              value={product.quantity}
-              onChange={(e) => onQuantityChange(product.id, e.target.value)}
-              style={{ marginTop: '20px', width: '100%' }}
-            />
+            { role != null && (
+                <TextField
+                    label="Количество"
+                    type="number"
+                    variant="outlined"
+                    size="medium"
+                    value={product.quantity}
+                    onChange={(e) => onQuantityChange(product.id, e.target.value)}
+                    style={{ marginTop: '20px', width: '100%' }}
+                    />
+            )}            
           </CardContent>
         </Card>
     );
   };
 
 const Products = () => {
-    const { email, token } = useSelector((state) => state.auth);
-    const [userData, setUserData] = useState(null);
+    const { email, token, role } = useSelector((state) => state.auth);
     const [userBalance, setUserBalance] = useState(0);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -148,7 +146,6 @@ const Products = () => {
         setTotalBonus(total);
       };
     
-
     const handleSelect = (id, bonus) => {
         setSelectedDiscountId(id);//храним выбранный id карты
         setSelectedDiscountBonus(bonus);//храним количество бонусов, которое стоит купон
@@ -266,82 +263,86 @@ const Products = () => {
                                 на бонусы для всех участников нашего экологического проекта!
                             </Typography>
                             <Typography variant="body1" paragraph>
-                            Наши товары прекрасно дополнят любой гардероб благодаря своим базовым цветам - белому, бежевому и черному. 
-                            Не упустите шанс добавить стильные и экологически чистые вещи в свою коллекцию!    
+                                Наши товары прекрасно дополнят любой гардероб благодаря своим базовым цветам - белому, бежевому и черному. 
+                                Не упустите шанс добавить стильные и экологически чистые вещи в свою коллекцию!    
                             </Typography>            
                             <Grid container direction="row" spacing={2}> {}
                                 {products.map((product) => (
                                 <Grid item xs={12} md={6} key={product.id}> {/* для экранов меньших (xs) один элемент в строке, для экранов больших (md) два элемента в строке */}
-                                    <ProductCard product={product} onQuantityChange={handleQuantityChange} />
+                                    <ProductCard product={product} onQuantityChange={handleQuantityChange} role={role} />
                                 </Grid>
                                 ))}
                             </Grid>
-                            <Divider style={{ marginTop: '32px' }} />
-                            <Box sx={{ textAlign: 'justify', mt: 2, mb: 2, height: '100%', overflow: 'hidden' }}>
-                                <Typography variant="h4" component="h1" gutterBottom>
-                                    Итого
-                                </Typography>
-                            </Box>
-                            {selectedProducts.length > 0 && (
-                                <Box sx={{ mt: 2, mb: 2 }}>
-                                    {selectedProducts.map((product) => (
-                                        <Typography key={product.id} variant="body2" color="textSecondary">
-                                            {product.name} {product.quantity} {getCorrectForm(product.quantity, ['штука', 'штуки', 'штук'])} = {product.quantity * product.bonus} бонусов
+                            { role != null && (
+                                <>
+                                    <Divider style={{ marginTop: '32px' }} />
+                                    <Box sx={{ textAlign: 'justify', mt: 2, mb: 2, height: '100%', overflow: 'hidden' }}>
+                                        <Typography variant="h4" component="h1" gutterBottom>
+                                            Итого
                                         </Typography>
-                                    ))}
-                                </Box>
-                            )}                            
-                            <Grid container spacing={2} mb={2}>
-                                <Grid item xs={6} mb={2}>
-                                    <TextField
-                                        label='Стоимость'
-                                        value={totalBonus}
-                                        variant="outlined"
-                                        fullWidth
-                                        InputProps={{
-                                            readOnly: true,
-                                        }}
-                                        margin="normal"
-                                    />
-                                </Grid>
-                                <Grid item xs={6} mb={2}>
-                                    <TextField
-                                        label='Кол-во бонусов'
-                                        value={userBalance}
-                                        variant="outlined"
-                                        fullWidth
-                                        InputProps={{
-                                            readOnly: true,
-                                        }}
-                                        margin="normal"
-                                    />                                    
-                                </Grid>                                
-                            </Grid>
-                                {totalBonus > 0 && (
-                                    <Typography variant="body1" paragraph>
-                                    Будет списано {totalBonus} бонусов. Баллов на счете
-                                    <Box component="span" sx={{ color: userBalance >= totalBonus ? 'inherit' : 'red' }}>
-                                        {userBalance >= totalBonus ? ' достаточно' : ' не достаточно'}.
                                     </Box>
-                                    </Typography>
-                                )}                                
-                                <Button                            
-                                    variant="contained"
-                                    color="secondary"
-                                    type="submit"
-                                    onClick={handleSubmit}
-                                    disabled={submitLoading}
-                                    startIcon={submitLoading ? <CircularProgress size={24} /> : null}
-                                >                                    
-                                    Подтвердить
-                                </Button>                            
-                                {submitResult && (
-                                    <Box sx={{ mt: 2 }}>
-                                        <Alert severity={submitResult.success ? 'success' : 'error'}>
-                                            {submitResult.message}
-                                        </Alert>
-                                    </Box>
-                                )}
+                                    {selectedProducts.length > 0 && (
+                                        <Box sx={{ mt: 2, mb: 2 }}>
+                                            {selectedProducts.map((product) => (
+                                                <Typography key={product.id} variant="body2" color="textSecondary">
+                                                    {product.name} {product.quantity} {getCorrectForm(product.quantity, ['штука', 'штуки', 'штук'])} = {product.quantity * product.bonus} бонусов
+                                                </Typography>
+                                            ))}
+                                        </Box>
+                                    )}                            
+                                    <Grid container spacing={2} mb={2}>
+                                        <Grid item xs={6} mb={2}>
+                                            <TextField
+                                                label='Стоимость'
+                                                value={totalBonus}
+                                                variant="outlined"
+                                                fullWidth
+                                                InputProps={{
+                                                    readOnly: true,
+                                                }}
+                                                margin="normal"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={6} mb={2}>
+                                            <TextField
+                                                label='Кол-во бонусов'
+                                                value={userBalance}
+                                                variant="outlined"
+                                                fullWidth
+                                                InputProps={{
+                                                    readOnly: true,
+                                                }}
+                                                margin="normal"
+                                            />                                    
+                                        </Grid>                                
+                                    </Grid>
+                                    {totalBonus > 0 && (
+                                        <Typography variant="body1" paragraph>
+                                        Будет списано {totalBonus} бонусов. Баллов на счете
+                                        <Box component="span" sx={{ color: userBalance >= totalBonus ? 'inherit' : 'red' }}>
+                                            {userBalance >= totalBonus ? ' достаточно' : ' не достаточно'}.
+                                        </Box>
+                                        </Typography>
+                                    )}                                
+                                    <Button                            
+                                        variant="contained"
+                                        color="secondary"
+                                        type="submit"
+                                        onClick={handleSubmit}
+                                        disabled={submitLoading}
+                                        startIcon={submitLoading ? <CircularProgress size={24} /> : null}
+                                    >                                    
+                                        Подтвердить
+                                    </Button>                            
+                                    {submitResult && (
+                                        <Box sx={{ mt: 2 }}>
+                                            <Alert severity={submitResult.success ? 'success' : 'error'}>
+                                                {submitResult.message}
+                                            </Alert>
+                                        </Box>
+                                    )}
+                                </>
+                            )}                        
                         </Box>
                     </Paper>
                     </div>

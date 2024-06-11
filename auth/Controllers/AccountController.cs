@@ -44,41 +44,49 @@ namespace auth.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
-            var result = await _accountService.Login(model);            
-            if (result.Count > 0)
+            try
             {
-                var errors = result;
-                ModelState.AddModelError("EmailPassword", "Email или пароль");
-                /*var errors = new Dictionary<string, string[]>
+                //вход пользователя в систему
+                var result = await _accountService.Login(model);
+                if (result.Count > 0)
                 {
-                    { "error", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToArray() }
-                };*/
-                return BadRequest(new { errors });
-            }              
+                    var errors = result;
+                    ModelState.AddModelError("EmailPassword", "Email или пароль");
+                    return BadRequest(new { errors });
+                }
 
-            //генерация токена
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                ModelState.AddModelError("User", "Пользователь не найден");
-                var errors = new Dictionary<string, string[]>
+                //найти пользователя в системе
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null)
                 {
-                    { "User", new string[] { "Пользователь не найден" } }
-                };
-                return BadRequest(new { errors });//return Unauthorized("User not found");
-            }                
-            //
-            var token = _tokenService.GenerateJwtToken(user);
-            if (token == null)
-            {
-                ModelState.AddModelError("Token", "Внутренняя ошибка");
-                var errors = new Dictionary<string, string[]>
+                    ModelState.AddModelError("User", "Пользователь не найден");
+                    var errors = new Dictionary<string, string[]>
+                    {
+                        { "User", new string[] { "Пользователь не найден" } }
+                    };
+                    return BadRequest(new { errors });//return Unauthorized("User not found");
+                }
+
+                //роли пользователя
+                var roles = await _userManager.GetRolesAsync(user);
+
+                //генерировать токен
+                var token = _tokenService.GenerateJwtToken(user);
+                if (token == null)
                 {
-                    { "Token", new string[] { "Внутренняя ошибка" } }
-                };
-                return BadRequest(new { errors });//return Unauthorized("Invalid email or password.");
-            }                
-            return Ok(new { UserName = user.UserName, Token = token });
+                    ModelState.AddModelError("Token", "Внутренняя ошибка");
+                    var errors = new Dictionary<string, string[]>
+                    {
+                        { "Token", new string[] { "Внутренняя ошибка" } }
+                    };
+                    return BadRequest(new { errors });//return Unauthorized("Invalid email or password.");
+                }
+                return Ok(new { UserName = user.UserName, Role = roles[0], Token = token });
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(ex);
+            }
         }
 
         [HttpPost("logout")]

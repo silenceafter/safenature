@@ -21,6 +21,8 @@ public partial class Transaction
 
     public virtual ICollection<ReceivingDiscount> ReceivingDiscounts { get; set; } = new List<ReceivingDiscount>();
 
+    public virtual ReceivingProduct? ReceivingProduct { get; set; }
+
     public virtual TransactionType Type { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;

@@ -27,9 +27,13 @@ public partial class EcodbContext : DbContext
 
     public virtual DbSet<Partner> Partners { get; set; }
 
+    public virtual DbSet<Point> Points { get; set; }
+
     public virtual DbSet<Product> Products { get; set; }
 
     public virtual DbSet<ReceivingDiscount> ReceivingDiscounts { get; set; }
+
+    public virtual DbSet<ReceivingProduct> ReceivingProducts { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
 
@@ -41,7 +45,7 @@ public partial class EcodbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;port=3306;database=ecodb;uid=root;password=4286Avetisova", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.37-mysql"));
+        => optionsBuilder.UseMySql("server=localhost;database=ecodb;user=root;password=4286Avetisova", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.37-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -158,6 +162,23 @@ public partial class EcodbContext : DbContext
             entity.Ignore(e => e.Discounts);//исключаем цикличную вложенность записей
         });
 
+        modelBuilder.Entity<Point>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("points");
+
+            entity.HasIndex(e => e.Name, "points_unique").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Address)
+                .HasColumnType("text")
+                .HasColumnName("address");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .HasColumnName("name");
+        });
+
         modelBuilder.Entity<Product>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -202,6 +223,30 @@ public partial class EcodbContext : DbContext
                 .HasForeignKey(d => d.TransactionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("receiving_discounts_transaction_id_fk");
+        });
+
+        modelBuilder.Entity<ReceivingProduct>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("receiving_products");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+            entity.Property(e => e.Date)
+                .HasColumnType("datetime")
+                .HasColumnName("date");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
+
+            entity.HasOne(d => d.IdNavigation).WithOne(p => p.ReceivingProduct)
+                .HasForeignKey<ReceivingProduct>(d => d.Id)
+                .HasConstraintName("receiving_products_products_FK");
+
+            entity.HasOne(d => d.Id1).WithOne(p => p.ReceivingProduct)
+                .HasForeignKey<ReceivingProduct>(d => d.Id)
+                .HasConstraintName("receiving_products_transactions_FK");
         });
 
         modelBuilder.Entity<Role>(entity =>

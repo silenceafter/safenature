@@ -36,8 +36,7 @@ function Header(props) {
       { title: 'Обменять бонусы', url: '/bonus-exchange' },      
       { title: 'Магазины', url: '/partners' },            
       { title: 'Наши товары', url: '/products' }, 
-      { title: 'Пункты приёма отходов', url: '/points' },           
-      { title: 'Учетная запись', url: '/account' },            
+      { title: 'Пункты приёма отходов', url: '/points' },          
     ];
   } else {
     //для гостей
@@ -45,8 +44,8 @@ function Header(props) {
       { title: 'Главная', url: '/' },
       { title: 'О нас', url: '/about' },
       { title: 'Магазины', url: '/partners' },
-      { title: 'Пункты приёма отходов', url: '/points' },      
       { title: 'Наши товары', url: '/products' },
+      { title: 'Пункты приёма отходов', url: '/points' },
     ];
   }
 
@@ -84,9 +83,9 @@ function Header(props) {
                 gap={2}
                 alignItems="center"
               >
-                <IconButton>
+                {/*<IconButton>
                   <SearchIcon />
-                </IconButton>
+                </IconButton>*/}
                 <Typography component={RouterLink} to="/account" sx={{ textDecoration: 'none' }}>{username}</Typography>
                 <Button variant="outlined" size="small" component={RouterLink} to="/logout">
                   Выйти
@@ -102,9 +101,9 @@ function Header(props) {
                 gap={2}
                 alignItems="center"
               >
-                <IconButton>
+                {/*<IconButton>
                   <SearchIcon />
-                </IconButton>                
+                </IconButton>*/}                
                 <Button variant="outlined" size="small" component={RouterLink} to="/login">
                   Войти
                 </Button>

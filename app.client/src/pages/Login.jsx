@@ -25,64 +25,73 @@ const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const handleSubmit = async () => {
-      setLoading(true);
-      setMessage(null);
-      //
-      try {
-        const response = await fetch('https://localhost:7086/account/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'                 
-            },
-            body: JSON.stringify({ Email: formData.email, Password: formData.password })
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-
-            //сохранить токен
-            dispatch(login(result.userName, formData.email, result.token.result));   
-            
-            //запрос к бекенд-приложению
-            const backendResponse = await fetch('https://localhost:7158/user/login', {
-                method: 'GET',
+    const handleSubmit = async (event) => {
+        //event.preventDefault();
+        if (!formData.email || !formData.password) {
+            setMessage({ type: 'error', text: 'Пожалуйста, заполните все обязательные поля' });
+            return;
+        }
+        //
+        setLoading(true);
+        setMessage(null);
+      
+        try {
+            const response = await fetch('https://localhost:7086/account/login', {
+                method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${result.token.result}`,
-                    'Content-Type': 'application/json'    
-                }
+                    'Content-Type': 'application/json'                 
+                },
+                body: JSON.stringify({ Email: formData.email, Password: formData.password })
             });
 
-            //результат
-            if (backendResponse.ok) {
-                const data = await backendResponse.json();
-                if (data.status === 401)
-                  throw new Error('Ошибка авторизации');
+            if (response.ok) {
+                const result = await response.json();
+
+                //сохранить токен
+                dispatch(login(result.userName, formData.email, result.token.result, result.role));
+                
+                //запрос к бекенд-приложению
+                const backendResponse = await fetch('https://localhost:7158/user/login', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${result.token.result}`,
+                        'Content-Type': 'application/json'    
+                    }
+                });
+
+                //результат
+                if (backendResponse.ok) {
+                    const data = await backendResponse.json();
+                    setMessage({ type: 'success', text: 'Успешный вход!' });
+                    setTimeout(() => navigate('/'), 2000);
+                    //
+                    if (data.status === 401)
+                        throw new Error('Ошибка авторизации');
+                } else {
+                    throw new Error('Ошибка авторизации');
+                }
             } else {
-                throw new Error('Ошибка авторизации');
+            const errorResult = await response.json();
+            let errorMessages = '';
+            //
+            for (let key in errorResult.errors) {
+                if (errorResult.errors.hasOwnProperty(key)) {
+                    let values = errorResult.errors[key];
+                    values.forEach(value => {
+                        errorMessages += `${value}, `;
+                    });
+                }
             }
-            navigate('/');
-        } else {
-          const errorResult = await response.json();
-          let errorMessages = '';
-          for (let key in errorResult.errors) {
-            if (errorResult.errors.hasOwnProperty(key)) {
-              let values = errorResult.errors[key];
-              values.forEach(value => {
-                errorMessages += `${value}, `;
-              });
+            //
+            errorMessages = errorMessages.slice(0, -2);
+            setMessage({ type: 'error', text: 'Ошибка входа: ' + errorMessages });
             }
-          }
-          //
-          errorMessages = errorMessages.slice(0, -2);
-          setMessage({ type: 'error', text: 'Ошибка входа: ' + errorMessages });
+        } catch (error) {
+            console.error('Error:', error);
+            setMessage({ type: 'error', text: 'Ошибка: ' + error.message });
+        } finally {
+            setLoading(false);
         }
-      } catch (error) {
-        console.error('Error:', error);
-        setMessage({ type: 'error', text: 'Ошибка: ' + error.message });
-      } finally {
-        setLoading(false);
-      }
     };   
 
     const handleChange = (event) => {

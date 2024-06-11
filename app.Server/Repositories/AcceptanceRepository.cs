@@ -53,7 +53,7 @@ namespace app.Server.Repositories
                         
                         //считаем общее количество бонусов
                         var hazardousWaste = await _context.HazardousWastes.FindAsync(item.HazardousWasteId);
-                        bonuses += hazardousWaste.Bonuses;                        
+                        bonuses += hazardousWaste.Bonuses * item.Quantity;                        
 
                         //количество добавленных строк
                         addedRows += _context.ChangeTracker.Entries().Count(e => e.State == EntityState.Added);

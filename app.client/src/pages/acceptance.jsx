@@ -2,9 +2,6 @@ import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import XIcon from '@mui/icons-material/X';
 import Sidebar from '../components/sidebar';
 import MainFeaturedPost from '../components/mainFeaturedPost';
 import image from '../images/acceptance.jpg';
@@ -18,7 +15,7 @@ import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import CircularProgress from '@mui/material/CircularProgress';
-import { login, logout } from '../store/actions/authActions';
+import { logout } from '../store/actions/authActions';
 import Alert from '@mui/material/Alert';
 
 const Acceptance = () => {
@@ -32,9 +29,6 @@ const Acceptance = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const [value, setValue] = useState(1);
-    let timeoutId;
-
     //раздел
     const mainFeaturedPost = {
         title: 'Принять отходы',
@@ -46,10 +40,8 @@ const Acceptance = () => {
 
     //информация о странице
     const sidebar = {
-    title: 'About',
-    description:
-        'Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.',
-    
+    title: '',
+    description: 'Спасибо за ваше участие в нашем проекте и стремление к экологической ответственности! Если у вас возникли вопросы или вам нужна дополнительная информация, свяжитесь с нами',
     social: social,
     };
 
@@ -91,13 +83,6 @@ const Acceptance = () => {
 
         setFields(fields.map((field) =>
             field.id === id ? { ...field, textFieldQuantityValue: newValue, textFieldBonusValue: calculateBonus(selectValue, newValue) } : field
-        ));
-    };
-
-    //изменить значение TextValue2
-    const handleTextFieldBonusChange = (id, newValue) => {
-        setFields(fields.map((field) =>
-            field.id === id ? { ...field, textFieldBonusValue: newValue } : field
         ));
     };
 
@@ -176,13 +161,13 @@ const Acceptance = () => {
     }, []);
 
     //рендер
-    if (loading) {
+    /*if (loading || error) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 <CircularProgress />
             </Box>
         );
-    }
+    }*/
     return (
         <> 
             <MainFeaturedPost post={mainFeaturedPost} />   
@@ -235,11 +220,15 @@ const Acceptance = () => {
                                                 label="Отход"
                                                 onChange={(event) => handleSelectChange(field.id, event.target.value, 0)}
                                             >
-                                                {userData.map((option) => (
-                                                <MenuItem key={option.id} value={option.id}> 
-                                                    {option.name}
-                                                </MenuItem>
-                                                ))}
+                                                {userData && userData.length > 0 ? (
+                                                    userData.map((option) => (
+                                                        <MenuItem key={option.id} value={option.id}> 
+                                                            {option.name}
+                                                        </MenuItem>
+                                                    ))
+                                                ) : (
+                                                    <MenuItem disabled>Нет доступных данных</MenuItem>
+                                                )}
                                             </Select>                                            
                                         </FormControl>
                                     </Grid>

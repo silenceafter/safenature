@@ -7,7 +7,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import YoutubeIcon from '@mui/icons-material/YouTube';
 import { useSelector, useDispatch } from 'react-redux';
-import { Box, Grid, Typography } from '@mui/material';
+import { Container, Box, Grid, Typography } from '@mui/material';
 import RecyclingIcon from '@mui/icons-material/Recycling';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import DiscountIcon from '@mui/icons-material/Discount';
@@ -22,17 +22,32 @@ import {
   Paper,
 } from '@mui/material';
 import Divider from '@mui/material/Divider';
+import image from '../images/nature_3.jpg';
+import photo from '../images/eco_5.jpg';
+import { styled } from '@mui/system';
+
+// Импортируйте логотипы компаний
+import MagnitLogo from '../images/partner_1.png';
+import LentaLogo from '../images/partner_2.png';
+import PyatLogo from '../images/partner_3.png';
+
+const Image11 = styled('img')({
+  width: '100%',
+  height: 'auto',
+  borderRadius: 8,
+});
+
 
 const items = [
   {
     icon: <RecyclingIcon style={{ fontSize: 50, color: 'green' }} />,
     title: 'Сдавай отходы',
-    description: 'Приноси использованные батарейки, аккумуляторы, лампочки, ртутные градусники и другие отходы (смотри таблицу отходов, которые мы принимаем) в наши пункты приема.'
+    description: 'Приноси использованные батарейки, аккумуляторы, лампочки, ртутные градусники и другие отходы (смотри список отходов, которые мы принимаем) в наши пункты приема.'
   },
   {
     icon: <AttachMoneyIcon style={{ fontSize: 50, color: 'gold' }} />,
     title: 'Получай бонусы',
-    description: 'Бонусные баллы можно обменять на скидочные купоны, которые действуют в магазинах наших партнеров. Покупки могут быть еще более выгодными! Поможем окружающей среде и сделаем это простым и удобным способом.'
+    description: 'Бонусные баллы можно обменять на скидочные купоны, которые действуют в магазинах наших партнеров. Покупки могут быть еще более выгодными!'
   },
   {
     icon: <DiscountIcon style={{ fontSize: 50, color: 'purple' }} />,
@@ -45,7 +60,7 @@ const mainFeaturedPost = {
   title: 'Эко-проект по утилизации опасных отходов',
   description:
     "Эффективная координация деятельности по утилизации отходов первого и второго классов опасности",
-  image: 'https://source.unsplash.com/random?wallpapers',
+  image: image,
   imageText: 'main image description',
   linkText: '',
 };
@@ -63,132 +78,77 @@ const Home = () => {
       <>
         <MainFeaturedPost post={mainFeaturedPost} />        
         <Grid container spacing={5} sx={{ mt: 3 }}>
-        {/*<Box sx={{ textAlign: 'center', py: 5 }}>
-          <Typography variant="h4" gutterBottom>
-            Принимаем отходы
-          </Typography>
-          <Typography variant="subtitle1" gutterBottom>
-            В 2024 году мы открыли 1-й пункт по приему отходов. Сегодня их уже 5 в 2-х городах России
-          </Typography>
-          <Box sx={{ mt: 3, mb: 5 }}>
-            <Button type="button"                  
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}>
-              Регистрация
-            </Button>
-          </Box>
-          <Grid container spacing={4} justifyContent="center">
-            {items.map((item, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Box sx={{ textAlign: 'center', px: 3 }}>
-                  {item.icon}
-                  <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-                    {item.title}
-                  </Typography>
-                  <Typography variant="body1" color="textSecondary">
-                    {item.description}
-                  </Typography>
-                </Box>
+          {<Box sx={{ textAlign: 'center', py: 5 }}>
+            <Typography variant="h4" gutterBottom>
+              Принимаем отходы
+            </Typography>
+            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+              В 2024 году мы открыли 4 пункта по приему отходов в Курске
+            </Typography>
+            <Box sx={{ mt: 3, mb: 5 }}></Box>
+              <Grid container spacing={4} justifyContent="center">
+                {items.map((item, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Box sx={{ textAlign: 'center', px: 3 }}>
+                    {item.icon}
+                    <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+                      {item.title}
+                    </Typography>
+                    <Typography variant="body1" color="textSecondary">
+                      {item.description}
+                    </Typography>
+                  </Box>
+                </Grid>
+                ))} 
               </Grid>
-            ))}
+          </Box>}
 
-
-
-       
-                <div>
-                <Box sx={{ textAlign: 'center', mt: 10, mb: 10 }}>
-                <Typography variant="h4" gutterBottom>
-            Отходы
+          <Box sx={{ p: 4 }}>
+      <Grid container spacing={2} alignItems="center">
+        <Grid item xs={12} md={8}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 3, textAlign: 'center' }}>
+            Наши планы
           </Typography>
-                    <TableContainer component={Paper} sx={{ textAlign: 'justify', mt: 4, mb: 4 }}>
-                        <Table aria-label="user table">
-                            <TableHead>
-                            <TableRow>
-                                <TableCell>Имя пользователя</TableCell>
-                                <TableCell>Email</TableCell>
-                                <TableCell>Роль</TableCell>
-                                <TableCell>Номер телефона</TableCell>
-                                <TableCell>Кол-во баллов</TableCell>                                
-                            </TableRow>
-                            </TableHead>
-                            <TableBody>
-                            <TableRow>
-                                <TableCell>111</TableCell>
-                                
-                            </TableRow>
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Box></div>
-                
-          </Grid>
-          
-          
-          </Box>*/}
-        
-        
-        <Grid
-        item
-        xs={12}
-        md={8}
-        sx={{
-            '& .markdown': {
-            py: 3,
-            },
-        }}
-    >
-      <Divider />
-      <div>  
-      <Box sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>                            
-      <Typography variant="h4" component="h1" gutterBottom>
-        Sample blog post
-      </Typography>      
-          <Typography variant="body1" paragraph>
-            Добро пожаловать в сердце экологической революции! Мы - команда страстных защитников природы, стремящихся к гармонии между человеком и окружающей средой. Наш проект по переработке опасных отходов первого и второго классов опасности - это наш ответ на вызовы нашего времени, выраженный в языке заботы, ответственности и инноваций.
+          <Typography variant="body1">
+            Мы не собираемся останавливаться на достигнутом. В ближайшем будущем мы планируем:  
           </Typography>
-          <Typography variant="body1" sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
-            По данным Всемирной организации здравоохранения (ВОЗ), каждый год в мире производится более 400 миллионов тонн опасных отходов. Это включает в себя отходы от промышленности, здравоохранения, сельского хозяйства, а также бытовые отходы. Опасные отходы могут содержать токсичные вещества, которые могут наносить вред здоровью людей и окружающей среде.
+          <ul>
+            <li>Расширить функциональность нашего веб-приложения.</li>
+            <li>Увеличить число партнеров и доступных бонусов для наших пользователей.  </li>
+            <li>Проводить образовательные кампании для повышения осведомленности о важности правильной утилизации опасных отходов.  </li>
+          </ul>
+  
+          <Typography sx={{ mt: 3, textAlign: 'left' }}>Присоединяйтесь к нам  
+            Мы приглашаем вас стать частью нашего сообщества и вместе с нами вносить вклад в охрану окружающей среды. Зарегистрируйтесь на нашем сайте, используйте наши услуги и помогите сделать мир чище и безопаснее.
           </Typography>
-          <Typography variant="body1" sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
-          Мы верим, что каждый маленький шаг в сторону устойчивого потребления, переработки и утилизации отходов приближает нас к чистому и светлому будущему. Наша миссия не только в том, чтобы преображать опасные отходы в безопасные ресурсы, но и вдохновлять людей на заботу о драгоценной планете, которую мы делим.
-          </Typography>
-          <Typography variant="body1" sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
-            Присоединяйтесь к нам в этом удивительном путешествии экологического созидания! Давайте вместе создадим мир, где каждый акт заботы о природе станет каплей великого океана экологического процветания. Помните: наш дом - это Земля, и только вместе мы можем защитить его и сохранить для будущих поколений.
-          </Typography>
- </Box>
-      </div> 
-
-      <div>
-                <Box sx={{ textAlign: 'center', mt: 10, mb: 10 }}>
-                <Typography variant="h4" gutterBottom>
-            Отходы
-          </Typography>
-                    <TableContainer component={Paper} sx={{ textAlign: 'justify', mt: 4, mb: 4 }}>
-                        <Table aria-label="user table">
-                            <TableHead>
-                            <TableRow>
-                                <TableCell>Имя пользователя</TableCell>
-                                <TableCell>Email</TableCell>
-                                <TableCell>Роль</TableCell>
-                                <TableCell>Номер телефона</TableCell>
-                                <TableCell>Кол-во баллов</TableCell>                                
-                            </TableRow>
-                            </TableHead>
-                            <TableBody>
-                            <TableRow>
-                                <TableCell>111</TableCell>
-                                
-                            </TableRow>
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Box></div>        
-        </Grid> <Sidebar
-            title={sidebar.title}
-            description={sidebar.description}
-            archives={sidebar.archives}
-            social={sidebar.social}
-          />  </Grid>                                   
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Paper elevation={3}>
+            <Image11 src={photo} alt="Dashboard example" />
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
+    <Container sx={{ my: 4 }}>
+        <Box sx={{ textAlign: 'center', mt: 4, mb: 4 }}>
+            <Typography variant="subtitle1" gutterBottom>
+                НАШИ ПАРТНЕРЫ:
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Grid container spacing={4} justifyContent="center" alignItems="center">
+                <Grid item>
+                    <img src={MagnitLogo} alt="magnit" style={{ height: 100 }} />
+                </Grid>
+                <Grid item>
+                    <img src={LentaLogo} alt="lenta" style={{ height: 100 }} />
+                </Grid>
+                <Grid item>
+                    <img src={PyatLogo} alt="pyat" style={{ height: 100 }} />
+                </Grid>                  
+            </Grid>
+        </Box>
+    </Container>   
+</Grid>                                   
       </>
   );
 };

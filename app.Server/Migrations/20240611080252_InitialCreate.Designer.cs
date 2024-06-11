@@ -11,7 +11,7 @@ using app.Server.Models;
 namespace app.Server.Migrations
 {
     [DbContext(typeof(EcodbContext))]
-    [Migration("20240527082457_InitialCreate")]
+    [Migration("20240611080252_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -19,8 +19,11 @@ namespace app.Server.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .UseCollation("utf8mb4_0900_ai_ci")
                 .HasAnnotation("ProductVersion", "7.0.17")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.HasCharSet(modelBuilder, "utf8mb4");
 
             modelBuilder.Entity("app.Server.Models.Acceptance", b =>
                 {
@@ -30,6 +33,7 @@ namespace app.Server.Migrations
                         .HasColumnName("id");
 
                     b.Property<DateTime>("Date")
+                        .HasMaxLength(6)
                         .HasColumnType("datetime(6)")
                         .HasColumnName("date");
 
@@ -48,9 +52,9 @@ namespace app.Server.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.HasIndex("HazardousWasteId");
+                    b.HasIndex(new[] { "HazardousWasteId" }, "IX_acceptance_hazardous_waste_id");
 
-                    b.HasIndex("TransactionId");
+                    b.HasIndex(new[] { "TransactionId" }, "IX_acceptance_transaction_id");
 
                     b.ToTable("acceptance", (string)null);
                 });
@@ -67,10 +71,12 @@ namespace app.Server.Migrations
                         .HasColumnName("bonuses");
 
                     b.Property<DateTime>("DateEnd")
+                        .HasMaxLength(6)
                         .HasColumnType("datetime(6)")
                         .HasColumnName("date_end");
 
                     b.Property<DateTime>("DateStart")
+                        .HasMaxLength(6)
                         .HasColumnType("datetime(6)")
                         .HasColumnName("date_start");
 
@@ -86,9 +92,26 @@ namespace app.Server.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.HasIndex("PartnerId");
+                    b.HasIndex(new[] { "PartnerId" }, "IX_discounts_partner_id");
 
                     b.ToTable("discounts", (string)null);
+                });
+
+            modelBuilder.Entity("app.Server.Models.Efmigrationshistory", b =>
+                {
+                    b.Property<string>("MigrationId")
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("ProductVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.HasKey("MigrationId")
+                        .HasName("PRIMARY");
+
+                    b.ToTable("__efmigrationshistory", (string)null);
                 });
 
             modelBuilder.Entity("app.Server.Models.HazardClass", b =>
@@ -139,7 +162,7 @@ namespace app.Server.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.HasIndex("HazardClassId");
+                    b.HasIndex(new[] { "HazardClassId" }, "IX_hazardous_waste_hazard_class_id");
 
                     b.ToTable("hazardous_waste", (string)null);
                 });
@@ -168,6 +191,64 @@ namespace app.Server.Migrations
                     b.ToTable("partners", (string)null);
                 });
 
+            modelBuilder.Entity("app.Server.Models.Point", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("address");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("PRIMARY");
+
+                    b.HasIndex(new[] { "Name" }, "points_unique")
+                        .IsUnique();
+
+                    b.ToTable("points", (string)null);
+                });
+
+            modelBuilder.Entity("app.Server.Models.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Bonus")
+                        .HasColumnType("int")
+                        .HasColumnName("bonus");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("PRIMARY");
+
+                    b.HasIndex(new[] { "Name" }, "products_unique")
+                        .IsUnique();
+
+                    b.ToTable("products", (string)null);
+                });
+
             modelBuilder.Entity("app.Server.Models.ReceivingDiscount", b =>
                 {
                     b.Property<int>("Id")
@@ -176,6 +257,7 @@ namespace app.Server.Migrations
                         .HasColumnName("id");
 
                     b.Property<DateTime>("Date")
+                        .HasMaxLength(6)
                         .HasColumnType("datetime(6)")
                         .HasColumnName("date");
 
@@ -190,11 +272,36 @@ namespace app.Server.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.HasIndex("DiscountId");
+                    b.HasIndex(new[] { "DiscountId" }, "IX_receiving_discounts_discount_id");
 
-                    b.HasIndex("TransactionId");
+                    b.HasIndex(new[] { "TransactionId" }, "IX_receiving_discounts_transaction_id");
 
                     b.ToTable("receiving_discounts", (string)null);
+                });
+
+            modelBuilder.Entity("app.Server.Models.ReceivingProduct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime")
+                        .HasColumnName("date");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("TransactionId")
+                        .HasColumnType("int")
+                        .HasColumnName("transaction_id");
+
+                    b.HasKey("Id")
+                        .HasName("PRIMARY");
+
+                    b.ToTable("receiving_products", (string)null);
                 });
 
             modelBuilder.Entity("app.Server.Models.Role", b =>
@@ -232,6 +339,7 @@ namespace app.Server.Migrations
                         .HasColumnName("bonuses_start");
 
                     b.Property<DateTime>("Date")
+                        .HasMaxLength(6)
                         .HasColumnType("datetime(6)")
                         .HasColumnName("date");
 
@@ -246,9 +354,9 @@ namespace app.Server.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.HasIndex("TypeId");
+                    b.HasIndex(new[] { "TypeId" }, "IX_transactions_type_id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex(new[] { "UserId" }, "IX_transactions_user_id");
 
                     b.ToTable("transactions", (string)null);
                 });
@@ -300,7 +408,7 @@ namespace app.Server.Migrations
                     b.HasKey("Id")
                         .HasName("PRIMARY");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex(new[] { "RoleId" }, "IX_users_role_id");
 
                     b.ToTable("users", (string)null);
                 });
@@ -329,8 +437,8 @@ namespace app.Server.Migrations
                     b.HasOne("app.Server.Models.Partner", "Partner")
                         .WithMany("Discounts")
                         .HasForeignKey("PartnerId")
-                        .IsRequired()
-                        .HasConstraintName("discounts_partner_id_fk");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Partner");
                 });
@@ -363,6 +471,27 @@ namespace app.Server.Migrations
                     b.Navigation("Discount");
 
                     b.Navigation("Transaction");
+                });
+
+            modelBuilder.Entity("app.Server.Models.ReceivingProduct", b =>
+                {
+                    b.HasOne("app.Server.Models.Product", "IdNavigation")
+                        .WithOne("ReceivingProduct")
+                        .HasForeignKey("app.Server.Models.ReceivingProduct", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("receiving_products_products_FK");
+
+                    b.HasOne("app.Server.Models.Transaction", "Id1")
+                        .WithOne("ReceivingProduct")
+                        .HasForeignKey("app.Server.Models.ReceivingProduct", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("receiving_products_transactions_FK");
+
+                    b.Navigation("Id1");
+
+                    b.Navigation("IdNavigation");
                 });
 
             modelBuilder.Entity("app.Server.Models.Transaction", b =>
@@ -415,6 +544,11 @@ namespace app.Server.Migrations
                     b.Navigation("Discounts");
                 });
 
+            modelBuilder.Entity("app.Server.Models.Product", b =>
+                {
+                    b.Navigation("ReceivingProduct");
+                });
+
             modelBuilder.Entity("app.Server.Models.Role", b =>
                 {
                     b.Navigation("Users");
@@ -425,6 +559,8 @@ namespace app.Server.Migrations
                     b.Navigation("Acceptances");
 
                     b.Navigation("ReceivingDiscounts");
+
+                    b.Navigation("ReceivingProduct");
                 });
 
             modelBuilder.Entity("app.Server.Models.TransactionType", b =>

@@ -2,9 +2,6 @@ import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import XIcon from '@mui/icons-material/X';
 import Sidebar from '../components/sidebar';
 import MainFeaturedPost from '../components/mainFeaturedPost';
 import image from '../images/bonusExchange.jpg';
@@ -84,7 +81,7 @@ const BonusExchange = () => {
         </Card>
     );
     const DiscountCardList = ({ discounts, error }) => {
-        return (
+        return (            
           <Grid container spacing={2} sx={{ maxHeight: 600, overflowY: 'auto', p: 2 }}>
             {error ? (
               // Если есть ошибка, отображаем заглушки
@@ -120,9 +117,8 @@ const BonusExchange = () => {
 
     //информация о странице
     const sidebar = {
-        title: 'About',
-        description:
-            'Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.',        
+        title: '',
+        description: 'Спасибо, что участвуете в нашем проекте и поддерживаете экологически ответственное поведение! Если у вас возникли вопросы или нужна дополнительная информация, свяжитесь с нами',        
         social: social,
     };
 
@@ -146,7 +142,10 @@ const BonusExchange = () => {
           });
     
           if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (response.status === 401) {
+                dispatch(logout());
+                navigate('/login');
+            }
           }
     
           const result = await response.json();

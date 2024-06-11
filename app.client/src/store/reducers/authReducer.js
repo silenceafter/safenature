@@ -2,6 +2,7 @@ const initialState = {
     username: localStorage.getItem('auth') ? JSON.parse(localStorage.getItem('auth')).username : null,
     email: localStorage.getItem('auth') ? JSON.parse(localStorage.getItem('auth')).email : null,
     token: localStorage.getItem('auth') ? JSON.parse(localStorage.getItem('auth')).token : null,
+    role: localStorage.getItem('auth') ? JSON.parse(localStorage.getItem('auth')).role : null,
 };
 
 const authReducer = (state = initialState, action) => {
@@ -11,6 +12,7 @@ const authReducer = (state = initialState, action) => {
           username: action.payload.username,
           email: action.payload.email,
           token: action.payload.token,
+          role: action.payload.role,
         };
         localStorage.setItem('auth', JSON.stringify(loginData));
         return {
@@ -26,6 +28,7 @@ const authReducer = (state = initialState, action) => {
             username: null,
             email: null,
             token: null,
+            role: null,
           },
         };
 
