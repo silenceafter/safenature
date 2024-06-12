@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Design;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Microsoft.Extensions.DependencyInjection;
 using app.Server.Models;
-using app.Server.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using app.Server.Repositories.Interfaces;
 using app.Server.Repositories;
@@ -165,7 +164,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("policy");
 app.UseHttpsRedirection();
-//app.UseMiddleware<AuthorizationMiddleware>();//добавление middleware должно быть перед UseAuthorization()
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
