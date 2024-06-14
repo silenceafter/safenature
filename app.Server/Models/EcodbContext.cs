@@ -6,9 +6,7 @@ namespace app.Server.Models;
 
 public partial class EcodbContext : DbContext
 {
-    public EcodbContext()
-    {
-    }
+    public EcodbContext() {}
 
     public EcodbContext(DbContextOptions<EcodbContext> options)
         : base(options)
@@ -44,8 +42,9 @@ public partial class EcodbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;database=ecodb;user=root;password=4286Avetisova", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.37-mysql"));
+        => optionsBuilder
+            .UseMySql("server=localhost;database=ecodb;user=root;password=4286Avetisova", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.37-mysql"))
+            /*.UseLazyLoadingProxies()*/;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,11 +62,16 @@ public partial class EcodbContext : DbContext
 
             entity.HasIndex(e => e.TransactionId, "IX_acceptance_transaction_id");
 
+            entity.HasIndex(e => e.PointId, "acceptance_points_FK");
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Date)
                 .HasMaxLength(6)
                 .HasColumnName("date");
             entity.Property(e => e.HazardousWasteId).HasColumnName("hazardous_waste_id");
+            entity.Property(e => e.PointId)
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("point_id");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
             entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
 
@@ -75,6 +79,11 @@ public partial class EcodbContext : DbContext
                 .HasForeignKey(d => d.HazardousWasteId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("acceptance_hazardous_waste_id_fk");
+
+            entity.HasOne(d => d.Point).WithMany(p => p.Acceptances)
+                .HasForeignKey(d => d.PointId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("acceptance_points_FK");
 
             entity.HasOne(d => d.Transaction).WithMany(p => p.Acceptances)
                 .HasForeignKey(d => d.TransactionId)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace app.Server.Models;
 
@@ -15,7 +16,14 @@ public partial class Acceptance
 
     public DateTime Date { get; set; }
 
-    public virtual HazardousWaste HazardousWaste { get; set; } = null!;
+    public int PointId { get; set; }
 
+    [JsonIgnore]
+    public virtual HazardousWaste HazardousWaste { get; set; } = null!;
+    
+    [JsonIgnore]
+    public virtual Point Point { get; set; } = null!;
+    
+    [JsonIgnore]
     public virtual Transaction Transaction { get; set; } = null!;
 }

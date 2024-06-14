@@ -22,6 +22,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.17" />
     <PackageReference Include="Microsoft.Extensions.Localization" Version="7.0.20" />
     <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="7.0.20" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="7.0.16" />

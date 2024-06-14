@@ -20,6 +20,7 @@ using System.Security.Claims;
 using Newtonsoft.Json;
 using auth.Models;
 using auth.Services;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +46,11 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<SettingsJwt>(builder.Configuration.GetSection("JWT"));
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    /*.AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    })*/;
 
 //identity
 builder.Services.AddAuthentication(options =>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace app.Server.Models;
 
@@ -13,5 +14,6 @@ public partial class Product
 
     public int Bonus { get; set; }
 
+    [JsonIgnore]
     public virtual ReceivingProduct? ReceivingProduct { get; set; }
 }
