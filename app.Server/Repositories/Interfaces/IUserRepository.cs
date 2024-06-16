@@ -16,6 +16,8 @@ namespace app.Server.Repositories.Interfaces
         public Task<List<TransactionResponse>>? GetTransactionByUserId(int userId);//все транзакции пользователя по id пользователя
         public Task<List<TransactionResponse>>? GetTransactionById(int id);//все транзакции пользователя по id типа транзакции
         public Task<List<AcceptanceResponse>>? GetAcceptanceByUserId(int userId);
+        public Task<List<ReceivingDiscountsResponse>>? GetReceivingDiscountsByUserId(int userId);
+        public Task<List<ReceivingProductResponse>>? GetReceivingProductByUserId(int userId);
         
     }
 }

@@ -2,6 +2,7 @@
 using app.Server.Controllers.Requests;
 using app.Server.Models;
 using app.Server.Repositories.Interfaces;
+using app.Server.TempModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace app.Server.Repositories
@@ -195,6 +196,127 @@ namespace app.Server.Repositories
                 return response;
             }
             catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<ReceivingDiscountsResponse>>? GetReceivingDiscountsByUserId(int userId)
+        {
+            try
+            {
+                var transactions = await _context.Transactions
+                    .Where(t => t.UserId == userId && t.TypeId == 2)
+                     .Include(u => u.Type)
+                    .Join(
+                        _context.ReceivingDiscounts,
+                        transaction => transaction.Id,
+                        receivingDiscount => receivingDiscount.TransactionId,
+                        (transaction, receivingDiscount) => new
+                        {
+                            Transaction = transaction,
+                            ReceivingDiscount = receivingDiscount
+                        }
+                    )
+                    .Join(
+                        _context.Discounts,
+                        combined => combined.ReceivingDiscount.DiscountId,
+                        discount => discount.Id,
+                        (combined, discount) => new
+                        {
+                            combined.Transaction,
+                            combined.ReceivingDiscount,
+                            Discount = discount,
+                            PartnerId = discount.PartnerId
+                        }
+                    )
+                    .Join(
+                        _context.Partners,
+                        combined => combined.PartnerId,
+                        partner => partner.Id,
+                        (combined, partner) => new
+                        {
+                            combined.Transaction,
+                            combined.ReceivingDiscount,
+                            combined.Discount,
+                            PartnerName = partner.Name
+                        }
+                    )                   
+                    .Select(result => new
+                    {
+                        TransactionId = result.Transaction.Id,
+                        PartnerName = result.PartnerName,
+                        DiscountTerms = result.Discount.Terms,
+                        DiscountDateStart = result.Discount.DateStart,
+                        DiscountDateEnd = result.Discount.DateEnd,
+                        DiscountBonuses = result.Discount.Bonuses,
+                        Date = result.ReceivingDiscount.Date
+                    })
+                    .ToListAsync();
+                //
+                var response = new List<ReceivingDiscountsResponse>();
+                foreach (var transaction in transactions)
+                {
+                    response.Add(new ReceivingDiscountsResponse()
+                    {
+                        Id = transaction.TransactionId,
+                        PartnerName = transaction.PartnerName,
+                        DiscountTerms = transaction.DiscountTerms,
+                        DiscountDateStart = transaction.DiscountDateStart,
+                        DiscountDateEnd = transaction.DiscountDateEnd,
+                        DiscountBonuses = transaction.DiscountBonuses,
+                        Date = transaction.Date
+                    });
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<ReceivingProductResponse>>? GetReceivingProductByUserId(int userId)
+        {
+            try
+            {
+                var transactions = await _context.Transactions
+                    .Where(t => t.UserId == userId && t.TypeId == 8)
+                     .Include(u => u.Type)
+                    .Join(
+                        _context.ReceivingProducts,
+                        transaction => transaction.Id,
+                        receivingProduct => receivingProduct.TransactionId,
+                        (transaction, receivingProduct) => new
+                        {
+                            Transaction = transaction,
+                            ReceivingProduct = receivingProduct
+                        }
+                    )
+                    .Join(
+                        _context.Products,
+                        combined => combined.ReceivingProduct.ProductId,
+                        product => product.Id,
+                        (combined, product) => new
+                        {
+                            combined.Transaction,
+                            combined.ReceivingProduct,
+                            Product = product,
+                            ProductName = product.Name,
+                            ProductBonus = product.Bonus
+                        }
+                    )                   
+                    .Select(result => new
+                    {
+                        TransactionId = result.Transaction.Id,
+                        ProductName = result.ProductName,
+                        ProductBonus = result.ProductBonus,
+                        Date = result.ReceivingProduct.Date
+                    })
+                    .ToListAsync();
+                return null;
+            }
+            catch(Exception ex)
             {
                 return null;
             }

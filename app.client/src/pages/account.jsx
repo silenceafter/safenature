@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { useSelector, useDispatch } from 'react-redux';
@@ -35,12 +36,12 @@ function formatDateTime(dateTimeString) {
     };
 
     // Форматируем дату с учетом указанных опций
-    const formattedDateTime = date.toLocaleDateString('ru-RU', options);
+    const formattedDateTime = date.toLocaleString('ru-RU', options);
     return formattedDateTime;
 }
 
 const Account = () => {
-    const { email, token } = useSelector((state) => state.auth);
+    const { email, token, role } = useSelector((state) => state.auth);
     const { social } = useSelector((state) => state.social);    
     const currentRoute = useSelector(state => state.router.currentRoute);
     //
@@ -51,6 +52,8 @@ const Account = () => {
     const userDataRequest = useSelector((state) => state.getRequest.userDataRequest);
     const userTransactionsRequest = useSelector((state) => state.getRequest.userTransactionsRequest);
     const userAcceptanceRequest = useSelector((state) => state.getRequest.userAcceptanceRequest);
+    const userReceivingDiscountRequest = useSelector((state) => state.getRequest.userReceivingDiscountRequest);
+    const userReceivingProductRequest = useSelector((state) => state.getRequest.userReceivingProductRequest);
 
     //роли
     const roles = [ 
@@ -94,12 +97,16 @@ const Account = () => {
         //запрос данных пользователя
         dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-current-user', 'userDataRequest'));
         dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-transactions', 'userTransactionsRequest'));
-        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-acceptance', 'userAcceptanceRequest'));        
+        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-acceptance', 'userAcceptanceRequest'));
+        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-receiving-discount', 'userReceivingDiscountRequest'));
+        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-receiving-product', 'userReceivingProductRequest'));        
     }, [dispatch]);
 
     //состояния запросов
-    const isLoading = userDataRequest?.loading || userTransactionsRequest?.loading || userAcceptanceRequest?.loading;
-    const isError = userDataRequest?.error || userTransactionsRequest?.error || userAcceptanceRequest?.error;
+    const isLoading = userDataRequest?.loading || userTransactionsRequest?.loading || userAcceptanceRequest?.loading || 
+        userReceivingDiscountRequest?.loading || userReceivingProductRequest?.loading;
+    const isError = userDataRequest?.error || userTransactionsRequest?.error || userAcceptanceRequest?.error || 
+        userReceivingDiscountRequest?.error || userReceivingProductRequest?.error;
 
     //рендер
     if (isLoading) {
@@ -111,7 +118,8 @@ const Account = () => {
     }
     //
     if (isError) {
-        if (userDataRequest.error === 401 || userTransactionsRequest.error === 401 || userAcceptanceRequest.error) {
+        if (userDataRequest.error === 401 || userTransactionsRequest.error === 401 || userAcceptanceRequest.error || 
+            userReceivingDiscountRequest.error || userReceivingProductRequest.error) {
             navigate('/login');
         }
     }
@@ -130,6 +138,25 @@ const Account = () => {
                     },
                 }}
             >
+                { role != null && role == 'Admin' && (
+                    <>
+                    <Divider />
+                    <div>
+                        <Box sx={{ textAlign: 'justify', mt: 2, mb: 5 }}>
+                            <Typography variant="h6" gutterBottom sx={{ mt: 5 }}>
+                                Панель администратора
+                            </Typography>
+                            <Typography><Link href="#">Пользователи</Link></Typography>
+                            <Typography><Link href="#">Магазины</Link></Typography>
+                            <Typography><Link href="#">Пункты приема отходов</Link></Typography>
+                            <Typography><Link href="#">Отходы</Link></Typography>
+                            <Typography><Link href="#">Купоны</Link></Typography>
+                            <Typography><Link href="#">Товары</Link></Typography>
+                        </Box>
+                    </div>
+                    </>
+                )}
+
                 <Divider />
                 <div>
                     <Box sx={{ textAlign: 'justify', mt: 2, mb: 5 }}>
@@ -258,6 +285,96 @@ const Account = () => {
                                             <TableCell></TableCell>
                                             <TableCell></TableCell>
                                             <TableCell></TableCell>
+                                        </>
+                                    )
+                                }  
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+                    <Box sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
+                        <Typography variant="h6" gutterBottom sx={{ mt: 5 }}>
+                            Операции обмена бонусов на купоны
+                        </Typography>
+                        <TableContainer component={Paper}>
+                            <Table aria-label="user table">
+                                <TableHead>
+                                <TableRow>
+                                    <TableCell>#</TableCell>
+                                    <TableCell>Магазин</TableCell>
+                                    <TableCell>Условия применения</TableCell>
+                                    <TableCell>Начало действия</TableCell>
+                                    <TableCell>Окончание действия</TableCell>
+                                    <TableCell>Кол-во бонусов</TableCell>
+                                    <TableCell>Дата</TableCell>
+                                </TableRow>
+                                </TableHead>
+                                <TableBody>                          
+                                { userReceivingDiscountRequest?.data
+                                    ? (                                                                                
+                                        userReceivingDiscountRequest.data.map((transaction, index) => (
+                                            <>
+                                                <TableRow key={transaction.id}>
+                                                    <TableCell>{index + 1}</TableCell>
+                                                    <TableCell>{transaction.partnerName}</TableCell>
+                                                    <TableCell>{transaction.discountTerms}</TableCell>
+                                                    <TableCell>{formatDateTime(transaction.discountDateStart)}</TableCell>
+                                                    <TableCell>{formatDateTime(transaction.discountDateEnd)}</TableCell>
+                                                    <TableCell>{transaction.discountBonuses}</TableCell>
+                                                    <TableCell>{formatDateTime(transaction.date)}</TableCell>
+                                                </TableRow>
+                                            </>
+                                        ))                                                  
+                                    ) 
+                                    : (
+                                        <>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                        </>
+                                    )
+                                }  
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+                    <Box sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
+                        <Typography variant="h6" gutterBottom sx={{ mt: 5 }}>
+                            Операции обмена бонусов на товары
+                        </Typography>
+                        <TableContainer component={Paper}>
+                            <Table aria-label="user table">
+                                <TableHead>
+                                <TableRow>
+                                    <TableCell>#</TableCell>
+                                    <TableCell>Товар</TableCell>
+                                    <TableCell>Кол-во бонусов</TableCell>
+                                    <TableCell>Дата</TableCell>
+                                </TableRow>
+                                </TableHead>
+                                <TableBody>                          
+                                { userReceivingProductRequest?.data
+                                    ? (                                                                                
+                                        userReceivingProductRequest.data.map((transaction, index) => (
+                                            <>
+                                                <TableRow key={transaction.id}>
+                                                    <TableCell>{index + 1}</TableCell>
+                                                    <TableCell>{transaction.productName}</TableCell>
+                                                    <TableCell>{transaction.productBonus}</TableCell>
+                                                    <TableCell>{formatDateTime(transaction.date)}</TableCell>
+                                                </TableRow>
+                                            </>
+                                        ))                                                  
+                                    ) 
+                                    : (
+                                        <>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>                    
                                         </>
                                     )
                                 }  

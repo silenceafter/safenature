@@ -3,6 +3,7 @@ using app.Server.Controllers.Response;
 using app.Server.Models;
 using app.Server.Repositories;
 using app.Server.Repositories.Interfaces;
+using app.Server.Services;
 using app.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +34,29 @@ namespace app.Server.Controllers
         {
             var points = await _pointRepository.GetPointsAll();
             return Ok(points);
+        }
+
+        [HttpPost("register-product-reserve")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
+        public async Task<IActionResult> RegisterProductReserve([FromBody] ProductRequest request)
+        {
+            try
+            {
+                //пользователь
+                var emailHash = _encryptionService.ComputeHash(request.Email);
+                var user = await _userRepository.GetUserByEmail(emailHash);
+
+                //пользователь не найден
+                if (user == null)
+                    return BadRequest();
+
+                var data = await _receivingDiscountRepository.RegisterDiscountReserve(request, user);
+                return data > 0 ? Ok(data) : BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
         }
     }
 }
