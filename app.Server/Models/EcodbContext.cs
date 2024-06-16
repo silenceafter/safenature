@@ -6,7 +6,9 @@ namespace app.Server.Models;
 
 public partial class EcodbContext : DbContext
 {
-    public EcodbContext() {}
+    public EcodbContext()
+    {
+    }
 
     public EcodbContext(DbContextOptions<EcodbContext> options)
         : base(options)
@@ -42,9 +44,8 @@ public partial class EcodbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder
-            .UseMySql("server=localhost;database=ecodb;user=root;password=4286Avetisova", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.37-mysql"))
-            /*.UseLazyLoadingProxies()*/;
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseMySql("server=localhost;database=ecodb;user=root;password=4286Avetisova", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.36-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -168,7 +169,6 @@ public partial class EcodbContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .HasColumnName("name");
-            entity.Ignore(e => e.Discounts);//исключаем цикличную вложенность записей
         });
 
         modelBuilder.Entity<Point>(entity =>
@@ -240,21 +240,25 @@ public partial class EcodbContext : DbContext
 
             entity.ToTable("receiving_products");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("id");
+            entity.HasIndex(e => e.ProductId, "receiving_products_products_FK");
+
+            entity.HasIndex(e => e.TransactionId, "receiving_products_transactions_FK");
+
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Date)
                 .HasColumnType("datetime")
                 .HasColumnName("date");
             entity.Property(e => e.ProductId).HasColumnName("product_id");
             entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
 
-            entity.HasOne(d => d.IdNavigation).WithOne(p => p.ReceivingProduct)
-                .HasForeignKey<ReceivingProduct>(d => d.Id)
+            entity.HasOne(d => d.Product).WithMany(p => p.ReceivingProducts)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("receiving_products_products_FK");
 
-            entity.HasOne(d => d.Id1).WithOne(p => p.ReceivingProduct)
-                .HasForeignKey<ReceivingProduct>(d => d.Id)
+            entity.HasOne(d => d.Transaction).WithMany(p => p.ReceivingProducts)
+                .HasForeignKey(d => d.TransactionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("receiving_products_transactions_FK");
         });
 

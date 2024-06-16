@@ -314,7 +314,19 @@ namespace app.Server.Repositories
                         Date = result.ReceivingProduct.Date
                     })
                     .ToListAsync();
-                return null;
+                //
+                var response = new List<ReceivingProductResponse>();
+                foreach (var transaction in transactions)
+                {
+                    response.Add(new ReceivingProductResponse()
+                    {
+                        Id = transaction.TransactionId,
+                        ProductName = transaction.ProductName,
+                        ProductBonus = transaction.ProductBonus,
+                        Date = transaction.Date
+                    });
+                }
+                return response;
             }
             catch(Exception ex)
             {

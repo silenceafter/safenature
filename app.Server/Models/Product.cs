@@ -15,5 +15,5 @@ public partial class Product
     public int Bonus { get; set; }
 
     [JsonIgnore]
-    public virtual ReceivingProduct? ReceivingProduct { get; set; }
+    public virtual ICollection<ReceivingProduct> ReceivingProducts { get; set; } = new List<ReceivingProduct>();
 }

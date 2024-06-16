@@ -24,9 +24,11 @@ import { fetchDataGet } from '../store/thunk/thunks';
 import { updateRoute } from '../store/actions/routerActions';
 
 function formatDateTime(dateTimeString) {
-    const date = new Date(dateTimeString); // Создаем объект Date из строки даты-времени
+    const date = new Date(dateTimeString);
+    const utcTime = date.getTime();
+    const moscowOffset = 3 * 60 * 60 * 1000;
+    const moscowDate = new Date(utcTime + moscowOffset);
     const options = {
-        timeZone: 'Europe/Moscow', // Указываем временную зону (Москва)
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -36,7 +38,7 @@ function formatDateTime(dateTimeString) {
     };
 
     // Форматируем дату с учетом указанных опций
-    const formattedDateTime = date.toLocaleString('ru-RU', options);
+    const formattedDateTime = moscowDate.toLocaleString('ru-RU', options);
     return formattedDateTime;
 }
 

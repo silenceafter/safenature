@@ -1,4 +1,5 @@
-﻿using app.Server.Controllers.Requests;
+﻿using app.server.Controllers.Requests;
+using app.Server.Controllers.Requests;
 using app.Server.Controllers.Response;
 using app.Server.Models;
 using app.Server.Repositories;
@@ -20,12 +21,25 @@ namespace app.Server.Controllers
     [ApiController]
     [Route("[controller]")]
     public class PointController : Controller
-    {
+    {        
+        private readonly ILogger<ReceivingDiscountController> _logger;
+        private readonly EcodbContext _context;
+        private readonly IEncryptionService _encryptionService;
+        private readonly IUserRepository _userRepository;
         private readonly IPointRepository _pointRepository;
 
-        public PointController(IPointRepository pointRepository)
+        public PointController(
+            ILogger<ReceivingDiscountController> logger,
+            EcodbContext context,
+            IPointRepository pointRepository,
+            IEncryptionService encryptionService,
+            IUserRepository userRepository)
         {
+            _logger = logger;
+            _context = context;
             _pointRepository = pointRepository;
+            _encryptionService = encryptionService;
+            _userRepository = userRepository;            
         }
 
         [HttpGet("get-points")]
@@ -38,7 +52,7 @@ namespace app.Server.Controllers
 
         [HttpPost("register-product-reserve")]
         [Authorize(Policy = "AllowIfNoRoleClaim")]
-        public async Task<IActionResult> RegisterProductReserve([FromBody] ProductRequest request)
+        public async Task<IActionResult> RegisterProductReserve([FromBody] ReceivingProductRequest request)
         {
             try
             {
@@ -50,7 +64,7 @@ namespace app.Server.Controllers
                 if (user == null)
                     return BadRequest();
 
-                var data = await _receivingDiscountRepository.RegisterDiscountReserve(request, user);
+                var data = await _pointRepository.RegisterProductReserve(request, user);
                 return data > 0 ? Ok(data) : BadRequest();
             }
             catch (Exception ex)

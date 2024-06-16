@@ -25,8 +25,8 @@ public partial class Transaction
     public virtual ICollection<ReceivingDiscount> ReceivingDiscounts { get; set; } = new List<ReceivingDiscount>();
 
     [JsonIgnore]
-    public virtual ReceivingProduct? ReceivingProduct { get; set; }
-    
+    public virtual ICollection<ReceivingProduct> ReceivingProducts { get; set; } = new List<ReceivingProduct>();
+
     [JsonIgnore]
     public virtual TransactionType Type { get; set; } = null!;
 

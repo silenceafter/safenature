@@ -35,7 +35,9 @@ namespace app.Server.Repositories
                     {
                         UserId = user.Id,//request.UserId,
                         TypeId = 2,
-                        Date = DateTime.UtcNow.ToUniversalTime()                        
+                        Date = DateTime.UtcNow.ToUniversalTime(),
+                        BonusesStart = user.Bonuses,
+                        BonusesEnd = user.Bonuses
                     };
                     await _context.Transactions.AddAsync(userTransaction);
 

@@ -149,7 +149,6 @@ const Products = () => {
     const handleSelect = (id, bonus) => {
         setSelectedDiscountId(id);//храним выбранный id карты
         setSelectedDiscountBonus(bonus);//храним количество бонусов, которое стоит купон
-        console.log('Selected Discount ID:', id); // Здесь вы получаете значение выбранной карточки
     };
 
     //раздел
@@ -173,19 +172,27 @@ const Products = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         setSubmitLoading(true);
-        const dataToSend = {
+
+        //выбранное количество товаров
+        const selectedProducts = [];
+        for(const product of products) {
+            if (product.quantity > 0) 
+                selectedProducts.push({ id: product.id, quantity: product.quantity });
+        }
+        //
+        const request = {
             email: email,
-            discountId: selectedDiscountId
+            products: selectedProducts
         };
     
         try {
-          const response = await fetch('https://localhost:7158/receivingdiscount/register-discount-reserve', {
+          const response = await fetch('https://localhost:7158/point/register-product-reserve', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(dataToSend),
+            body: JSON.stringify(request),
           });
     
           if (!response.ok) {
@@ -213,7 +220,7 @@ const Products = () => {
     
                 if (response2.ok) {
                     const balanceResponse = await response2.json();
-                    setUserBalance(balanceResponse);
+                    setUserBalance(balanceResponse.bonus);
                 } else {
                     if (response2.status === 401) {
                         dispatch(logout());

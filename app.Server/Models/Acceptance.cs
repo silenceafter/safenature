@@ -20,10 +20,10 @@ public partial class Acceptance
 
     [JsonIgnore]
     public virtual HazardousWaste HazardousWaste { get; set; } = null!;
-    
+
     [JsonIgnore]
     public virtual Point Point { get; set; } = null!;
-    
+
     [JsonIgnore]
     public virtual Transaction Transaction { get; set; } = null!;
 }

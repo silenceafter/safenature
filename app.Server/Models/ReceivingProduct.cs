@@ -15,8 +15,8 @@ public partial class ReceivingProduct
     public DateTime Date { get; set; }
 
     [JsonIgnore]
-    public virtual Transaction Id1 { get; set; } = null!;
+    public virtual Product Product { get; set; } = null!;
 
     [JsonIgnore]
-    public virtual Product IdNavigation { get; set; } = null!;
+    public virtual Transaction Transaction { get; set; } = null!;
 }
