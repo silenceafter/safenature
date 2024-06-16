@@ -124,6 +124,54 @@ namespace app.Server.Controllers
             }
         }
 
+        [HttpGet("get-user-transactions")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
+        public async Task<IActionResult> GetUserTransactions()
+        {
+            try
+            {
+                //извлечь информацию из токена
+                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                //данные сервера авторизации
+                var authorizationData = await _authorizationService.GetAuthorizationData(token);
+
+                //данные ecodb
+                var emailHash = _encryptionService.ComputeHash(authorizationData.Email);
+                var user = await _userRepository.GetUserByEmail(emailHash);
+                var transactions = await _userRepository.GetTransactionByUserId(user.Id);
+                return Ok(transactions);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("get-user-acceptance")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
+        public async Task<IActionResult> GetUserAcceptance()
+        {
+            try
+            {
+                //извлечь информацию из токена
+                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                //данные сервера авторизации
+                var authorizationData = await _authorizationService.GetAuthorizationData(token);
+
+                //данные ecodb
+                var emailHash = _encryptionService.ComputeHash(authorizationData.Email);
+                var user = await _userRepository.GetUserByEmail(emailHash);
+                var transactions = await _userRepository.GetAcceptanceByUserId(user.Id);//inner join транзакции приема отходов
+                return Ok(transactions);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+        }
+
         [HttpGet("login")]
         [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> Login()

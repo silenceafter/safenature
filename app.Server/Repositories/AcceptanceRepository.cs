@@ -16,7 +16,7 @@ namespace app.Server.Repositories
             _context = context;
         }
 
-        public async Task<int> RegisterDispose(List<AcceptanceRequest> request, User user)
+        public async Task<int> RegisterDispose(AcceptanceRequest request, User user)
         {
             using (var transaction = _context.Database.BeginTransaction())
             {
@@ -24,7 +24,7 @@ namespace app.Server.Repositories
                 {
                     int addedRows = 0;
                     int bonuses = 0;
-                    
+
                     //1 создать транзакцию приема отходов
                     var userTransaction = new Transaction()
                     {
@@ -40,15 +40,16 @@ namespace app.Server.Repositories
                     await _context.SaveChangesAsync();
                     var userTransactionId = userTransaction.Id;
 
-                    foreach (var item in request)
-                    {                        
-                        //2 добавить запись о приеме отходов
+                    //2 добавить запись о приеме отходов
+                    foreach (var item in request.WasteItems)
+                    {                                                
                         await _context.Acceptances.AddAsync(new Acceptance()
                         {
                             TransactionId = userTransactionId,
                             HazardousWasteId = item.HazardousWasteId,
                             Quantity = item.Quantity,
-                            Date = DateTime.UtcNow.ToUniversalTime()
+                            Date = DateTime.UtcNow.ToUniversalTime(),
+                            PointId = request.PointId
                         });
                         
                         //считаем общее количество бонусов

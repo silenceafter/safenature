@@ -69,7 +69,7 @@ const Login = () => {
                 if (backendResponse.ok) {
                     const data = await backendResponse.json();
                     setMessage({ type: 'success', text: 'Успешный вход!' });
-                    setTimeout(() => navigate('/'), 2000);
+                    setTimeout(() => navigate('/'), 1000);
                     if (data.status === 401)
                         throw new Error('Ошибка авторизации');
                 } else {

@@ -1,4 +1,5 @@
-﻿using app.Server.Controllers.Requests;
+﻿using app.server.Controllers.Response;
+using app.Server.Controllers.Requests;
 using app.Server.Models;
 using app.Server.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +67,137 @@ namespace app.Server.Repositories
         public async Task<User>? GetUserByEmail(string emailHash)
         {            
             return await _context.Users.FirstOrDefaultAsync(u => u.EmailHash == emailHash);
+        }
+
+        public async Task<List<TransactionResponse>>? GetTransactionByUserId(int userId)
+        {
+            try
+            {
+                var transactions = await _context.Transactions
+                    .Include(u => u.Type)
+                    .Where(u => u.UserId == userId)
+                    .ToListAsync();
+                //
+                var response = new List<TransactionResponse>();
+                foreach(var transaction in transactions)
+                {
+                    response.Add(new TransactionResponse()
+                    {
+                        Id = transaction.Id,
+                        TransactionName = transaction.Type.Name,
+                        Date = transaction.Date,
+                        BonusesStart = transaction.BonusesStart,
+                        BonusesEnd = transaction.BonusesEnd
+                    });
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }            
+        }
+
+        public async Task<List<TransactionResponse>>? GetTransactionById(int id)
+        {
+            try
+            {
+                var transactions = await _context.Transactions
+                    .Include(u => u.Type)
+                    .Where(u => u.Id == id)
+                    .ToListAsync();
+                //
+                var response = new List<TransactionResponse>();
+                foreach (var transaction in transactions)
+                {
+                    response.Add(new TransactionResponse()
+                    {
+                        Id = transaction.Id,
+                        TransactionName = transaction.Type.Name,
+                        Date = transaction.Date,
+                        BonusesStart = transaction.BonusesStart,
+                        BonusesEnd = transaction.BonusesEnd
+                    });
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<AcceptanceResponse>>? GetAcceptanceByUserId(int userId)
+        {
+            try
+            {
+                var transactions = await _context.Transactions
+                    .Where(t => t.UserId == userId && t.TypeId == 1)
+                    .Include(u => u.Type)
+                    .Join(
+                        _context.Acceptances,
+                        transaction => transaction.Id,
+                        acceptance => acceptance.TransactionId,
+                        (transaction, acceptance) => new
+                        {
+                            Transaction = transaction,
+                            Acceptance = acceptance
+                        }
+                    )
+                    .Join(
+                        _context.HazardousWastes,
+                        combined => combined.Acceptance.HazardousWasteId,
+                        hazardousWaste => hazardousWaste.Id,
+                        (combined, hazardousWaste) => new
+                        {
+                            combined.Transaction,
+                            combined.Acceptance,
+                            HazardousWasteName = hazardousWaste.Name
+                        }
+                    )
+                    .Join(
+                        _context.Points,
+                        combined => combined.Acceptance.PointId,
+                        point => point.Id,
+                        (combined, point) => new
+                        {
+                            combined.Transaction,
+                            combined.Acceptance,
+                            combined.HazardousWasteName,
+                            PointName = point.Name,
+                            PointAddress = point.Address
+                        }
+                    )
+                    .Select(result => new
+                    {
+                        TransactionId = result.Transaction.Id,
+                        HazardousWasteName = result.HazardousWasteName,
+                        Quantity = result.Acceptance.Quantity,
+                        PointName = result.PointName,
+                        PointAddress = result.PointAddress,
+                        Date = result.Acceptance.Date
+                    })
+                    .ToListAsync();
+                //
+                var response = new List<AcceptanceResponse>();
+                foreach (var transaction in transactions)
+                {
+                    response.Add(new AcceptanceResponse()
+                    {
+                        Id = transaction.TransactionId,
+                        HazardousWasteName = transaction.HazardousWasteName,
+                        Quantity = transaction.Quantity,
+                        PointName = transaction.PointName,
+                        PointAddress = transaction.PointAddress,
+                        Date = transaction.Date
+                    });
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
     }
 }

@@ -19,7 +19,6 @@ import {
   TableRow,
   Paper,
 } from '@mui/material';
-//import Paper from '@mui/material/Paper';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import eco_3 from '../images/eco_3.jpg';

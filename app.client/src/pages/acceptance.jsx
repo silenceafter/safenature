@@ -20,9 +20,21 @@ import Alert from '@mui/material/Alert';
 
 const Acceptance = () => {
     const { email, token } = useSelector((state) => state.auth);
+    
+
+    //отходы
+    const [fields, setFields] = useState([
+        { id: 1, selectValue: '', textFieldQuantityValue: 1, textFieldBonusValue: 0 }
+    ]);
     const [userData, setUserData] = useState(null);
+    const [userLoading, setUserLoading] = useState(true);
+
+    //point, пункт приема
+    const [point, setPoint] = useState('');
+    const [pointData, setPointData] = useState(null);    
+    const [pointLoading, setPointLoading] = useState(true);
+    
     const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [submitLoading, setSubmitLoading] = useState(false);//для submit
     const [submitResult, setSubmitResult] = useState(null);
     const { social } = useSelector((state) => state.social);
@@ -51,10 +63,10 @@ const Acceptance = () => {
         return selectedItem ? selectedItem.bonuses * quantityValue : 0;
     };
 
-    //state формы
-    const [fields, setFields] = useState([
-        { id: 1, selectValue: '', textFieldQuantityValue: 1, textFieldBonusValue: 0 }
-      ]);
+    //изменить пункт приема отходов
+    const handlePointChange = (event) => {
+        setPoint(event.target.value);
+    };
 
     //добавить строку
     const handleAddField = () => {
@@ -90,11 +102,17 @@ const Acceptance = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         setSubmitLoading(true);
-        const dataToSend = fields.map(field => ({
-          email: email,
-          hazardousWasteId: field.selectValue,
-          quantity: field.textFieldQuantityValue
-        }));
+
+        //данные запроса
+        const wasteItems = [];
+        for(const field of fields)
+            wasteItems.push({ hazardousWasteId: field.selectValue, quantity: field.textFieldQuantityValue });
+        //
+        const request = {
+            pointId: point,
+            email: email,
+            wasteItems: wasteItems
+        }
     
         try {
           const response = await fetch('https://localhost:7158/acceptance/register-dispose', {
@@ -103,7 +121,7 @@ const Acceptance = () => {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(dataToSend),
+            body: JSON.stringify(request),
           });
     
           if (!response.ok) {
@@ -113,6 +131,7 @@ const Acceptance = () => {
           const result = await response.json();
           setSubmitResult({ success: true, message: 'Данные приняты!' });
           setFields([{ id: 1, selectValue: '', textFieldQuantityValue: 1, textFieldBonusValue: 0 }]);//оставить первую строку, очистить элементы
+          setPoint('');
         } catch (error) {
           console.error('Error:', error);
           setSubmitResult({ success: false, message: 'Ошибка при отправке данных.' });
@@ -128,9 +147,10 @@ const Acceptance = () => {
         if (!email)
             navigate('/access-denied');
         
-        //запросы: 1-й к сервису авторизации, 2-й к бекенд-части
+        //запросы: 1-й = получить список отходов
         const userRequest = async () => {
             try {
+                setUserLoading(true);
                 const response = await fetch('https://localhost:7158/hazardouswaste/get-hazardous-waste', {
                     method: 'GET',
                     headers: {
@@ -141,17 +161,32 @@ const Acceptance = () => {
                 if (response.ok) {
                     const userResponse = await response.json();
                     setUserData(userResponse);
+
+                    //2-й запрос = получить список пунктов сдачи
+                    setPointLoading(true);
+                    const response2 = await fetch('https://localhost:7158/point/get-points', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });                    
+                    //
+                    if (response2.ok) {
+                        const pointResponse = await response2.json();
+                        setPointData(pointResponse);
+                    }
+                    setPointLoading(false);
                 } else {
                     if (response.status === 401) {
                         //токен не действует
                         dispatch(logout());//удалить токен
                         navigate('/login');
                     }                
-                }
+                }                
             } catch (error) {
                 setError(error);
             } finally {
-                setLoading(false);
+                setUserLoading(false);
             }
         };
         userRequest();
@@ -161,13 +196,6 @@ const Acceptance = () => {
     }, []);
 
     //рендер
-    /*if (loading || error) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                <CircularProgress />
-            </Box>
-        );
-    }*/
     return (
         <> 
             <MainFeaturedPost post={mainFeaturedPost} />   
@@ -209,6 +237,28 @@ const Acceptance = () => {
                                     pr: 6
                                 }}
                             >
+                                <FormControl fullWidth required sx={{ marginBottom: 2 }}>
+                                    <InputLabel id="select-label-point">Пункт приема</InputLabel>
+                                    <Select
+                                        labelId="select-label-point"
+                                        value={point}
+                                        label="Пункт приема"
+                                        onChange={handlePointChange}
+                                        disabled={pointLoading}
+                                    >
+                                        <MenuItem value="" disabled>Выберите пункт приема</MenuItem>
+                                        {pointData && pointData.length > 0 ? (
+                                        pointData.map((option) => (
+                                            <MenuItem key={option.id} value={option.id}>
+                                            {option.name}, {option.address}
+                                            </MenuItem>
+                                        ))
+                                        ) : (
+                                        <MenuItem disabled>Нет доступных данных</MenuItem>
+                                        )}
+                                    </Select>
+                                </FormControl> 
+
                                 {fields.map((field, index) => (
                                     <Grid container spacing={2} alignItems="center" key={field.id}>
                                     <Grid item xs={6}>
@@ -219,6 +269,7 @@ const Acceptance = () => {
                                                 value={field.selectValue}
                                                 label="Отход"
                                                 onChange={(event) => handleSelectChange(field.id, event.target.value, 0)}
+                                                disabled={userLoading}
                                             >
                                                 {userData && userData.length > 0 ? (
                                                     userData.map((option) => (

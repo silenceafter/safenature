@@ -1,30 +1,14 @@
-//import * as React from 'react';
-//import CssBaseline from '@mui/material/CssBaseline';
-//import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import Link from '@mui/material/Link';
 import CircularProgress from '@mui/material/CircularProgress';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import XIcon from '@mui/icons-material/X';
 import Grid from '@mui/material/Grid';
-import Main from '../components/main';
 import Sidebar from '../components/sidebar';
 import MainFeaturedPost from '../components/mainFeaturedPost';
-import FeaturedPost from '../components/featuredPost';
 import Divider from '@mui/material/Divider';
-import Markdown from '../components/markdown';
-//import Markdown from 'markdown-to-jsx';
-import { post } from 'jquery';
-//import ReactMarkdown from 'markdown-to-jsx';
-import { Card, CardContent, Avatar } from '@mui/material';
-import { styled } from '@mui/system';
-import { login, logout } from '../store/actions/authActions';
 import image from '../images/account.jpg';
 import {
     Table,
@@ -38,17 +22,51 @@ import {
 import { fetchDataGet } from '../store/thunk/thunks';
 import { updateRoute } from '../store/actions/routerActions';
 
+function formatDateTime(dateTimeString) {
+    const date = new Date(dateTimeString); // Создаем объект Date из строки даты-времени
+    const options = {
+        timeZone: 'Europe/Moscow', // Указываем временную зону (Москва)
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    };
+
+    // Форматируем дату с учетом указанных опций
+    const formattedDateTime = date.toLocaleDateString('ru-RU', options);
+    return formattedDateTime;
+}
+
 const Account = () => {
     const { email, token } = useSelector((state) => state.auth);
-    const { social } = useSelector((state) => state.social);
+    const { social } = useSelector((state) => state.social);    
     const currentRoute = useSelector(state => state.router.currentRoute);
+    //
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const accountBackendRequest = useSelector((state) => state.getRequest.accountBackendRequest);
+
+    //запросы
+    const userDataRequest = useSelector((state) => state.getRequest.userDataRequest);
+    const userTransactionsRequest = useSelector((state) => state.getRequest.userTransactionsRequest);
+    const userAcceptanceRequest = useSelector((state) => state.getRequest.userAcceptanceRequest);
+
+    //роли
+    const roles = [ 
+        { name: 'User', nameRu: 'Пользователь' },
+        { name: 'Admin', nameRu: 'Администратор' },
+        { name: 'Worker', nameRu: 'Сотрудник' }
+    ];
 
     const handleRouteChange = (newRoute) => {
         dispatch(updateRoute(newRoute));
     };
+
+    const getRoleNameRu = (role) => {
+        const roleObject = Array.from(roles).find(r => r.name === role);
+        return roleObject ? roleObject.nameRu : 'Роль не найдена';
+    };    
 
     //раздел
     const mainFeaturedPost = {
@@ -74,12 +92,14 @@ const Account = () => {
             navigate('/access-denied');
 
         //запрос данных пользователя
-        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-current-user', 'accountBackendRequest'));                
+        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-current-user', 'userDataRequest'));
+        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-transactions', 'userTransactionsRequest'));
+        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-acceptance', 'userAcceptanceRequest'));        
     }, [dispatch]);
 
     //состояния запросов
-    const isLoading = accountBackendRequest?.loading;
-    const isError = accountBackendRequest?.error;
+    const isLoading = userDataRequest?.loading || userTransactionsRequest?.loading || userAcceptanceRequest?.loading;
+    const isError = userDataRequest?.error || userTransactionsRequest?.error || userAcceptanceRequest?.error;
 
     //рендер
     if (isLoading) {
@@ -91,7 +111,7 @@ const Account = () => {
     }
     //
     if (isError) {
-        if (accountBackendRequest.error === 401) {
+        if (userDataRequest.error === 401 || userTransactionsRequest.error === 401 || userAcceptanceRequest.error) {
             navigate('/login');
         }
     }
@@ -111,44 +131,140 @@ const Account = () => {
                 }}
             >
                 <Divider />
-                <div>                    
-                    <TableContainer component={Paper}>
-                        <Table aria-label="user table">
-                            <TableHead>
-                            <TableRow>
-                                <TableCell>Имя пользователя</TableCell>
-                                <TableCell>Email</TableCell>
-                                <TableCell>Роль</TableCell>
-                                <TableCell>Номер телефона</TableCell>
-                                <TableCell>Кол-во баллов</TableCell>
-                            </TableRow>
-                            </TableHead>
-                            <TableBody>
-                            <TableRow>
-                            { accountBackendRequest?.data
-                                ? (
-                                    <>
-                                        <TableCell>{accountBackendRequest?.data.userName}</TableCell>
-                                        <TableCell>{accountBackendRequest?.data.email}</TableCell>
-                                        <TableCell>{accountBackendRequest?.data.role}</TableCell>
-                                        <TableCell>{accountBackendRequest?.data.phoneNumber != null ? accountBackendRequest?.data.phoneNumber : 'не указан'}</TableCell>
-                                        <TableCell>{accountBackendRequest?.data.bonus}</TableCell>
-                                    </>
-                                ) 
-                                : (
-                                    <>
-                                        <TableCell></TableCell>
-                                        <TableCell></TableCell>
-                                        <TableCell></TableCell>
-                                        <TableCell></TableCell>
-                                        <TableCell></TableCell>
-                                    </>
-                                )
-                            }  
-                            </TableRow>
-                            </TableBody>
-                        </Table>
-                    </TableContainer>                
+                <div>
+                    <Box sx={{ textAlign: 'justify', mt: 2, mb: 5 }}>
+                        <Typography variant="h6" gutterBottom sx={{ mt: 5 }}>
+                            Учетные данные
+                        </Typography>
+                        <TableContainer component={Paper}>
+                            <Table aria-label="user table">
+                                <TableHead>
+                                <TableRow>
+                                    <TableCell>Имя пользователя</TableCell>
+                                    <TableCell>Email</TableCell>
+                                    <TableCell>Роль</TableCell>
+                                    <TableCell>Номер телефона</TableCell>
+                                    <TableCell>Кол-во баллов</TableCell>
+                                </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                <TableRow>
+                                { userDataRequest?.data
+                                    ? (
+                                        <>
+                                            <TableCell>{userDataRequest?.data.userName}</TableCell>
+                                            <TableCell>{userDataRequest?.data.email}</TableCell>
+                                            <TableCell>{getRoleNameRu(userDataRequest?.data.role)}</TableCell>
+                                            <TableCell>{userDataRequest?.data.phoneNumber != null ? userDataRequest?.data.phoneNumber : 'не указан'}</TableCell>
+                                            <TableCell>{userDataRequest?.data.bonus}</TableCell>
+                                        </>
+                                    ) 
+                                    : (
+                                        <>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                        </>
+                                    )
+                                }  
+                                </TableRow>
+                                </TableBody>
+                            </Table>
+                        </TableContainer>                        
+                    </Box>
+                    <Box sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
+                        <Typography variant="h6" gutterBottom sx={{ mt: 5 }}>
+                            Совершенные операции
+                        </Typography>
+                        <TableContainer component={Paper}>
+                            <Table aria-label="user table">
+                                <TableHead>
+                                <TableRow>
+                                    <TableCell>#</TableCell>
+                                    <TableCell>Операция</TableCell>
+                                    <TableCell>Дата</TableCell>
+                                    <TableCell>Кол-во бонусов было</TableCell>
+                                    <TableCell>Кол-во бонусов стало</TableCell>
+                                </TableRow>
+                                </TableHead>
+                                <TableBody>                          
+                                { userTransactionsRequest?.data
+                                    ? (                                                                                
+                                        userTransactionsRequest.data.map((transaction, index) => (
+                                            <>
+                                                <TableRow key={transaction.id}>
+                                                    <TableCell>{index + 1}</TableCell>
+                                                    <TableCell>{transaction.transactionName}</TableCell>
+                                                    <TableCell>{formatDateTime(transaction.date)}</TableCell>
+                                                    <TableCell>{transaction.bonusesStart}</TableCell>
+                                                    <TableCell>{transaction.bonusesEnd}</TableCell>
+                                                </TableRow>
+                                            </>
+                                        ))                                                  
+                                    ) 
+                                    : (
+                                        <>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                        </>
+                                    )
+                                }  
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+                    <Box sx={{ textAlign: 'justify', mt: 2, mb: 2 }}>
+                        <Typography variant="h6" gutterBottom sx={{ mt: 5 }}>
+                            Операции приема отходов
+                        </Typography>
+                        <TableContainer component={Paper}>
+                            <Table aria-label="user table">
+                                <TableHead>
+                                <TableRow>
+                                    <TableCell>#</TableCell>
+                                    <TableCell>Отход</TableCell>
+                                    <TableCell>Кол-во</TableCell>
+                                    <TableCell>Пункт приема</TableCell>
+                                    <TableCell>Адрес пункта приема</TableCell>
+                                    <TableCell>Дата</TableCell>
+                                </TableRow>
+                                </TableHead>
+                                <TableBody>                          
+                                { userAcceptanceRequest?.data
+                                    ? (                                                                                
+                                        userAcceptanceRequest.data.map((transaction, index) => (
+                                            <>
+                                                <TableRow key={transaction.id}>
+                                                    <TableCell>{index + 1}</TableCell>
+                                                    <TableCell>{transaction.hazardousWasteName}</TableCell>
+                                                    <TableCell>{transaction.quantity}</TableCell>
+                                                    <TableCell>{transaction.pointName}</TableCell>
+                                                    <TableCell>{transaction.pointAddress}</TableCell>
+                                                    <TableCell>{formatDateTime(transaction.date)}</TableCell>
+                                                </TableRow>
+                                            </>
+                                        ))                                                  
+                                    ) 
+                                    : (
+                                        <>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                        </>
+                                    )
+                                }  
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
                 </div>
                 </Grid>
                 <Sidebar

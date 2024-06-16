@@ -26,7 +26,7 @@ public partial class Transaction
 
     [JsonIgnore]
     public virtual ReceivingProduct? ReceivingProduct { get; set; }
-
+    
     [JsonIgnore]
     public virtual TransactionType Type { get; set; } = null!;
 

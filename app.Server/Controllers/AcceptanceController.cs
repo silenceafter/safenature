@@ -42,8 +42,9 @@ namespace app.Server.Controllers
 
         [HttpPost("register-dispose")]
         [Authorize(Policy = "AllowIfNoRoleClaim")]
-        public async Task<IActionResult> RegisterDispose([FromBody] List<AcceptanceRequest> request)
+        public async Task<IActionResult> RegisterDispose([FromBody] AcceptanceRequest request)
         {
+            /* email в request для роли оператора */
             try
             {
                 //извлечь информацию из токена
@@ -51,7 +52,6 @@ namespace app.Server.Controllers
 
                 //данные сервера авторизации
                 var authorizationData = await _authorizationService.GetAuthorizationData(token);
-
 
                 //пользователь
                 var emailHash = _encryptionService.ComputeHash(authorizationData.Email);
