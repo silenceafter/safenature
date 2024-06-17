@@ -43,7 +43,6 @@ const App = () => {
                   <Route path="/login" element={<Login />} />
                   <Route path="/logout" element={<Logout />} />
                   <Route path="/forgot" element={<Forgot />} />
-                  <Route path="/callback" element={<Callback />} />
                   <Route path="/account" element={<Account />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/partners" element={<Partners />} />
@@ -52,6 +51,12 @@ const App = () => {
                   <Route path="/bonus-exchange" element={<BonusExchange />} />
                   <Route path="/acceptance" element={<Acceptance />} />
                   <Route path="/access-denied" element={<AccessDenied />} />
+                  <Route path="/admin/coupons" element={<AdminCoupons />} />
+                  <Route path="/admin/hazardWaste" element={<AdminHazardWaste />} />
+                  <Route path="/admin/partners" element={<AdminPartners />} />
+                  <Route path="/admin/points" element={<AdminPoints />} />
+                  <Route path="/admin/products" element={<AdminProducts />} />
+                  <Route path="/admin/users" element={<AdminUsers />} />
               </Routes>
             </main>
           </Container>
