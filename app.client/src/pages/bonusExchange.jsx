@@ -186,7 +186,7 @@ const BonusExchange = () => {
     useEffect(() => {
         //доступ запрещен
         if (!email)
-            navigate('/access-denied');
+            return;//navigate('/access-denied');
         
         //1 получить список доступных купонов
         const userRequest = async () => {
@@ -256,6 +256,9 @@ const BonusExchange = () => {
     }, []);
 
     //рендер
+    //доступ запрещен
+    if (!email)
+        navigate('/access-denied');
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>

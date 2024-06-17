@@ -14,6 +14,8 @@ public partial class ReceivingProduct
 
     public DateTime Date { get; set; }
 
+    public int Quantity { get; set; }
+
     [JsonIgnore]
     public virtual Product Product { get; set; } = null!;
 

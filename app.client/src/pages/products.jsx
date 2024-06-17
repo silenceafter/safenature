@@ -186,7 +186,7 @@ const Products = () => {
         };
     
         try {
-          const response = await fetch('https://localhost:7158/point/register-product-reserve', {
+          const response = await fetch('https://localhost:7158/product/register-product-reserve', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

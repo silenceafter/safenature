@@ -94,7 +94,7 @@ const Account = () => {
     useEffect(() => {
         //доступ запрещен
         if (!email)
-            navigate('/access-denied');
+            return;//navigate('/access-denied');
 
         //запрос данных пользователя
         dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-current-user', 'userDataRequest'));
@@ -111,6 +111,10 @@ const Account = () => {
         userReceivingDiscountRequest?.error || userReceivingProductRequest?.error;
 
     //рендер
+    //доступ запрещен
+    if (!email)
+        navigate('/access-denied');
+
     if (isLoading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -147,6 +151,25 @@ const Account = () => {
                         <Box sx={{ textAlign: 'justify', mt: 2, mb: 5 }}>
                             <Typography variant="h6" gutterBottom sx={{ mt: 5 }}>
                                 Панель администратора
+                            </Typography>
+                            <Typography><Link href="#">Пользователи</Link></Typography>
+                            <Typography><Link href="#">Магазины</Link></Typography>
+                            <Typography><Link href="#">Пункты приема отходов</Link></Typography>
+                            <Typography><Link href="#">Отходы</Link></Typography>
+                            <Typography><Link href="#">Купоны</Link></Typography>
+                            <Typography><Link href="#">Товары</Link></Typography>
+                        </Box>
+                    </div>
+                    </>
+                )}
+
+                { role != null && role == 'Worker' && (
+                    <>
+                    <Divider />
+                    <div>
+                        <Box sx={{ textAlign: 'justify', mt: 2, mb: 5 }}>
+                            <Typography variant="h6" gutterBottom sx={{ mt: 5 }}>
+                                Панель сотрудника
                             </Typography>
                             <Typography><Link href="#">Пользователи</Link></Typography>
                             <Typography><Link href="#">Магазины</Link></Typography>
@@ -353,7 +376,9 @@ const Account = () => {
                                 <TableRow>
                                     <TableCell>#</TableCell>
                                     <TableCell>Товар</TableCell>
-                                    <TableCell>Кол-во бонусов</TableCell>
+                                    <TableCell>Бонусы</TableCell>
+                                    <TableCell>Количество</TableCell>                                    
+                                    <TableCell>Стоимость</TableCell>
                                     <TableCell>Дата</TableCell>
                                 </TableRow>
                                 </TableHead>
@@ -366,6 +391,8 @@ const Account = () => {
                                                     <TableCell>{index + 1}</TableCell>
                                                     <TableCell>{transaction.productName}</TableCell>
                                                     <TableCell>{transaction.productBonus}</TableCell>
+                                                    <TableCell>{transaction.productQuantity}</TableCell>                                                    
+                                                    <TableCell>{transaction.cost}</TableCell>
                                                     <TableCell>{formatDateTime(transaction.date)}</TableCell>
                                                 </TableRow>
                                             </>
@@ -377,6 +404,8 @@ const Account = () => {
                                             <TableCell></TableCell>
                                             <TableCell></TableCell>
                                             <TableCell></TableCell>                    
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
                                         </>
                                     )
                                 }  

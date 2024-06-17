@@ -1,4 +1,5 @@
-﻿using app.Server.Controllers.Requests;
+﻿using app.server.Controllers.Requests;
+using app.Server.Controllers.Requests;
 using app.Server.Models;
 
 namespace app.Server.Repositories.Interfaces
@@ -6,6 +7,6 @@ namespace app.Server.Repositories.Interfaces
     public interface IProductRepository
     {
         Task<IEnumerable<Product>>? GetProductsAll();
-        Task<int> BuyProducts(List<ProductRequest> products, User user);
+        public Task<int> RegisterProductReserve(ReceivingProductRequest request, User user);
     }
 }

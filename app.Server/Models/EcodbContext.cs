@@ -45,7 +45,7 @@ public partial class EcodbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;database=ecodb;user=root;password=4286Avetisova", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.36-mysql"));
+        => optionsBuilder.UseMySql("server=localhost;database=ecodb;user=root;password=4286Avetisova", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.37-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -249,6 +249,7 @@ public partial class EcodbContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("date");
             entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.Quantity).HasColumnName("quantity");
             entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
 
             entity.HasOne(d => d.Product).WithMany(p => p.ReceivingProducts)

@@ -145,7 +145,7 @@ const Acceptance = () => {
     useEffect(() => {
         //доступ запрещен
         if (!email)
-            navigate('/access-denied');
+            return;//navigate('/access-denied');
         
         //запросы: 1-й = получить список отходов
         const userRequest = async () => {
@@ -196,6 +196,10 @@ const Acceptance = () => {
     }, []);
 
     //рендер
+    //доступ запрещен
+    if (!email)
+        navigate('/access-denied');
+    //
     return (
         <> 
             <MainFeaturedPost post={mainFeaturedPost} />   

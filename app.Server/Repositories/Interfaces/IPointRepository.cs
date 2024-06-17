@@ -6,7 +6,6 @@ namespace app.Server.Repositories.Interfaces
 {
     public interface IPointRepository
     {
-        Task<IEnumerable<Point>>? GetPointsAll();
-        public Task<int> RegisterProductReserve(ReceivingProductRequest request, User user);
+        Task<IEnumerable<Point>>? GetPointsAll();        
     }
 }

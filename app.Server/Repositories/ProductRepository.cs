@@ -1,4 +1,5 @@
-﻿using app.Server.Controllers.Requests;
+﻿using app.server.Controllers.Requests;
+using app.Server.Controllers.Requests;
 using app.Server.Models;
 using app.Server.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -26,61 +27,84 @@ namespace app.Server.Repositories
             }            
         }
 
-        public async Task<int> BuyProducts(List<ProductRequest> productsRequest, User user)
+        public async Task<int> RegisterProductReserve(ReceivingProductRequest request, User user)
         {
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
-                    if (productsRequest.Count > 0)
+                    var productBonus = 0;
+                    foreach (var item in request.Products)
                     {
-                        //1 создать транзакцию о приобретении товара
-                        var userTransaction = new Transaction()
-                        {
-                            UserId = user.Id,
-                            TypeId = 8,
-                            Date = DateTime.UtcNow.ToUniversalTime()
-                        };
-                        await _context.Transactions.AddAsync(userTransaction);
-
-                        //сохранить
-                        await _context.SaveChangesAsync();
-                        var userTransactionId = userTransaction.Id;
+                        var product = await _context.Products.FindAsync(item.Id);
+                        productBonus += product.Bonus;
                     }
 
-                    //коллекция
-                    foreach(var productRequest in productsRequest)
+                    //пользователю не хватает бонусов для покупки товара
+                    if (productBonus >= user.Bonuses)
                     {
-                        var product = await _context.Products.FindAsync(productRequest.Id);
-                        var bonusesEnd = user.Bonuses - product.Bonus;
-                    
-                        //пользователю не хватает бонусов для покупки товара
-                        if (bonusesEnd < 0)
-                        {
-                            transaction.Rollback();
-                            return 0;
-                        }                        
+                        transaction.Rollback();
+                        return 0;
+                    }
 
-                        //2 добавить запись о приобретении товара
-                        /*await _context.Re.AddAsync(new ReceivingDiscount()
+                    var bonusesEnd = user.Bonuses - productBonus;
+
+                    //1 создать транзакцию о приобретении товара
+                    var userTransaction = new Transaction()
+                    {
+                        UserId = user.Id,
+                        TypeId = 8,
+                        Date = DateTime.UtcNow.ToUniversalTime(),
+                        BonusesStart = user.Bonuses,
+                        BonusesEnd = user.Bonuses
+                    };
+                    await _context.Transactions.AddAsync(userTransaction);
+
+                    //сохранить
+                    await _context.SaveChangesAsync();
+                    var userTransactionId = userTransaction.Id;
+
+                    //2 добавить запись о приобретении товара
+                    foreach (var item in request.Products)
+                    {
+                        var product = await _context.Products.FindAsync(item.Id);
+                        await _context.ReceivingProducts.AddAsync(new ReceivingProduct()
                         {
                             TransactionId = userTransactionId,
-                            DiscountId = request.DiscountId,
-                            Date = DateTime.UtcNow.ToUniversalTime()
-                        });*/
-
+                            ProductId = product.Id,
+                            Date = DateTime.UtcNow.ToUniversalTime(),
+                            Quantity = item.Quantity
+                        });
                     }
-                    
 
-                    
+                    //3 создать пользовательскую транзакцию списания бонусов
+                    userTransaction = new Transaction()
+                    {
+                        UserId = user.Id,//request.UserId,
+                        TypeId = 4,
+                        Date = DateTime.UtcNow.ToUniversalTime(),
+                        BonusesStart = user.Bonuses,
+                        BonusesEnd = bonusesEnd
+                    };
+                    await _context.Transactions.AddAsync(userTransaction);
+
+                    //4 обновить количество бонусов у пользователя  
+                    user.Bonuses = bonusesEnd;
+
+                    //количество добавленных строк
+                    int addedRows = _context.ChangeTracker.Entries().Count(e => e.State == EntityState.Added);
+
+                    //сохранить
+                    await _context.SaveChangesAsync();
+                    transaction.Commit();
+                    return addedRows;
                 }
                 catch (Exception ex)
                 {
-
+                    transaction.Rollback();
+                    return 0;
                 }
             }
-
-                    return 0;
         }
     }
 }

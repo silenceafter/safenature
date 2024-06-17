@@ -77,6 +77,7 @@ namespace app.Server.Repositories
                 var transactions = await _context.Transactions
                     .Include(u => u.Type)
                     .Where(u => u.UserId == userId)
+                    .OrderBy(u => u.Id)
                     .ToListAsync();
                 //
                 var response = new List<TransactionResponse>();
@@ -106,6 +107,7 @@ namespace app.Server.Repositories
                 var transactions = await _context.Transactions
                     .Include(u => u.Type)
                     .Where(u => u.Id == id)
+                    .OrderBy(u => u.Id)
                     .ToListAsync();
                 //
                 var response = new List<TransactionResponse>();
@@ -178,6 +180,7 @@ namespace app.Server.Repositories
                         PointAddress = result.PointAddress,
                         Date = result.Acceptance.Date
                     })
+                    .OrderBy(result => result.TransactionId)
                     .ToListAsync();
                 //
                 var response = new List<AcceptanceResponse>();
@@ -252,6 +255,7 @@ namespace app.Server.Repositories
                         DiscountBonuses = result.Discount.Bonuses,
                         Date = result.ReceivingDiscount.Date
                     })
+                    .OrderBy(result => result.TransactionId)
                     .ToListAsync();
                 //
                 var response = new List<ReceivingDiscountsResponse>();
@@ -310,9 +314,11 @@ namespace app.Server.Repositories
                     {
                         TransactionId = result.Transaction.Id,
                         ProductName = result.ProductName,
+                        ProductQuantity = result.ReceivingProduct.Quantity,
                         ProductBonus = result.ProductBonus,
                         Date = result.ReceivingProduct.Date
                     })
+                    .OrderBy(result => result.TransactionId)
                     .ToListAsync();
                 //
                 var response = new List<ReceivingProductResponse>();
@@ -322,7 +328,9 @@ namespace app.Server.Repositories
                     {
                         Id = transaction.TransactionId,
                         ProductName = transaction.ProductName,
+                        ProductQuantity = transaction.ProductQuantity,
                         ProductBonus = transaction.ProductBonus,
+                        Cost = transaction.ProductBonus * transaction.ProductQuantity,
                         Date = transaction.Date
                     });
                 }
