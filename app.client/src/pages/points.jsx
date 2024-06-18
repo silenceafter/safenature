@@ -48,7 +48,7 @@ const Points = () => {
     useEffect(() => {
         const userRequest = async () => {
             try {
-                const response = await fetch('https://localhost:7158/point/get-points');
+                const response = await fetch('http://localhost:7158/point/get-points');
                 if (response.ok) {
                     const userResponse = await response.json();
                     setUserData(userResponse);

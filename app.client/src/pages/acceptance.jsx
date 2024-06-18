@@ -115,12 +115,13 @@ const Acceptance = () => {
         }
     
         try {
-          const response = await fetch('https://localhost:7158/acceptance/register-dispose', {
+          const response = await fetch('http://localhost:7158/acceptance/register-dispose', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
+            credentials: 'include',
             body: JSON.stringify(request),
           });
     
@@ -151,11 +152,12 @@ const Acceptance = () => {
         const userRequest = async () => {
             try {
                 setUserLoading(true);
-                const response = await fetch('https://localhost:7158/hazardouswaste/get-hazardous-waste', {
+                const response = await fetch('http://localhost:7158/hazardouswaste/get-hazardous-waste', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`
-                    }
+                    },
+                    credentials: 'include'
                 });
                 //
                 if (response.ok) {
@@ -164,11 +166,12 @@ const Acceptance = () => {
 
                     //2-й запрос = получить список пунктов сдачи
                     setPointLoading(true);
-                    const response2 = await fetch('https://localhost:7158/point/get-points', {
+                    const response2 = await fetch('http://localhost:7158/point/get-points', {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${token}`
-                        }
+                        },
+                        credentials: 'include'
                     });                    
                     //
                     if (response2.ok) {

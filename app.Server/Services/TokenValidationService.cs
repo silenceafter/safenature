@@ -27,7 +27,7 @@ namespace app.Server.Services
             try
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                var response = await _httpClient.PostAsync("https://localhost:7086/account/validate", null);
+                var response = await _httpClient.PostAsync("http://localhost:7086/account/validate", null);
                 return response.IsSuccessStatusCode;           
             }
             catch (Exception ex)

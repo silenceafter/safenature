@@ -24,7 +24,7 @@ namespace app.Server.Services
             try
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                var response = await _httpClient.GetAsync("https://localhost:7086/account/get-current-user");
+                var response = await _httpClient.GetAsync("http://localhost:7086/account/get-current-user");
                 response.EnsureSuccessStatusCode();
                 //
                 var json = await response.Content.ReadAsStringAsync();

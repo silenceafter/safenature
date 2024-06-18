@@ -97,11 +97,11 @@ const Account = () => {
             return;//navigate('/access-denied');
 
         //запрос данных пользователя
-        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-current-user', 'userDataRequest'));
-        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-transactions', 'userTransactionsRequest'));
-        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-acceptance', 'userAcceptanceRequest'));
-        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-receiving-discount', 'userReceivingDiscountRequest'));
-        dispatch(fetchDataGet(token, 'https://localhost:7158/user/get-user-receiving-product', 'userReceivingProductRequest'));        
+        dispatch(fetchDataGet(token, 'http://localhost:7158/user/get-current-user', 'userDataRequest'));
+        dispatch(fetchDataGet(token, 'http://localhost:7158/user/get-user-transactions', 'userTransactionsRequest'));
+        dispatch(fetchDataGet(token, 'http://localhost:7158/user/get-user-acceptance', 'userAcceptanceRequest'));
+        dispatch(fetchDataGet(token, 'http://localhost:7158/user/get-user-receiving-discount', 'userReceivingDiscountRequest'));
+        dispatch(fetchDataGet(token, 'http://localhost:7158/user/get-user-receiving-product', 'userReceivingProductRequest'));        
     }, [dispatch]);
 
     //состояния запросов

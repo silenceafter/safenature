@@ -29,11 +29,12 @@ const Logout = () => {
     useEffect(() => {    
         const handleSubmit = async () => {
             try {
-                const response = await fetch('https://localhost:7086/account/logout', {
+                const response = await fetch('http://localhost:7086/account/logout', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`                 
-                    }
+                    },
+                    credentials: 'include'
                 });
 
                 if (response.ok) {

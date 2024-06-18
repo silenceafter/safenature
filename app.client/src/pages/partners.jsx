@@ -49,11 +49,12 @@ const Partners = () => {
   useEffect(() => {
       const userRequest = async () => {
       try {
-          const response = await fetch('https://localhost:7158/partner/getpartners', {
+          const response = await fetch('http://localhost:7158/partner/getpartners', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json'
-              }
+              },
+              credentials: 'include'
           });
 
           if (response.ok) {

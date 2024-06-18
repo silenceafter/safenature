@@ -9,7 +9,7 @@ function Copyright() {
   return (
     <Typography variant="body2" color="text.secondary" align="center">
       {'© '}
-      <Link color="inherit" href="https://localhost:5173/">
+      <Link color="inherit" href="http://localhost:5173/">
         SafeNature
       </Link>{' '}
       {new Date().getFullYear()}

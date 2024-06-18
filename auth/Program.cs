@@ -60,14 +60,10 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 //cors
 builder.Services.AddCors(options =>
-    options.AddPolicy("policy", builder =>
-    {
-        builder.WithOrigins("https://localhost:5173", "https://localhost:5174", "https://localhost:7158")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
-    })
-);
+{
+    options.AddPolicy("policy",
+        builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+});
 
 //appsettings: jwt
 builder.Services.Configure<SettingsJwtDto>(builder.Configuration.GetSection("JWT"));
@@ -225,7 +221,7 @@ app.UseCors("policy");
 var locOptions = app.Services.GetService<IOptions<RequestLocalizationOptions>>();
 app.UseRequestLocalization(locOptions.Value);
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();

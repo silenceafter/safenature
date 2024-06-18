@@ -85,7 +85,7 @@ namespace auth.Services
                     ), // Используем клеймы текущего пользователя
                     Expires = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_settingsJwtDto.ExpirationMinutes)),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-                    Issuer = _settingsJwtDto.Issuer,//"https://localhost:7086/"
+                    Issuer = _settingsJwtDto.Issuer,//"http://localhost:7086/"
                     Audience = _settingsJwtDto.Audience
                 };
                 var token = tokenHandler.CreateToken(tokenDescriptor);

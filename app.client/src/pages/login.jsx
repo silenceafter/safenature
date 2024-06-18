@@ -46,11 +46,12 @@ const Login = () => {
         setErrors({});
       
         try {
-            const response = await fetch('https://localhost:7086/account/login', {
+            const response = await fetch('http://localhost:7086/account/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify({ Email: formData.email, Password: formData.password })
             });
 
@@ -58,12 +59,13 @@ const Login = () => {
                 const result = await response.json();
                 dispatch(login(result.userName, formData.email, result.token.result, result.role));
 
-                const backendResponse = await fetch('https://localhost:7158/user/login', {
+                const backendResponse = await fetch('http://localhost:7158/user/login', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${result.token.result}`,
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    credentials: 'include'
                 });
 
                 if (backendResponse.ok) {

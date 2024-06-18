@@ -132,12 +132,13 @@ const BonusExchange = () => {
         };
     
         try {
-          const response = await fetch('https://localhost:7158/receivingdiscount/register-discount-reserve', {
+          const response = await fetch('http://localhost:7158/receivingdiscount/register-discount-reserve', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
+            credentials: 'include',
             body: JSON.stringify(dataToSend),
           });
     
@@ -159,12 +160,13 @@ const BonusExchange = () => {
 
             //обновляем баланс после успешного запроса
             try {
-                const response2 = await fetch('https://localhost:7158/user/get-account-balance', {
+                const response2 = await fetch('http://localhost:7158/user/get-account-balance', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
-                    }
+                    },
+                    credentials: 'include'
                 });
     
                 if (response2.ok) {
@@ -191,12 +193,13 @@ const BonusExchange = () => {
         //1 получить список доступных купонов
         const userRequest = async () => {
             try {
-                const response = await fetch('https://localhost:7158/receivingdiscount/get-discounts', {
+                const response = await fetch('http://localhost:7158/receivingdiscount/get-discounts', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
-                    }
+                    },
+                    credentials: 'include'
                 });
                 //
                 if (response.ok) {
@@ -218,12 +221,13 @@ const BonusExchange = () => {
 
                     //2 запрос баланса
                     try {
-                        const response2 = await fetch('https://localhost:7158/user/get-account-balance', {
+                        const response2 = await fetch('http://localhost:7158/user/get-account-balance', {
                             method: 'GET',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
                                 'Content-Type': 'application/json',
-                            }
+                            },
+                            credentials: 'include'
                         });
                         //
                         if (response2.ok) {

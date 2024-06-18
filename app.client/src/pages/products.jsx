@@ -89,12 +89,13 @@ const Products = () => {
         const fetchProducts = async () => {
           try {
             //запрос 1 = список товаров
-            const response1 = await fetch('https://localhost:7158/product/get-products', {
+            const response1 = await fetch('http://localhost:7158/product/get-products', {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
               },
+              credentials: 'include'
             });
             //
             if (!response1.ok) {
@@ -110,12 +111,13 @@ const Products = () => {
             setProducts(productsWithQuantity);
 
             //запрос 2 = баланс пользователя
-            const response2 = await fetch('https://localhost:7158/user/get-account-balance', {
+            const response2 = await fetch('http://localhost:7158/user/get-account-balance', {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
               },
+              credentials: 'include'
             });
     
             if (!response2.ok) {
@@ -186,12 +188,13 @@ const Products = () => {
         };
     
         try {
-          const response = await fetch('https://localhost:7158/product/register-product-reserve', {
+          const response = await fetch('http://localhost:7158/product/register-product-reserve', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
+            credentials: 'include',
             body: JSON.stringify(request),
           });
     
@@ -210,12 +213,13 @@ const Products = () => {
 
             //обновляем баланс после успешного запроса
             try {
-                const response2 = await fetch('https://localhost:7158/user/get-account-balance', {
+                const response2 = await fetch('http://localhost:7158/user/get-account-balance', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
-                    }
+                    },
+                    credentials: 'include'
                 });
     
                 if (response2.ok) {
