@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-auth-1b5e28d1-315b-48c2-8e5a-387c252f1bdd</UserSecretsId>
+    <OutputPath>$(SolutionDir)publish\auth\</OutputPath> <!-- Добавлено для публикации в отдельную директорию -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +37,19 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>appsettings.auth.json</TargetPath>
+    </Content>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>appsettings.Development.auth.json</TargetPath>
+    </Content>
   </ItemGroup>
 
 </Project>

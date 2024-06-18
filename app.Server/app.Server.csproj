@@ -7,6 +7,7 @@
     <SpaRoot>..\app.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:5173</SpaProxyServerUrl>
+    <OutputPath>$(SolutionDir)publish\app.server\</OutputPath> <!-- Добавлено для публикации в отдельную директорию -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,6 +44,19 @@
   <ItemGroup>
     <Folder Include="Controllers\Response\HazardClassResponse.cs\" />
     <Folder Include="Migrations\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>appsettings.server.json</TargetPath>
+    </Content>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>appsettings.Development.server.json</TargetPath>
+    </Content>
   </ItemGroup>
 
 </Project>
