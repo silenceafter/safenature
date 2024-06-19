@@ -19,7 +19,7 @@ export const fetchDataGet = (token, url, key) => async (dispatch) => {
                 'Content-Type': 'application/json',    
             },
             credentials: 'include'
-        });//'http://localhost:7086/account/get-current-user'
+        });
         
         if (!response.ok) {
             const error = new Error('HTTP error');
@@ -42,9 +42,10 @@ export const fetchDataPost = (token, url, key, data) => async (dispatch) => {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',    
-            },
+            },            
+            body: JSON.stringify(data),
             credentials: 'include',
-            body: JSON.stringify(data)
+            mode: 'cors'
         });
         
         if (!response.ok) {

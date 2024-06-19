@@ -28,9 +28,10 @@ const Forgot = () => {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json'                 
-              },
+              },              
+              body: JSON.stringify({ Email: formData.email, Password: formData.password }),
               credentials: 'include',
-              body: JSON.stringify({ Email: formData.email, Password: formData.password })
+              mode: 'cors'
           });
 
           if (response.ok) {

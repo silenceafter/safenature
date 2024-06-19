@@ -60,8 +60,7 @@ const Register = () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'                 
-            },
-            credentials: 'include',
+            },            
             body: JSON.stringify(
               {
                 UserName: formData.userName,
@@ -70,7 +69,9 @@ const Register = () => {
                 Password: formData.password,
                 ConfirmPassword: formData.confirmPassword
               }
-            )
+            ),
+            credentials: 'include',
+            mode: 'cors'
         });
 
         if (response.ok) {

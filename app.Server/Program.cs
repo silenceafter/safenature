@@ -35,7 +35,13 @@ builder.Configuration.GetSection("JWT").Bind(settingsJwt);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("policy",
-        builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:5173", "http://localhost:7086")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
 });
 
 //appsettings: jwt

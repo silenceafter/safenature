@@ -120,9 +120,10 @@ const Acceptance = () => {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
-            },
-            credentials: 'include',
+            },            
             body: JSON.stringify(request),
+            credentials: 'include',
+            mode: 'cors'
           });
     
           if (!response.ok) {
@@ -157,7 +158,8 @@ const Acceptance = () => {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     },
-                    credentials: 'include'
+                    credentials: 'include',
+                    mode: 'cors'
                 });
                 //
                 if (response.ok) {
@@ -171,7 +173,8 @@ const Acceptance = () => {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         },
-                        credentials: 'include'
+                        credentials: 'include',
+                        mode: 'cors'
                     });                    
                     //
                     if (response2.ok) {

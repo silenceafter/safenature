@@ -95,7 +95,8 @@ const Products = () => {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
               },
-              credentials: 'include'
+              credentials: 'include',
+              mode: 'cors'
             });
             //
             if (!response1.ok) {
@@ -117,7 +118,8 @@ const Products = () => {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
               },
-              credentials: 'include'
+              credentials: 'include',
+              mode: 'cors'
             });
     
             if (!response2.ok) {
@@ -193,9 +195,10 @@ const Products = () => {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
-            },
-            credentials: 'include',
+            },            
             body: JSON.stringify(request),
+            credentials: 'include',
+            mode: 'cors'
           });
     
           if (!response.ok) {
@@ -219,7 +222,8 @@ const Products = () => {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
-                    credentials: 'include'
+                    credentials: 'include',
+                    mode: 'cors'
                 });
     
                 if (response2.ok) {

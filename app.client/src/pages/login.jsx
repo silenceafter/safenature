@@ -50,9 +50,10 @@ const Login = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
+                },                
+                body: JSON.stringify({ Email: formData.email, Password: formData.password }),
                 credentials: 'include',
-                body: JSON.stringify({ Email: formData.email, Password: formData.password })
+                mode: 'cors'
             });
 
             if (response.ok) {
@@ -65,7 +66,8 @@ const Login = () => {
                         'Authorization': `Bearer ${result.token.result}`,
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'include'
+                    credentials: 'include',
+                    mode: 'cors'
                 });
 
                 if (backendResponse.ok) {
