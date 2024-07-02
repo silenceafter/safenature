@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Web.Helpers;
 
 namespace auth.Controllers
@@ -210,6 +211,20 @@ namespace auth.Controllers
                     }
                 )
             );
-        }                        
+        }
+
+        [HttpGet("test")]
+        public async Task<IActionResult> Test()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                var userName = User.Identity.Name;//получить имя пользователя
+                var userId = User.FindFirst(ClaimTypes.Name)?.Value;
+            }
+
+
+            return Ok();
+        }
+
     }
 }
