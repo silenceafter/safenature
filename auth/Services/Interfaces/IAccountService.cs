@@ -14,5 +14,6 @@ namespace auth.Services.Interfaces
         Task<IdentityResult> AssignRoleToUser(string email, string role);
         Task<IdentityResult> DeleteUserByEmail(string email);
         Task<List<RoleDto>> GetRoles();
+        Task<IdentityUser>? GetUserByEmailOrUsername(string email, string username);
     }
 }

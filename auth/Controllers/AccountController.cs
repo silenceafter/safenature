@@ -26,20 +26,45 @@ namespace auth.Controllers
         private readonly IAccountService _accountService;
         private readonly ITokenService _tokenService;
         private readonly EmailService _emailService;
-        //private readonly IUrlHelper _urlHelper;
 
         public AccountController(
             UserManager<IdentityUser> userManager, 
             IAccountService accountService, 
             ITokenService tokenService,
-            EmailService emailService/*,
-            IUrlHelperFactory urlHelperFactory*/)
+            EmailService emailService)
         {
             _userManager = userManager;
             _accountService = accountService;
             _tokenService = tokenService;
             _emailService = emailService;
-            //_urlHelper = urlHelperFactory.GetUrlHelper(new ActionContext());
+        }
+
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromBody] RegisterDto model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            //
+            var result = await _accountService.Register(model);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            }
+
+            //присваиваем пользователю роль "User"
+            var roleResult = await _accountService.AssignRoleToUser(model.Email, "User");
+            if (!roleResult.Succeeded)
+            {
+                //если присвоение роли не удалось, откатываем регистрацию пользователя
+                await _accountService.DeleteUserByEmail(model.Email);
+                foreach (var error in roleResult.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            }
+            return CreatedAtAction(nameof(GetUs);//Created("", new { });//201 Created           
         }
 
         [HttpPost("login")]
@@ -97,34 +122,6 @@ namespace auth.Controllers
             return await _accountService.Logout()
                 ? Ok()
                 : BadRequest("Произошла ошибка при обработке токена");
-        }
-
-        [HttpPost("register")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] RegisterDto model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-            //
-            var result = await _accountService.Register(model);
-            if (!result.Succeeded)
-            {
-                foreach (var error in result.Errors)
-                    ModelState.AddModelError(string.Empty, error.Description);
-                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-            }
-               
-            //присваиваем пользователю роль "User"
-            var roleResult = await _accountService.AssignRoleToUser(model.Email, "User");
-            if (!roleResult.Succeeded)
-            {
-                //если присвоение роли не удалось, откатываем регистрацию пользователя
-                await _accountService.DeleteUserByEmail(model.Email);
-                foreach (var error in roleResult.Errors)
-                    ModelState.AddModelError(string.Empty, error.Description);
-                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-            }
-            return Created("", new { });//201 Created           
         }
 
         [HttpPost("forgot")]
@@ -211,6 +208,17 @@ namespace auth.Controllers
                     }
                 )
             );
+        }
+
+        [HttpGet("get-user")]
+        public async Task<IActionResult> GetUser(string id)
+        {
+            var user = await _accountService.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
         }
 
         [HttpGet("test")]

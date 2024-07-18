@@ -288,5 +288,18 @@ namespace auth.Services
                 return new List<RoleDto>();
             }
         }
+    
+        public async Task<IdentityUser>? GetUserByEmailOrUsername(string email, string username)
+        {
+            IdentityUser user = null;
+            if (!string.IsNullOrEmpty(email))
+                user = await _userManager.FindByEmailAsync(email);
+            if (user == null && !string.IsNullOrEmpty(username))
+                user = await _userManager.FindByNameAsync(username);          
+            //
+            if (user == null)
+                return null;
+            return user;
+        }
     }
 }
