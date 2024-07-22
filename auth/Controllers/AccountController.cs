@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using MySqlX.XDevAPI.Common;
 using System.Security.Claims;
 using System.Web.Helpers;
 
@@ -45,26 +46,27 @@ namespace auth.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-            //
-            var result = await _accountService.Register(model);
-            if (!result.Succeeded)
-            {
-                foreach (var error in result.Errors)
-                    ModelState.AddModelError(string.Empty, error.Description);
-                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+
+            //регистрация
+            var (result, user) = await _accountService.Register(model);
+            if (user == null) {
+                var errorMessages = result.Errors.Select(error => error.Description).ToArray();
+                return BadRequest(new { Error = $"Пользователь {model.Username} не зарегистрирован.", Details = errorMessages });
             }
 
-            //присваиваем пользователю роль "User"
-            var roleResult = await _accountService.AssignRoleToUser(model.Email, "User");
-            if (!roleResult.Succeeded)
+            //DTO
+            UserDto userDto = new UserDto
             {
-                //если присвоение роли не удалось, откатываем регистрацию пользователя
-                await _accountService.DeleteUserByEmail(model.Email);
-                foreach (var error in roleResult.Errors)
-                    ModelState.AddModelError(string.Empty, error.Description);
-                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-            }
-            return CreatedAtAction(nameof(GetUs);//Created("", new { });//201 Created           
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                EmailConfirmed = user.EmailConfirmed,
+                PhoneNumber = user.PhoneNumber,
+                PhoneNumberConfirmed = user.PhoneNumberConfirmed,
+                Roles = new List<string> { "User" }
+            };
+
+            return Created(string.Empty, userDto);
         }
 
         [HttpPost("login")]
@@ -193,7 +195,7 @@ namespace auth.Controllers
             return Ok(roles);
         }
 
-        [HttpPost("update-role")]
+        /*[HttpPost("update-role")]
         [Authorize]
         public async Task<IActionResult> UpdateRole(string email, string role)
         {
@@ -208,9 +210,9 @@ namespace auth.Controllers
                     }
                 )
             );
-        }
+        }*/
 
-        [HttpGet("get-user")]
+        /*[HttpGet("get-user")]
         public async Task<IActionResult> GetUser(string id)
         {
             var user = await _accountService.FindByIdAsync(id);
@@ -219,7 +221,7 @@ namespace auth.Controllers
                 return NotFound();
             }
             return Ok(user);
-        }
+        }*/
 
         [HttpGet("test")]
         public async Task<IActionResult> Test()

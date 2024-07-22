@@ -20,6 +20,7 @@ using System.Text;
 using System.Threading.Tasks;
 using auth.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 
 namespace auth.Services
 {
@@ -51,11 +52,10 @@ namespace auth.Services
             _tokenService = tokenService;
         }
 
-        public async Task<IdentityResult> Register(RegisterDto model)
+        public async Task<(IdentityResult Result, IdentityUser? User)> Register(RegisterDto model, string role = "User")
         {
-            await using (var transaction = _context.Database.BeginTransaction())
-            {
-                try
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
                 {
                     var user = new IdentityUser 
                     { 
@@ -67,30 +67,37 @@ namespace auth.Services
                     //создание пользователя
                     var result = await _userManager.CreateAsync(user, model.Password);
                     if (!result.Succeeded)
-                    {
-                        //откат
-                        await transaction.RollbackAsync();
-                        return result;
-                    }                        
+                        return (result, null);
 
-                    //сохранить
-                    await _context.SaveChangesAsync();
+                    //проверяем, существует ли роль
+                    var roleExists = await _roleManager.RoleExistsAsync(role);
+                    if (!roleExists)
+                    {
+                        return (IdentityResult.Failed(new IdentityError
+                        {
+                            Description = $"Роль {role} не найдена."
+                        }), null);
+                    }
+
+                    //присваиваем пользователю роль
+                    result = await _userManager.AddToRoleAsync(user, role);                    
 
                     //временное подтверждение email
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     result = await _userManager.ConfirmEmailAsync(user, token);
 
                     //сохранить
-                    await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    return new IdentityResult();
-                }
+                    return (IdentityResult.Success, user);
             }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return (IdentityResult.Failed(new IdentityError
+                {
+                    Description = $"Исключение. Откат транзакции."
+                }), null);
+            }            
         }
 
         public async Task<Dictionary<string, string[]>> Login(LoginDto model)
@@ -193,7 +200,7 @@ namespace auth.Services
             }
         }
 
-        public async Task<IdentityResult> AssignRoleToUser(string email, string role)
+        public async Task<IdentityResult> AssignRoleToUserByEmail(string email, string role = "User")
         {
             try
             {
@@ -202,7 +209,7 @@ namespace auth.Services
                 {
                     return IdentityResult.Failed(new IdentityError
                     {
-                        Description = $"User with email {email} not found."
+                        Description = $"Пользователь с email {email} не найден."
                     });
                 }
 
@@ -211,9 +218,13 @@ namespace auth.Services
                 if (!roleExists)
                 {
                     //создаем роль, если она не существует
-                    var roleResult = await _roleManager.CreateAsync(new IdentityRole(role));
+                    /*var roleResult = await _roleManager.CreateAsync(new IdentityRole(role));
                     if (!roleResult.Succeeded)
-                        return roleResult;
+                        return roleResult;*/
+                    return IdentityResult.Failed(new IdentityError
+                    {
+                        Description = $"Роль {role} не найдена."
+                    });
                 }
 
                 //присваиваем пользователю роль
@@ -231,7 +242,45 @@ namespace auth.Services
                 );
             }
         }
-    
+
+        public async Task<IdentityResult> AssignRoleToUserByEmail(IdentityUser user, string role = "User")
+        {
+            try
+            {                
+                if (user == null)
+                {
+                    return IdentityResult.Failed(new IdentityError
+                    {
+                        Description = "Пользователь не указан."
+                    });
+                }
+
+                //проверяем, существует ли роль
+                var roleExists = await _roleManager.RoleExistsAsync(role);
+                if (!roleExists)
+                {
+                    return IdentityResult.Failed(new IdentityError
+                    {
+                        Description = $"Роль {role} не найдена."
+                    });
+                }
+
+                //присваиваем пользователю роль
+                var result = await _userManager.AddToRoleAsync(user, role);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                //возвращаем ошибку
+                return IdentityResult.Failed(
+                    new IdentityError
+                    {
+                        Description = $"{ex.Message}"
+                    }
+                );
+            }
+        }
+
         public async Task<IdentityResult> DeleteUserByEmail(string email)
         {
             try
