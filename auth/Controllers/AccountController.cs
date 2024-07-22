@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using MySqlX.XDevAPI.Common;
+using System.Data;
 using System.Security.Claims;
 using System.Web.Helpers;
 
@@ -65,7 +66,6 @@ namespace auth.Controllers
                 PhoneNumberConfirmed = user.PhoneNumberConfirmed,
                 Roles = new List<string> { "User" }
             };
-
             return Created(string.Empty, userDto);
         }
 
@@ -76,40 +76,66 @@ namespace auth.Controllers
             {
                 //вход пользователя в систему
                 var result = await _accountService.Login(model);
-                if (result.Count > 0)
+                if (result.Exception != null) 
                 {
-                    var errors = result;
-                    ModelState.AddModelError("EmailPassword", "Email или пароль");
-                    return BadRequest(new { errors });
+                    //исключение
+                    var errorMessages = new[] { result.Exception.Message };
+                    return BadRequest(new { Error = result.Exception.Message, Details = errorMessages });
                 }
-
-                //найти пользователя в системе
-                var user = await _userManager.FindByEmailAsync(model.Email);
-                if (user == null)
+                else if (result.User == null)
                 {
-                    ModelState.AddModelError("User", "Пользователь не найден");
-                    var errors = new Dictionary<string, string[]>
+                    //пользователь не найден
+                    return BadRequest(new { Error = $"Пользователь {model.Email} не зарегистрирован." });
+                }
+                else
+                {
+                    //ошибка SignInResult
+                    if (result.SignInResult == null)
                     {
-                        { "User", new string[] { "Пользователь не найден" } }
-                    };
-                    return BadRequest(new { errors });//return Unauthorized("User not found");
-                }
+                        return BadRequest(
+                            new
+                            {
+                                Error = $"Вход в систему пользователем {model.Email} не выполнен",
+                                Details = new[] { "Отсутствует результат SignInResult" }
+                            });
+                    }
+
+                    //пользователь найден, вход не выполнен
+                    if (!result.SignInResult.Succeeded) 
+                    {
+                        var message = result.SignInResult switch
+                        {
+                            { Succeeded: true } => "Вход выполнен успешно.",
+                            { IsLockedOut: true } => "Учетная запись заблокирована.",
+                            { IsNotAllowed: true } => "Вход не разрешен. Пожалуйста, подтвердите вашу учетную запись.",
+                            { RequiresTwoFactor: true } => "Требуется двухфакторная аутентификация.",
+                            _ => "Неудачная попытка входа. Проверьте электронную почту и пароль."
+                        };
+                        var errorMessages = new[] { message };
+                        return BadRequest(
+                            new 
+                            { 
+                                Error = $"Вход в систему пользователем {model.Email} не выполнен", 
+                                Details = errorMessages 
+                            });
+                    }
+                }                
 
                 //роли пользователя
-                var roles = await _userManager.GetRolesAsync(user);
+                var roles = await _userManager.GetRolesAsync(result.User);
 
                 //генерировать токен
-                var token = _tokenService.GenerateJwtToken(user);
+                var token = _tokenService.GenerateJwtToken(result.User);
                 if (token == null)
-                {
-                    ModelState.AddModelError("Token", "Внутренняя ошибка");
-                    var errors = new Dictionary<string, string[]>
-                    {
-                        { "Token", new string[] { "Внутренняя ошибка" } }
-                    };
-                    return BadRequest(new { errors });//return Unauthorized("Invalid email or password.");
+                {                   
+                    return BadRequest(
+                        new 
+                        { 
+                            Error = $"Для пользователя {model.Email} вход не выполнен", 
+                            Detault = new[] { "Не удалось сгенерировать токен" } 
+                        });
                 }
-                return Ok(new { UserName = user.UserName, Role = roles[0], Token = token });
+                return Ok(new { UserName = result.User.UserName, Roles = roles, Token = token });
             }
             catch (Exception ex) 
             {

@@ -75,7 +75,7 @@ namespace auth.Services
                     {
                         return (IdentityResult.Failed(new IdentityError
                         {
-                            Description = $"Роль {role} не найдена."
+                            Description = $"Роль {role} не найдена"
                         }), null);
                     }
 
@@ -95,42 +95,43 @@ namespace auth.Services
                 await transaction.RollbackAsync();
                 return (IdentityResult.Failed(new IdentityError
                 {
-                    Description = $"Исключение. Откат транзакции."
+                    Description = $"Исключение. Откат транзакции"
                 }), null);
             }            
         }
 
-        public async Task<Dictionary<string, string[]>> Login(LoginDto model)
+        public async Task<LoginResult> Login(LoginDto model)
         {
             try
             {
                 //пользователь
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null)
-                {                 
-                    return new Dictionary<string, string[]>
-                    {
-                         { "Email", new string[] { "Email" } },
-                    };
-                }//пользователь не найден
-
-                //вход по паролю
-                var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, lockoutOnFailure: true);
-                if (!result.Succeeded)
                 {
-                    return new Dictionary<string, string[]>
+                    //пользователь не найден
+                    return new LoginResult()
                     {
-                        { "Password", new string[] { "Пароль" } },
+                        User = null,
+                        SignInResult = null,
+                        Exception = null
                     };
                 }
-                return new Dictionary<string, string[]> { };
+                //вход по паролю
+                var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, lockoutOnFailure: true);                                
+                return new LoginResult()
+                {
+                    User = user,
+                    SignInResult = result,
+                    Exception = null
+                };
             }
             catch (Exception ex)
             {
-                return new Dictionary<string, string[]>
+                return new LoginResult()
                 {
-                    { "Email", new string[] { "Email" } },
-                    { "Password", new string[] { "Пароль" } },
+                    User = null,
+                    SignInResult = null,
+                    Exception = ex
                 };
             }
         }

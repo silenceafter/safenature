@@ -1,4 +1,5 @@
-﻿using auth.DTOs;
+﻿using auth.Data;
+using auth.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,7 @@ namespace auth.Services.Interfaces
     public interface IAccountService
     {
         Task<(IdentityResult Result, IdentityUser? User)> Register(RegisterDto model, string role = "User");
-        Task<Dictionary<string, string[]>> Login(LoginDto model);
+        Task<LoginResult> Login(LoginDto model);
         Task<bool> Logout();
         //Task<IdentityResult> Forgot(ForgotDto model);
         Task<UserDto>? GetIdentityUser();
