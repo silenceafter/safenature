@@ -6,6 +6,8 @@ namespace app.Server.Models;
 public partial class User
 {
     public int Id { get; set; }
+    public string Encrypt { get; set; }
+    public string EmailHash { get; set; }  
 
     public int Bonuses { get; set; }
 

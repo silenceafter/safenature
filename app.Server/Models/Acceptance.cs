@@ -10,6 +10,7 @@ public partial class Acceptance
     public int TransactionId { get; set; }
 
     public int HazardousWasteId { get; set; }
+    public int Quantity { get; set; }
 
     public DateTime Date { get; set; }
 

@@ -1,57 +1,63 @@
-import { useEffect, useState } from 'react';
-import { UserManager } from 'oidc-client';
-import './App.css';
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+import './app.css';
+import CssBaseline from '@mui/material/CssBaseline';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Register } from './pages/register';
+import { Login } from './pages/login';
+import { Logout } from './pages/logout';
+import { Callback } from './pages/callback';
+import { Home } from './pages/home';
+import { Account } from './pages/account';
+import { About } from './pages/about';
+import { Partners } from './pages/partners';
+import { Products } from './pages/products';
+import { Points } from './pages/points';
+import { Article } from './pages/article';
+import { AccessDenied } from './pages/accessDenied';
+import { BonusExchange } from './pages/bonusExchange';
+import { Acceptance } from './pages/acceptance';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
+import Header from './components/header';
+import Footer from './components/footer';
+import { Container } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import ReactMarkdown from 'markdown-to-jsx';
 
-function App() {
-    
-
-
-    const [forecasts, setForecasts] = useState();
-
-    useEffect(() => {
-        populateWeatherData();
-    }, []);
-
-    const contents = forecasts === undefined
-        ? <p><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationreact">https://aka.ms/jspsintegrationreact</a> for more details.</em></p>
-        : <table className="table table-striped" aria-labelledby="tabelLabel">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
-                </tr>
-            </thead>
-            <tbody>
-                {forecasts.map(forecast =>
-                    <tr key={forecast.date}>
-                        <td>{forecast.date}</td>
-                        <td>{forecast.temperatureC}</td>
-                        <td>{forecast.temperatureF}</td>
-                        <td>{forecast.summary}</td>
-                    </tr>
-                )}
-            </tbody>
-        </table>;
-
-    return (
-        <div>
-            <h1 id="tabelLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            {contents}
-        </div>
-    );
-    
-    async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
-        const data = await response.json();
-        setForecasts(data);
-    }
-}
+const App = () => {
+  const { email, token } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  //
+  return (    
+    <Router>
+      <div className="App">
+        <CssBaseline />
+          <Container maxWidth="lg">
+            <Header title="SafeNature" />
+            <main>
+              <Routes>
+                  <Route index element={<Home />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/logout" element={<Logout />} />
+                  <Route path="/callback" element={<Callback />} />
+                  <Route path="/account" element={<Account />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/partners" element={<Partners />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/points" element={<Points />} />
+                  <Route path="/bonus-exchange" element={<BonusExchange />} />
+                  <Route path="/acceptance" element={<Acceptance />} />
+                  <Route path="/article" element={<Article />} />
+                  <Route path="/access-denied" element={<AccessDenied />} />
+              </Routes>
+            </main>
+          </Container>
+          <Footer
+              title=""
+              description=""
+          />
+      </div>
+    </Router> 
+  );
+};
 
 export default App;
