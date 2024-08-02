@@ -116,6 +116,7 @@ namespace auth.Services
                         Exception = null
                     };
                 }
+
                 //вход по паролю
                 var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, lockoutOnFailure: true);                                
                 return new LoginResult()
@@ -136,14 +137,40 @@ namespace auth.Services
             }
         }
 
-        public async Task<bool> Logout()
+        public async Task<LogoutResult> Logout(LogoutDto model)
         {
             try
             {
+                //пользователь
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    //пользователь не найден
+                    return new LogoutResult()
+                    {
+                        User = null,
+                        IsSignedIn = false,
+                        BlacklistedToken = null,
+                        Exception = null                        
+                    };
+                }
+
+                //текущий пользователь
+                ClaimsPrincipal currentUser = _httpContextAccessor.HttpContext?.User;
+                var isSignedIn = _signInManager.IsSignedIn(currentUser);
+
                 //получить токен
                 var token = await _tokenService.GetJwtTokenFromHeader();
                 if (token == null)
-                    return false;//BadRequest("Произошла ошибка при обработке токена");
+                {
+                    return new LogoutResult()
+                    {
+                        User = user,
+                        IsSignedIn = isSignedIn,
+                        BlacklistedToken = null,
+                        Exception = new Exception("Токен не найден")
+                    };
+                }                   
                 //
                 var blacklistedToken = new BlacklistedToken
                 {
@@ -152,11 +179,24 @@ namespace auth.Services
                 };
                 //
                 await _signInManager.SignOutAsync();
-                return await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? true : false;
+                var result = await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? true : false;
+                return new LogoutResult()
+                {
+                    User = user,
+                    IsSignedIn = isSignedIn,
+                    BlacklistedToken = blacklistedToken,
+                    Exception = null
+                };
             }
             catch (Exception ex)
             {
-                return false;
+                return new LogoutResult()
+                {
+                    User = null,
+                    IsSignedIn = false,
+                    BlacklistedToken= null,
+                    Exception = ex
+                };
             }
         }      
 
