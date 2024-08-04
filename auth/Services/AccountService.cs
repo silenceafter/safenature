@@ -52,7 +52,7 @@ namespace auth.Services
             _tokenService = tokenService;
         }
 
-        public async Task<(IdentityResult Result, IdentityUser? User)> Register(RegisterDto model, string role = "User")
+        public async Task<RegisterResult> Register(RegisterDto model, string role = "User")
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -67,16 +67,27 @@ namespace auth.Services
                     //создание пользователя
                     var result = await _userManager.CreateAsync(user, model.Password);
                     if (!result.Succeeded)
-                        return (result, null);
+                    {
+                        return new RegisterResult()
+                        {
+                            Result = result,
+                            User = null
+                        };//(result, null);
+                    }
 
                     //проверяем, существует ли роль
                     var roleExists = await _roleManager.RoleExistsAsync(role);
                     if (!roleExists)
                     {
-                        return (IdentityResult.Failed(new IdentityError
+                        return new RegisterResult()
+                        {
+                            Result = IdentityResult.Failed(new IdentityError { Description = $"Роль {role} не найдена" }),
+                            User = null
+                        };
+                    /*(IdentityResult.Failed(new IdentityError
                         {
                             Description = $"Роль {role} не найдена"
-                        }), null);
+                        }), null);*/
                     }
 
                     //присваиваем пользователю роль
@@ -88,15 +99,23 @@ namespace auth.Services
 
                     //сохранить
                     await transaction.CommitAsync();
-                    return (IdentityResult.Success, user);
+                    return new RegisterResult()
+                    {
+                        Result = IdentityResult.Success,
+                        User = user
+                    };//(IdentityResult.Success, user);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return (IdentityResult.Failed(new IdentityError
+                return new RegisterResult()
+                {
+                    Result = IdentityResult.Failed(new IdentityError { Description = "Исключение. Откат транзакции" }),
+                    User = null
+                }; /*(IdentityResult.Failed(new IdentityError
                 {
                     Description = $"Исключение. Откат транзакции"
-                }), null);
+                }), null);*/
             }            
         }
 
@@ -137,54 +156,47 @@ namespace auth.Services
             }
         }
 
-        public async Task<LogoutResult> Logout(LogoutDto model)
+        public async Task<LogoutResult> Logout()
         {
             try
             {
-                //пользователь
-                var user = await _userManager.FindByEmailAsync(model.Email);
-                if (user == null)
-                {
-                    //пользователь не найден
-                    return new LogoutResult()
-                    {
-                        User = null,
-                        IsSignedIn = false,
-                        BlacklistedToken = null,
-                        Exception = null                        
-                    };
-                }
-
-                //текущий пользователь
-                ClaimsPrincipal currentUser = _httpContextAccessor.HttpContext?.User;
-                var isSignedIn = _signInManager.IsSignedIn(currentUser);
-
                 //получить токен
                 var token = await _tokenService.GetJwtTokenFromHeader();
                 if (token == null)
                 {
+                    //токен пользователя не найден
                     return new LogoutResult()
                     {
-                        User = user,
-                        IsSignedIn = isSignedIn,
-                        BlacklistedToken = null,
-                        Exception = new Exception("Токен не найден")
+                        IsSuccessful = false,
+                        Message = "Ошибка извлечения токена пользователя",
+                        Exception = null
                     };
-                }                   
-                //
+                }                
+
+                //находится ли токен в черном списке?
+                if (await _tokenService.IsTokenBlacklisted(token))
+                {
+                    return new LogoutResult()
+                    {
+                        IsSuccessful = false,
+                        Message = "Токен уже содержится в черном списке",
+                        Exception = null
+                    };
+                }
+
+                //черный список токенов                
                 var blacklistedToken = new BlacklistedToken
                 {
                     Token = token,
-                    ExpirationDate = DateTime.UtcNow.AddHours(1) //срок действия токена
+                    ExpirationDate = DateTime.UtcNow.AddHours(1)//срок действия токена
                 };
                 //
                 await _signInManager.SignOutAsync();
                 var result = await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? true : false;
                 return new LogoutResult()
                 {
-                    User = user,
-                    IsSignedIn = isSignedIn,
-                    BlacklistedToken = blacklistedToken,
+                    IsSuccessful = true,
+                    Message = "Токен пользователя успешно добавлен в черный список",
                     Exception = null
                 };
             }
@@ -192,9 +204,8 @@ namespace auth.Services
             {
                 return new LogoutResult()
                 {
-                    User = null,
-                    IsSignedIn = false,
-                    BlacklistedToken= null,
+                    IsSuccessful = false,
+                    Message = "В процессе работы возникло исключение",
                     Exception = ex
                 };
             }

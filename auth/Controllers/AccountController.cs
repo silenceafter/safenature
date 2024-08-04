@@ -49,27 +49,28 @@ namespace auth.Controllers
                 return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
 
             //регистрация
-            var (result, user) = await _accountService.Register(model);
-            if (user == null) {
-                var errorMessages = result.Errors.Select(error => error.Description).ToArray();
+            var serviceResult = await _accountService.Register(model);//(result, user)
+            if (serviceResult.User == null) {
+                var errorMessages = serviceResult.Result.Errors.Select(error => error.Description).ToArray();
                 return BadRequest(new { Error = $"Пользователь {model.Username} не зарегистрирован.", Details = errorMessages });
             }
 
             //DTO
             UserDto userDto = new UserDto
             {
-                Id = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                EmailConfirmed = user.EmailConfirmed,
-                PhoneNumber = user.PhoneNumber,
-                PhoneNumberConfirmed = user.PhoneNumberConfirmed,
+                Id = serviceResult.User.Id,
+                UserName = serviceResult.User.UserName,
+                Email = serviceResult.User.Email,
+                EmailConfirmed = serviceResult.User.EmailConfirmed,
+                PhoneNumber = serviceResult.User.PhoneNumber,
+                PhoneNumberConfirmed = serviceResult.User.PhoneNumberConfirmed,
                 Roles = new List<string> { "User" }
             };
             return Created(string.Empty, userDto);
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
             try
@@ -144,12 +145,33 @@ namespace auth.Controllers
         }
 
         [HttpPost("logout")]
-        [AllowAnonymous]//[Authorize(Policy = "AllowIfNoRoleClaim")]
+        [Authorize(Policy = "AllowIfNoRoleClaim")]
         public async Task<IActionResult> Logout()
         {
-            return await _accountService.Logout()
-                ? Ok()
-                : BadRequest("Произошла ошибка при обработке токена");
+            var result = await _accountService.Logout();
+            if (result == null)
+            {
+                return BadRequest("Выход из аккаунта не выполнен. Критическая ошибка");
+            }                
+            //
+            if (!result.IsSuccessful)
+            {
+                if (result.Exception == null)
+                {
+                    //выход не выполнен, но исключение не произошло
+                    return BadRequest(result.Message);
+                }
+                else
+                {
+                    //выход не выполнен, произошло исключение
+                    return BadRequest(result.Exception.Message);
+                }
+                
+            } 
+            else
+            {
+                return Ok("Выход из аккаунта выполнен");
+            }
         }
 
         [HttpPost("forgot")]

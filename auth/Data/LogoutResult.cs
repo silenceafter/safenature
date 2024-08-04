@@ -5,9 +5,8 @@ namespace auth.Data
 {
     public class LogoutResult
     {
-        public IdentityUser? User { get; set; }
-        public bool IsSignedIn { get; set; }
-        public BlacklistedToken? BlacklistedToken { get; set; }
+        public bool IsSuccessful { get; set; }
+        public string Message { get; set; }
         public Exception? Exception { get; set; }
     }
 }

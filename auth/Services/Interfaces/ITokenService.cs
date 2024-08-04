@@ -10,5 +10,6 @@ namespace auth.Services.Interfaces
         Task<string>? GenerateJwtToken(IdentityUser user);
         Task<string>? GetJwtTokenFromHeader();
         Task<bool> ValidateJwtToken(/*string token*/);
+        Task<bool> IsTokenBlacklisted(string token);
     }
 }

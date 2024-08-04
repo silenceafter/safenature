@@ -7,9 +7,9 @@ namespace auth.Services.Interfaces
 {
     public interface IAccountService
     {
-        Task<(IdentityResult Result, IdentityUser? User)> Register(RegisterDto model, string role = "User");
+        Task<RegisterResult> Register(RegisterDto model, string role = "User");
         Task<LoginResult> Login(LoginDto model);
-        Task<LogoutResult> Logout(LogoutDto model);
+        Task<LogoutResult> Logout();
         //Task<IdentityResult> Forgot(ForgotDto model);
         Task<UserDto>? GetIdentityUser();
         Task<IdentityResult> AssignRoleToUserByEmail(string email, string role = "User");

@@ -11,6 +11,7 @@ using auth.Data;
 using auth.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using NuGet.Common;
 
 namespace auth.Services
 {
@@ -99,6 +100,11 @@ namespace auth.Services
             {
                 return null;
             }
+        }
+
+        public async Task<bool> IsTokenBlacklisted(string token)
+        {
+            return await _context.BlacklistedTokens.AnyAsync(t => t.Token == token);
         }
 
         public async Task<bool> ValidateJwtToken()
