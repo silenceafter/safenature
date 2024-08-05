@@ -32,6 +32,9 @@ builder.WebHost.ConfigureKestrel(options =>
 //appsettings.json
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
+//secrets
+builder.Configuration.AddUserSecrets<Program>();
+
 //bind
 var settingsJwtDto = new SettingsJwtDto();
 builder.Configuration.GetSection("JWT").Bind(settingsJwtDto);
@@ -102,7 +105,7 @@ builder.Services.AddControllers();
 builder.Services.AddTransient<IAccountService, AccountService>();
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddScoped<RoleManager<IdentityRole>>();
-builder.Services.AddTransient<EmailService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 //аутентификация
 builder.Services.AddAuthentication(options =>

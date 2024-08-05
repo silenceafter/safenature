@@ -211,7 +211,7 @@ namespace auth.Services
             }
         }      
 
-        /*public async Task<IdentityResult> Forgot(ForgotDto model)
+        public async Task<ForgotPasswordResult> ForgotPassword(ForgotPasswordDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
@@ -219,7 +219,7 @@ namespace auth.Services
                 // Если пользователь не существует или не подтвердил свой адрес электронной почты
                 //return BadRequest("User does not exist or email not confirmed.");
             }
-        }*/
+        }
 
         public async Task<UserDto>? GetIdentityUser()
         {

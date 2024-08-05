@@ -2,7 +2,7 @@
 
 namespace auth.DTOs
 {
-    public class ForgotDto
+    public class ForgotPasswordDto
     {
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address")]

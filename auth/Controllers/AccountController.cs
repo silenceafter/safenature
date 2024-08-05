@@ -176,7 +176,7 @@ namespace auth.Controllers
 
         [HttpPost("forgot")]
         [AllowAnonymous]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotDto model)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
