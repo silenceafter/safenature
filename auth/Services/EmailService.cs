@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using auth.Data;
 using auth.DTOs;
 using auth.Models;
 using auth.Services.Interfaces;
@@ -31,26 +32,36 @@ namespace auth.Services
             _useSsl = bool.TryParse(configuration["UseSsl"], out bool _useSslResult) ? _useSslResult : false;
         }
 
-        public async Task SendEmailAsync(string email, string subject, string message)
+        public async Task<DefaultResult> SendEmailAsync(string email, string subject, string message)
         {
             var emailMessage = new MimeMessage();
-
-            emailMessage.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
+            emailMessage.From.Add(new MailboxAddress(_senderName, _senderEmail));
             emailMessage.To.Add(new MailboxAddress("", email));
             emailMessage.Subject = subject;
             emailMessage.Body = new TextPart("plain") { Text = message };
-
+            //
             using (var client = new SmtpClient())
             {
                 try
                 {
-                    await client.ConnectAsync(_emailSettings.MailServer, _emailSettings.MailPort, _emailSettings.UseSsl);
-                    await client.AuthenticateAsync(_emailSettings.UserName, _emailSettings.Password);
+                    await client.ConnectAsync(_mailServer, _mailPort, _useSsl);
+                    await client.AuthenticateAsync(_userName, _password);
                     await client.SendAsync(emailMessage);
+                    return new DefaultResult()
+                    {
+                        IsSuccessful = true,
+                        Message = $"Письмо успешно отправлено на адрес {email}",
+                        Exception = null
+                    };
                 }
                 catch (Exception ex)
                 {
-                    throw;
+                    return new DefaultResult()
+                    {
+                        IsSuccessful = false,
+                        Message = $"Не удалось отправить email на почту {email}",
+                        Exception = ex
+                    };
                 }
                 finally
                 {

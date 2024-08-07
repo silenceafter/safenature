@@ -156,7 +156,7 @@ namespace auth.Services
             }
         }
 
-        public async Task<LogoutResult> Logout()
+        public async Task<DefaultResult> Logout()
         {
             try
             {
@@ -165,7 +165,7 @@ namespace auth.Services
                 if (token == null)
                 {
                     //токен пользователя не найден
-                    return new LogoutResult()
+                    return new DefaultResult()
                     {
                         IsSuccessful = false,
                         Message = "Ошибка извлечения токена пользователя",
@@ -176,7 +176,7 @@ namespace auth.Services
                 //находится ли токен в черном списке?
                 if (await _tokenService.IsTokenBlacklisted(token))
                 {
-                    return new LogoutResult()
+                    return new DefaultResult()
                     {
                         IsSuccessful = false,
                         Message = "Токен уже содержится в черном списке",
@@ -193,7 +193,7 @@ namespace auth.Services
                 //
                 await _signInManager.SignOutAsync();
                 var result = await _tokenService.AddJwtTokenToBlacklist(blacklistedToken) > 0 ? true : false;
-                return new LogoutResult()
+                return new DefaultResult()
                 {
                     IsSuccessful = true,
                     Message = "Токен пользователя успешно добавлен в черный список",
@@ -202,7 +202,7 @@ namespace auth.Services
             }
             catch (Exception ex)
             {
-                return new LogoutResult()
+                return new DefaultResult()
                 {
                     IsSuccessful = false,
                     Message = "В процессе работы возникло исключение",

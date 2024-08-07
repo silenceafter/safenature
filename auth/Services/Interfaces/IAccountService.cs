@@ -9,7 +9,7 @@ namespace auth.Services.Interfaces
     {
         Task<RegisterResult> Register(RegisterDto model, string role = "User");
         Task<LoginResult> Login(LoginDto model);
-        Task<LogoutResult> Logout();
+        Task<DefaultResult> Logout();
         Task<ForgotPasswordResult> ForgotPassword(ForgotPasswordDto model);
         Task<UserDto>? GetIdentityUser();
         Task<IdentityResult> AssignRoleToUserByEmail(string email, string role = "User");
