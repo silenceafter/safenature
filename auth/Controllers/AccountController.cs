@@ -233,14 +233,14 @@ namespace auth.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                return BadRequest($"Пользователь {model.Email} не найден.");
+                return BadRequest($"Пользователь {model.Email} не найден");
             }
 
             //сброс пароля пользователя
             var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
             if (result.Succeeded)
             {
-                return Ok(new { message = $"Пароль пользователя {model.Email} успешно сброшен." });
+                return Ok(new { message = $"Пароль пользователя {model.Email} успешно сброшен" });
             }
             else
             {
@@ -249,13 +249,18 @@ namespace auth.Controllers
         }
 
         [HttpPost("validate-token")]
-        //[Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> Validate()
         {
-            if (await _tokenService.ValidateJwtToken())
-                return Ok(true);
-            return Unauthorized();
+            var result = await _tokenService.ValidateJwtToken();
+            if (result)
+            {
+                return Ok(new { message = "Проверка токена прошла успешно" } );
+            }
+            return Unauthorized(new { message = "Токен недействителен" });
         }
+
+
 
         [HttpGet("get-current-user")]
         [Authorize]
