@@ -46,7 +46,9 @@ namespace auth.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            {
+                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));/
+            }                    
 
             //регистрация
             var serviceResult = await _accountService.Register(model);//(result, user)
@@ -73,6 +75,11 @@ namespace auth.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            }
+
             try
             {
                 //вход пользователя в систему
@@ -174,24 +181,29 @@ namespace auth.Controllers
             }
         }
 
-        [HttpPost("forgot")]
+        [HttpPost("forgot-password")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
+            {
+                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            }                
+            
+            //если пользователь не найден
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-                BadRequest();
+            {
+                return BadRequest($"Пользователь {model.Email} не найден");
+            }                
             //
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var urlHelper = new UrlHelper(ControllerContext);
             var callbackUrl = urlHelper.Action("ResetPassword", "Account", new { token, model.Email }, urlHelper.ActionContext.HttpContext.Request.Scheme);
 
             //отправить email с ссылкой на сброс пароля
-            await _emailService.SendEmailAsync(model.Email, "Reset Password", $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
-            return Ok(new { message = "Отправлена ссылка на сброс пароля пользователя" });
+            await _emailService.SendEmailAsync(model.Email, "Reset Password", $"Ссылка для сброса пароля: <a href='{callbackUrl}'>link</a>");
+            return Ok(new { message = $"Отправлена ссылка на сброс пароля пользователя {model.Email}" });
         }
 
         [HttpPost("validate")]
