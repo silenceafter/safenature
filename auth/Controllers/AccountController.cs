@@ -202,11 +202,53 @@ namespace auth.Controllers
             var callbackUrl = urlHelper.Action("ResetPassword", "Account", new { token, model.Email }, urlHelper.ActionContext.HttpContext.Request.Scheme);
 
             //отправить email с ссылкой на сброс пароля
-            await _emailService.SendEmailAsync(model.Email, "Reset Password", $"Ссылка для сброса пароля: <a href='{callbackUrl}'>link</a>");
-            return Ok(new { message = $"Отправлена ссылка на сброс пароля пользователя {model.Email}" });
+            var result = await _emailService.SendEmailAsync(model.Email, "Reset Password", $"Ссылка для сброса пароля: <a href='{callbackUrl}'>link</a>");
+            if (result == null)
+            {
+                return BadRequest("Критическая ошибка");
+            }
+            else
+            {
+                if (result.IsSuccessful)
+                {
+                    return Ok(new { message = $"Отправлена ссылка на сброс пароля пользователя {model.Email}" });
+                }
+                else
+                {
+                    return Ok(new { message = $"Не удалось отправить ссылку на сброс пароля пользователя {model.Email}" });
+                }
+            }                        
         }
 
-        [HttpPost("validate")]
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            }
+
+            //пользователь не найден
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return BadRequest($"Пользователь {model.Email} не найден.");
+            }
+
+            //сброс пароля пользователя
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (result.Succeeded)
+            {
+                return Ok(new { message = $"Пароль пользователя {model.Email} успешно сброшен." });
+            }
+            else
+            {
+                return BadRequest($"Не удалось сбросить пароль пользователя {model.Email}");
+            }
+        }
+
+        [HttpPost("validate-token")]
         //[Authorize]
         public async Task<IActionResult> Validate()
         {
